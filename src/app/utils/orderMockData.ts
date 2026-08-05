@@ -1,0 +1,91 @@
+import type { Order, OrderStatusFilter } from '@/app/types/order'
+
+export const orderStatusFilters: OrderStatusFilter[] = [
+  { label: 'Pending', count: 70 },
+  { label: 'Responded', count: 85 },
+  { label: 'Assigned', count: 53 },
+  { label: 'Completed', count: 56 },
+]
+
+export const mockOrders: Order[] = [
+  {
+    id: '324561324',
+    assignedTo: 'Miguel Santos',
+    pickupAddress: { city: 'Makati City', province: 'Metro Manila', flag: '🇵🇭' },
+    deliveryAddress: { city: 'Quezon City', province: 'Metro Manila', flag: '🇵🇭' },
+    estimatedDelivery: '12 Sep, 2024',
+    status: 'Picked up',
+  },
+  {
+    id: '183896772',
+    assignedTo: 'Angela Reyes',
+    pickupAddress: { city: 'Taguig City', province: 'Metro Manila', flag: '🇵🇭' },
+    deliveryAddress: { city: 'Pasig City', province: 'Metro Manila', flag: '🇵🇭' },
+    estimatedDelivery: '14 Sep, 2024',
+    status: 'In transit',
+  },
+  {
+    id: '267189302',
+    assignedTo: 'Carlo Mendoza',
+    pickupAddress: { city: 'Cebu City', province: 'Cebu', flag: '🇵🇭' },
+    deliveryAddress: { city: 'Mandaue City', province: 'Cebu', flag: '🇵🇭' },
+    estimatedDelivery: '15 Sep, 2024',
+    status: 'Picked up',
+  },
+  {
+    id: '942625346',
+    assignedTo: 'Bea Garcia',
+    pickupAddress: { city: 'Davao City', province: 'Davao del Sur', flag: '🇵🇭' },
+    deliveryAddress: { city: 'General Santos', province: 'South Cotabato', flag: '🇵🇭' },
+    estimatedDelivery: '18 Sep, 2024',
+    status: 'In transit',
+  },
+  {
+    id: '581274903',
+    assignedTo: 'Paolo Villanueva',
+    pickupAddress: { city: 'Iloilo City', province: 'Iloilo', flag: '🇵🇭' },
+    deliveryAddress: { city: 'Bacolod City', province: 'Negros Occidental', flag: '🇵🇭' },
+    estimatedDelivery: '19 Sep, 2024',
+    status: 'Picked up',
+  },
+  {
+    id: '716305842',
+    assignedTo: 'Kyla Navarro',
+    pickupAddress: { city: 'San Fernando', province: 'Pampanga', flag: '🇵🇭' },
+    deliveryAddress: { city: 'Malolos', province: 'Bulacan', flag: '🇵🇭' },
+    estimatedDelivery: '20 Sep, 2024',
+    status: 'In transit',
+  },
+  {
+    id: '408631957',
+    assignedTo: 'Joshua Lim',
+    pickupAddress: { city: 'Cagayan de Oro', province: 'Misamis Oriental', flag: '🇵🇭' },
+    deliveryAddress: { city: 'Iligan City', province: 'Lanao del Norte', flag: '🇵🇭' },
+    estimatedDelivery: '21 Sep, 2024',
+    status: 'Picked up',
+  },
+  {
+    id: '659218740',
+    assignedTo: 'Trisha Aquino',
+    pickupAddress: { city: 'Antipolo City', province: 'Rizal', flag: '🇵🇭' },
+    deliveryAddress: { city: 'Calamba City', province: 'Laguna', flag: '🇵🇭' },
+    estimatedDelivery: '22 Sep, 2024',
+    status: 'In transit',
+  },
+  {
+    id: '870496125',
+    assignedTo: 'Ramon Castillo',
+    pickupAddress: { city: 'Naga City', province: 'Camarines Sur', flag: '🇵🇭' },
+    deliveryAddress: { city: 'Legazpi City', province: 'Albay', flag: '🇵🇭' },
+    estimatedDelivery: '23 Sep, 2024',
+    status: 'Picked up',
+  },
+  {
+    id: '193764258',
+    assignedTo: 'Lara Bautista',
+    pickupAddress: { city: 'Baguio City', province: 'Benguet', flag: '🇵🇭' },
+    deliveryAddress: { city: 'Dagupan City', province: 'Pangasinan', flag: '🇵🇭' },
+    estimatedDelivery: '24 Sep, 2024',
+    status: 'In transit',
+  },
+]
