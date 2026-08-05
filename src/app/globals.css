@@ -22,5 +22,51 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-host-grotesk), sans-serif;
+}
+
+@keyframes sales-flow-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-130px);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sales-flow-block {
+  animation: sales-flow-drop 900ms cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.sales-flow-block--hidden {
+  opacity: 0;
+  transform: translateY(-130px);
+}
+
+@keyframes sales-flow-line-draw {
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+.sales-flow-line {
+  animation: sales-flow-line-draw 600ms ease-out both;
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+}
+
+.sales-flow-line--hidden {
+  opacity: 0;
+  stroke-dashoffset: 200;
 }
