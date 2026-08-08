@@ -20,10 +20,14 @@ export async function POST(request: NextRequest) {
       cache: 'no-store',
     })
 
+    //console.log(upstream)
     const headers = new Headers()
     const contentType = upstream.headers.get('content-type')
+    const setCookies = upstream.headers.get('set-cookie')
+    
+    if (setCookies) headers.set('set-cookie', setCookies)
     if (contentType) headers.set('content-type', contentType)
-
+    
     return new Response(await upstream.text(), {
       status: upstream.status,
       headers,
