@@ -1,8 +1,8 @@
 'use client'
 
 import { LockKeyhole, Mail } from 'lucide-react'
-import { Toaster, toast } from 'sonner'
-import React, { FormEvent, useState } from 'react'
+import { toast } from 'sonner'
+import React, { ChangeEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function LoginForm() {
@@ -11,7 +11,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: ChangeEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (isSubmitting) return
@@ -47,7 +47,6 @@ export default function LoginForm() {
 
   return (
     <div className="flex w-full h-screen p-4 bg-[#f9f9f9] items-center justify-center">
-        <Toaster richColors closeButton/>
         <div className="flex flex-col w-full sm:max-w-sm">
             <div className="flex flex-col gap-2">
                 <span className="text-[#0c0d0d] text-4xl font-medium">Welcome Back</span>

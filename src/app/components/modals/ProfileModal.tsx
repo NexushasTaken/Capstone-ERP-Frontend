@@ -3,20 +3,41 @@
 import { LogOut, X } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect } from 'react'
-import type { StaffProfile } from '@/app/types/profile'
+import type { ProfileModalProps } from '@/app/types/profile'
 import { formatProfileDetails } from '@/app/utils/profileHelpers'
-
-interface ProfileModalProps {
-  isOpen: boolean
-  profile: StaffProfile
-  onClose: () => void
-}
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export default function ProfileModal({
   isOpen,
   profile,
   onClose,
 }: ProfileModalProps) {
+
+  const router = useRouter()
+  async function handleLogout() {
+    try {
+      const response = await fetch('/api/User/Logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        const message = payload?.message ?? payload?.title ?? 'Unable to log out.'
+        throw new Error(message)
+      }
+
+      onClose()
+      toast.success("You're logged out successfully!")
+      router.push('/')
+      router.refresh()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to log out. Please try again.')
+    }
+  }
+
   useEffect(() => {
     if (!isOpen) return
 
@@ -34,7 +55,7 @@ export default function ProfileModal({
     <div
       aria-labelledby="profile-modal-title"
       aria-modal="true"
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4"
+      className="fixed inset-0 z-60 flex items-center justify-center bg-black/45 p-4"
       onMouseDown={onClose}
       role="dialog"
     >
@@ -61,7 +82,8 @@ export default function ProfileModal({
 
         <button
           aria-label="Log out"
-          className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0c0d0d] px-4 py-3 font-medium text-white"
+          className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0c0d0d] px-4 py-3 font-medium text-white cursor-pointer transition-all hover:scale-105 duration-300"
+          onClick={handleLogout}
           type="button"
         >
           <LogOut className="h-5 w-5" />
