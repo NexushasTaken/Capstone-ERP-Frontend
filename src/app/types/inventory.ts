@@ -59,7 +59,7 @@ export interface RawMaterialInventoryItem {
   quantity: number
   unit: string
   reorderPoint: number
-  supplier: string
+  warehouse: string
   unitCost: number
   status: RawMaterialStatus
 }
@@ -74,7 +74,7 @@ export type RawMaterialSortBy =
   | 'quantity'
   | 'reorderPoint'
   | 'unitCost'
-  | 'supplier'
+  | 'warehouse'
 
 export interface RawMaterialSortOption {
   label: string

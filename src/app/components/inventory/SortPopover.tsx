@@ -21,7 +21,7 @@ export default function SortPopover({
   return (
     <Popover>
       <PopoverTrigger
-        className="cursor-pointer rounded-xl border border-[#E1E4E2] p-2 text-[#121514] transition-colors hover:bg-[#F7F9F7]"
+        className="cursor-pointer rounded-xl border border-[#E1E4E2] p-2 text-[#121514] transition-colors hover:bg-[#DCE4DF]"
         >
         {trigger ?? <ArrowDownUp size={18} />}
       </PopoverTrigger>

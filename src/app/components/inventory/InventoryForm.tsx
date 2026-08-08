@@ -5,11 +5,12 @@ import MovementVelocity from '@/app/components/inventory/MovementVelocity'
 import { inventoryDashboardData, mockRawMaterials } from '@/app/utils/inventoryMockData'
 import { formatNumber, formatPeso, getRawMaterialStatusStyle, getRiskStyle } from '@/app/utils/inventoryHelpers'
 import { RAW_MATERIAL_STATUSES, RawMaterialSortBy, type RawMaterialFilter, type RawMaterialStatusFilter } from '@/app/types/inventory'
-import { AlertTriangle, Ellipsis, Shapes, Truck, Warehouse } from 'lucide-react'
+import { AlertTriangle, Ellipsis, Search, Shapes, Truck, Warehouse, X } from 'lucide-react'
 import SeeMoreModal from '@/app/components/modals/SeeMoreModal'
 import { useState } from 'react'
 import CloseButton from '@/app/components/CloseButton'
 import SortPopover from '@/app/components/inventory/SortPopover'
+
 
 const rawMaterialColumns = ['Material ID', 'Raw material', 'Used for', 'Available', 'Reorder point', 'Supplier', 'Unit cost', 'Status']
 
@@ -23,6 +24,7 @@ export default function InventoryForm() {
   const [selectedItem, setSelectedItem] =
     useState<(typeof mockRawMaterials)[number] | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<RawMaterialFilter>('All')
+  const [search, setSearch] = useState('')
 
   const rawMaterialStatusFilters: RawMaterialStatusFilter[] = [
     {
@@ -37,12 +39,17 @@ export default function InventoryForm() {
     })),
   ]
 
-  const filteredRawMaterials =
-  selectedFilter === 'All'
-    ? mockRawMaterials
-    : mockRawMaterials.filter(
-        (item) => item.status === selectedFilter
-  )
+  const filteredRawMaterials = mockRawMaterials.filter((item) => {
+    const matchesFilter =
+      selectedFilter === 'All' || item.status === selectedFilter
+
+    const matchesSearch =
+      search === '' ||
+      item.material.toLowerCase().includes(search.toLowerCase()) ||
+      item.warehouse.toLowerCase().includes(search.toLowerCase())
+
+    return matchesFilter && matchesSearch
+  })
 
   const displayedRawMaterials = [...filteredRawMaterials].sort((a, b) => {
     switch (sortBy) {
@@ -66,10 +73,10 @@ export default function InventoryForm() {
           ? a.unitCost - b.unitCost
           : b.unitCost - a.unitCost
 
-      case 'supplier':
+      case 'warehouse':
         return sortOrder === 'asc'
-          ? a.supplier.localeCompare(b.supplier)
-          : b.supplier.localeCompare(a.supplier)
+          ? a.warehouse.localeCompare(b.warehouse)
+          : b.warehouse.localeCompare(a.warehouse)
 
       default:
         return 0
@@ -174,6 +181,33 @@ export default function InventoryForm() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              {/* SEARCH INPUT */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search raw materials"
+                  className="w-full rounded-xl border border-[#DFE2E0] bg-white px-3 py-2 text-sm text-[#121514] placeholder:text-[#737A76] focus:border-[#121514] focus:outline-none focus:ring-1 focus:ring-[#121514]"
+                />
+                {search ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737A76] cursor-pointer transition-colors hover:text-[#121514]"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                ): (
+                  <Search className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#737A76]" />
+                )}
+                
+              </div>
+              {/* EXPORT TO CSV */}
+              <button className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors hover:bg-[#DCE4DF]" type="button">
+                Export to CSV
+              </button>
+              {/* FILTERS */}
               {rawMaterialStatusFilters.map((filter) => (
                 <button
                   key={filter.label}
@@ -182,7 +216,7 @@ export default function InventoryForm() {
                   className={`cursor-pointer rounded-xl border px-3 py-2 text-sm whitespace-nowrap transition-colors ${
                     selectedFilter === filter.label
                       ? 'border-[#121514] bg-[#121514] text-white'
-                      : 'border-[#E1E4E2] bg-white text-[#121514] hover:bg-gray-50'
+                      : 'border-[#E1E4E2] bg-white text-[#121514] hover:bg-[#DCE4DF]'
                   }`}
                 >
                   {filter.label}
@@ -213,8 +247,15 @@ export default function InventoryForm() {
                 </tr>
               </thead>
               <tbody>
-                {displayedRawMaterials.map((item) => {
-                  const statusStyle = getRawMaterialStatusStyle(item.status)
+                {displayedRawMaterials.length === 0 ? (
+                  <tr>
+                    <td colSpan={rawMaterialColumns.length + 1} className="px-3 py-4 text-center text-sm text-[#737A76]">
+                      No raw materials found.
+                    </td>
+                  </tr>
+                ) : 
+                  displayedRawMaterials.map((item) => {
+                    const statusStyle = getRawMaterialStatusStyle(item.status)
 
                   return (
                     <tr className="bg-[#FAFBFA] text-sm text-[#121514]" key={item.id}>
@@ -226,7 +267,7 @@ export default function InventoryForm() {
                       <td className="px-3 py-4 font-medium whitespace-nowrap">{item.usedFor}</td>
                       <td className="px-3 py-4 whitespace-nowrap">{formatNumber(item.quantity)} {item.unit}</td>
                       <td className="px-3 py-4 whitespace-nowrap">{formatNumber(item.reorderPoint)} {item.unit}</td>
-                      <td className="px-3 py-4 font-medium whitespace-nowrap">{item.supplier}</td>
+                      <td className="px-3 py-4 font-medium whitespace-nowrap">{item.warehouse}</td>
                       <td className="px-3 py-4 font-medium whitespace-nowrap">{formatPeso(item.unitCost)}</td>
                       <td className={`px-3 py-4 font-medium whitespace-nowrap ${statusStyle.labelClassName}`}>
                         <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${statusStyle.dotClassName}`} />
@@ -250,6 +291,12 @@ export default function InventoryForm() {
                 })}
               </tbody>
             </table>
+          </div>
+
+          <div className="mt-4 flex w-full justify-between gap-2">
+            <span className="text-sm text-[#737A76]">
+              Showing {displayedRawMaterials.length} of {filteredRawMaterials.length} raw materials
+            </span>
           </div>
         </section>
       </div>
@@ -301,8 +348,8 @@ export default function InventoryForm() {
                   <Truck className='text-[#777777] w-6 h-6'/>
                 </span>
                 <div className='flex flex-col'>
-                  <span className='text-xs'>Supplier</span>
-                  <span className='text-base font-semibold'>{selectedItem?.supplier}</span>
+                  <span className='text-xs'>Warehouse</span>
+                  <span className='text-base font-semibold'>{selectedItem?.warehouse}</span>
                 </div>
               </div>
           </div>
