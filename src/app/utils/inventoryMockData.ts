@@ -26,16 +26,16 @@ export const inventoryDashboardData: InventoryDashboardData = {
 }
 
 export const mockRawMaterials: RawMaterialInventoryItem[] = [
-  { id: 'RM-1001', material: 'Wood screws', category: 'Fasteners', usedFor: 'Dining table frames', quantity: 1280, unit: 'pcs', reorderPoint: 500, supplier: 'Manila Hardware Co.', unitCost: 1.8, status: 'In stock' },
-  { id: 'RM-1002', material: 'Oak boards', category: 'Lumber', usedFor: 'Table tops', quantity: 86, unit: 'boards', reorderPoint: 40, supplier: 'Luzon Timber Supply', unitCost: 740, status: 'In stock' },
-  { id: 'RM-1003', material: 'Steel brackets', category: 'Hardware', usedFor: 'Table leg supports', quantity: 224, unit: 'pcs', reorderPoint: 180, supplier: 'Metro Metalworks', unitCost: 38, status: 'Low stock' },
-  { id: 'RM-1004', material: 'Wood glue', category: 'Adhesives', usedFor: 'Chair and table joins', quantity: 32, unit: 'bottles', reorderPoint: 24, supplier: 'BuildPro Supplies', unitCost: 185, status: 'Low stock' },
-  { id: 'RM-1005', material: 'Clear varnish', category: 'Finishing', usedFor: 'Table finish coating', quantity: 18, unit: 'cans', reorderPoint: 20, supplier: 'ColorCraft Depot', unitCost: 420, status: 'Reorder' },
-  { id: 'RM-1006', material: 'Plywood sheets', category: 'Panels', usedFor: 'Cabinet backing', quantity: 64, unit: 'sheets', reorderPoint: 30, supplier: 'Quezon Panel Mart', unitCost: 1180, status: 'In stock' },
-  { id: 'RM-1007', material: 'Drawer slides', category: 'Hardware', usedFor: 'Desk drawers', quantity: 140, unit: 'pairs', reorderPoint: 70, supplier: 'Metro Metalworks', unitCost: 260, status: 'In stock' },
-  { id: 'RM-1008', material: 'Table legs', category: 'Components', usedFor: 'Dining tables', quantity: 48, unit: 'pcs', reorderPoint: 24, supplier: 'Cavite Woodcraft', unitCost: 390, status: 'Reserved' },
-  { id: 'RM-1009', material: 'Sanding discs', category: 'Consumables', usedFor: 'Surface preparation', quantity: 520, unit: 'pcs', reorderPoint: 180, supplier: 'BuildPro Supplies', unitCost: 12, status: 'In stock' },
-  { id: 'RM-1010', material: 'Hex bolts', category: 'Fasteners', usedFor: 'Workbench assembly', quantity: 760, unit: 'pcs', reorderPoint: 300, supplier: 'Manila Hardware Co.', unitCost: 4.5, status: 'In stock' },
+  { id: 'RM-1001', material: 'Wood screws', category: 'Fasteners', usedFor: 'Dining table frames', quantity: 1280, unit: 'pcs', reorderPoint: 500, warehouse: 'Manila Hardware Co.', unitCost: 1.8, status: 'In stock' },
+  { id: 'RM-1002', material: 'Oak boards', category: 'Lumber', usedFor: 'Table tops', quantity: 86, unit: 'boards', reorderPoint: 40, warehouse: 'Luzon Timber Supply', unitCost: 740, status: 'In stock' },
+  { id: 'RM-1003', material: 'Steel brackets', category: 'Hardware', usedFor: 'Table leg supports', quantity: 224, unit: 'pcs', reorderPoint: 180, warehouse: 'Metro Metalworks', unitCost: 38, status: 'Low stock' },
+  { id: 'RM-1004', material: 'Wood glue', category: 'Adhesives', usedFor: 'Chair and table joins', quantity: 32, unit: 'bottles', reorderPoint: 24, warehouse: 'BuildPro Supplies', unitCost: 185, status: 'Low stock' },
+  { id: 'RM-1005', material: 'Clear varnish', category: 'Finishing', usedFor: 'Table finish coating', quantity: 18, unit: 'cans', reorderPoint: 20, warehouse: 'ColorCraft Depot', unitCost: 420, status: 'Reorder' },
+  { id: 'RM-1006', material: 'Plywood sheets', category: 'Panels', usedFor: 'Cabinet backing', quantity: 64, unit: 'sheets', reorderPoint: 30, warehouse: 'Quezon Panel Mart', unitCost: 1180, status: 'In stock' },
+  { id: 'RM-1007', material: 'Drawer slides', category: 'Hardware', usedFor: 'Desk drawers', quantity: 140, unit: 'pairs', reorderPoint: 70, warehouse: 'Metro Metalworks', unitCost: 260, status: 'In stock' },
+  { id: 'RM-1008', material: 'Table legs', category: 'Components', usedFor: 'Dining tables', quantity: 48, unit: 'pcs', reorderPoint: 24, warehouse: 'Cavite Woodcraft', unitCost: 390, status: 'Reserved' },
+  { id: 'RM-1009', material: 'Sanding discs', category: 'Consumables', usedFor: 'Surface preparation', quantity: 520, unit: 'pcs', reorderPoint: 180, warehouse: 'BuildPro Supplies', unitCost: 12, status: 'In stock' },
+  { id: 'RM-1010', material: 'Hex bolts', category: 'Fasteners', usedFor: 'Workbench assembly', quantity: 760, unit: 'pcs', reorderPoint: 300, warehouse: 'Manila Hardware Co.', unitCost: 4.5, status: 'In stock' },
 ]
 
 export const rawMaterialSortOptions: RawMaterialSortOption[] = [
@@ -70,8 +70,8 @@ export const rawMaterialSortOptions: RawMaterialSortOption[] = [
     order: 'desc',
   },
   {
-    label: 'Supplier',
-    value: 'supplier',
+    label: 'warehouse',
+    value: 'warehouse',
     order: 'asc',
   },
 ]
