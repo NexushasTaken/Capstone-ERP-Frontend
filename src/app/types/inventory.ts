@@ -36,3 +36,58 @@ export interface InventoryDashboardData {
   movementVelocity: MovementVelocityItem[]
   predictedStockouts: PredictedStockout[]
 }
+
+export const RAW_MATERIAL_STATUSES = [
+  'In stock',
+  'Low stock',
+  'Reorder',
+  'Reserved',
+] as const
+
+export type RawMaterialStatus =
+  (typeof RAW_MATERIAL_STATUSES)[number]
+
+export type RawMaterialFilter =
+  | 'All'
+  | RawMaterialStatus
+
+export interface RawMaterialInventoryItem {
+  id: string
+  material: string
+  category: string
+  usedFor: string
+  quantity: number
+  unit: string
+  reorderPoint: number
+  supplier: string
+  unitCost: number
+  status: RawMaterialStatus
+}
+
+export interface RawMaterialStatusFilter {
+  label: RawMaterialFilter
+  count: number
+}
+
+export type RawMaterialSortBy =
+  | 'material'
+  | 'quantity'
+  | 'reorderPoint'
+  | 'unitCost'
+  | 'supplier'
+
+export interface RawMaterialSortOption {
+  label: string
+  value: RawMaterialSortBy
+  order: 'asc' | 'desc'
+}
+
+export interface SortPopoverProps {
+  value: RawMaterialSortBy
+  order: 'asc' | 'desc'
+  onChange: (
+    value: RawMaterialSortBy,
+    order: 'asc' | 'desc'
+  ) => void
+  trigger?: React.ReactNode
+}

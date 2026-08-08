@@ -19,9 +19,8 @@ export default function LoginForm() {
     setIsSubmitting(true)
 
     try {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL
       const response = await fetch(
-        `${apiBaseUrl?.replace(/\/$/, '') ?? ''}/api/User/Login`,
+        '/api/User/Login',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -47,7 +46,7 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="flex w-full h-screen p-4 bg-[#f9f9f9] items-center justify-center select-none">
+    <div className="flex w-full h-screen p-4 bg-[#f9f9f9] items-center justify-center">
         <Toaster richColors closeButton/>
         <div className="flex flex-col w-full sm:max-w-sm">
             <div className="flex flex-col gap-2">
@@ -59,7 +58,7 @@ export default function LoginForm() {
                 <div className="flex flex-col gap-2">
                     <label htmlFor="email" className='text-sm text-[#0c0d0d]'>Email address</label>
                     <div className="relative">
-                        <input id="email" name="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required className="pl-12 pr-4 py-4 outline-none border rounded-lg border-[#cfd1d1] w-full" placeholder='Email address'/>
+                        <input id="email" name="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required className="pl-12 pr-4 py-4 outline-none border rounded-lg border-[#cfd1d1] w-full text-[#0c0d0d]" placeholder='Email address'/>
                         <Mail className="text-[#0c0d0d] w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2" />
                     </div>
                 </div>
@@ -67,7 +66,7 @@ export default function LoginForm() {
                 <div className="flex flex-col mt-4 gap-2">
                     <label htmlFor="password" className='text-sm text-[#0c0d0d]'>Password</label>
                     <div className="relative">
-                        <input id="password" name="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required className="pl-12 pr-4 py-4 outline-none border rounded-lg border-[#cfd1d1] w-full" placeholder='Password'/>
+                        <input id="password" name="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required className="pl-12 pr-4 py-4 outline-none border rounded-lg border-[#cfd1d1] w-full text-[#0c0d0d]" placeholder='Password'/>
                         <LockKeyhole className="text-[#0c0d0d] w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2" />
                     </div>
                 </div>
