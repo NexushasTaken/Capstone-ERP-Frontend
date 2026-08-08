@@ -33,7 +33,7 @@ export default function SalesForm() {
         </div>
       </div>
 
-      <div className="mt-5 min-h-0 flex-1 overflow-auto">
+      <div className="mt-5 min-h-0 flex-1 overflow-auto ">
         <table className="w-full min-w-240 border-separate border-spacing-y-2 text-left">
           <thead className="text-sm font-normal text-[#737A76]">
             <tr>

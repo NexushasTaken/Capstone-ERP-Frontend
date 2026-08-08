@@ -6,12 +6,21 @@ import {
   CategoryScale,
   Chart,
   LinearScale,
+  LineController,
+  LineElement,
+  PointElement,
   Tooltip,
   type ChartConfiguration,
 } from 'chart.js'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
-Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip)
+Chart.register(BarController, BarElement, CategoryScale, LinearScale, LineController, LineElement, PointElement, Tooltip)
+
+const pesoFormatter = new Intl.NumberFormat('en-PH', {
+  style: 'currency',
+  currency: 'PHP',
+  maximumFractionDigits: 0,
+})
 
 const fulfillmentPerformanceData = {
   labels: ['12 Aug', '13 Aug', '14 Aug', '15 Aug', '16 Aug', '17 Aug', '18 Aug', '19 Aug', '20 Aug', '21 Aug', '22 Aug', '23 Aug', '24 Aug', '25 Aug', '26 Aug'],
@@ -85,7 +94,6 @@ function FulfillmentCanvas() {
 
     const chart = new Chart(canvasRef.current, config)
 
-    // Start after the canvas has been measured so the stagger is visible on refresh.
     chart.stop()
     chart.reset()
     const animationFrame = requestAnimationFrame(() => chart.update('default'))
@@ -112,96 +120,88 @@ export function FulfillmentChart() {
   )
 }
 
-type FulfillmentColumn = {
-  total: string
-  segments: number[]
-}
-
-const salesOverviewData: FulfillmentColumn[] = [
-  { total: '₱156,646', segments: [20, 16, 12, 35, 17] },
-  { total: '₱86,163', segments: [16, 15, 17, 17, 20] },
-  { total: '₱198,116', segments: [20, 16, 15, 18, 31] },
+const salesOverviewData = [
+  { total: 156646 },
+  { total: 86163 },
+  { total: 198116 },
 ]
 
-const segmentColors = ['#B9C0BB', '#909994', '#6C7570', '#414944', '#111513']
-const columnPositions = [20, 142, 264]
+function getLastCompletedMonthLabels(referenceDate = new Date()) {
+  return Array.from({ length: 3 }, (_, index) => {
+    const monthOffset = 3 - index
+    const monthDate = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - monthOffset, 1)
+
+    return monthDate.toLocaleString('en-US', { month: 'long' })
+  })
+}
 
 export function SalesChart() {
-  const [shouldAnimate, setShouldAnimate] = useState(false)
-  const segmentHeight = 12
-  const gap = 1
-  const bottom = 130
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    const animationFrame = requestAnimationFrame(() => setShouldAnimate(true))
-    return () => cancelAnimationFrame(animationFrame)
+    if (!canvasRef.current) return
+
+    const config: ChartConfiguration<'line'> = {
+      type: 'line',
+      data: {
+        labels: getLastCompletedMonthLabels(),
+        datasets: [
+          {
+            label: 'Sales',
+            data: salesOverviewData.map((month) => month.total),
+            borderColor: '#111513',
+            backgroundColor: 'rgba(17, 21, 19, 0.12)',
+            borderWidth: 3,
+            pointStyle: 'circle',
+            pointRadius: 8,
+            pointHoverRadius: 12,
+            pointBackgroundColor: '#EBF3ED',
+            pointBorderColor: '#111513',
+            pointBorderWidth: 3,
+            tension: 0.35,
+          },
+        ],
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (context) => `Sales: ${pesoFormatter.format(context.parsed.y ?? 0)}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            border: { display: false },
+            grid: { display: false },
+            ticks: {
+              color: '#4E5752',
+              font: { size: 12, weight: 500 },
+            },
+          },
+          y: {
+            beginAtZero: true,
+            border: { display: false },
+            grid: { color: '#DCE4DE' },
+            ticks: {
+              color: '#68716C',
+              callback: (value) => `${Number(value) / 1000}K`,
+            },
+          },
+        },
+      },
+    }
+
+    const chart = new Chart(canvasRef.current, config)
+    return () => chart.destroy()
   }, [])
 
-  const segmentY = (columnIndex: number, segmentIndex: number) => {
-    const priorHeight = salesOverviewData[columnIndex].segments
-      .slice(0, segmentIndex)
-      .reduce((sum, value) => sum + value, 0)
-    return bottom - priorHeight - segmentIndex * gap - salesOverviewData[columnIndex].segments[segmentIndex]
-  }
-
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <svg
-        aria-label="Mock Sales Overview Chart"
-        className="min-h-0 flex-1"
-        preserveAspectRatio="xMidYMid meet"
-        role="img"
-        viewBox="0 0 340 164"
-      >
-        {salesOverviewData.slice(0, -1).flatMap((column, columnIndex) =>
-          column.segments.map((_, segmentIndex) => {
-            const startX = columnPositions[columnIndex] + 42
-            const endX = columnPositions[columnIndex + 1]
-            const startY = segmentY(columnIndex, segmentIndex) + segmentHeight / 2
-            const endY = segmentY(columnIndex + 1, segmentIndex) + segmentHeight / 2
-            return (
-              <path
-                className={shouldAnimate ? 'sales-flow-line' : 'sales-flow-line sales-flow-line--hidden'}
-                d={`M ${startX} ${startY} C ${startX + 36} ${startY}, ${endX - 36} ${endY}, ${endX} ${endY}`}
-                fill="none"
-                key={`${columnIndex}-${segmentIndex}`}
-                style={{ animationDelay: `${(columnIndex + 1) * 550 + segmentIndex * 75}ms` }}
-                stroke="#DDE5DF"
-                strokeWidth="2"
-              />
-            )
-          }),
-        )}
-
-        {salesOverviewData.map((column, columnIndex) => (
-          <g key={column.total}>
-            <text fill="#111513" fontSize="10" fontWeight="600" textAnchor="middle" x={columnPositions[columnIndex] + 21} y="14">
-              {String.fromCodePoint(0x20B1)}{column.total.replace(/^\D+/, '')}
-            </text>
-            {column.segments.map((height, segmentIndex) => (
-              <rect
-                className={shouldAnimate ? 'sales-flow-block' : 'sales-flow-block sales-flow-block--hidden'}
-                fill={segmentColors[segmentIndex]}
-                height={height}
-                key={segmentIndex}
-                rx="3"
-                style={{ animationDelay: `${(columnIndex * column.segments.length + segmentIndex) * 100}ms` }}
-                width="42"
-                x={columnPositions[columnIndex]}
-                y={segmentY(columnIndex, segmentIndex)}
-              />
-            ))}
-          </g>
-        ))}
-      </svg>
-      <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 mb-4 text-sm text-[#4E5752]">
-        {['CPH', 'CPH 2', 'CPH 3', 'CPH 4', 'Other'].map((label, index) => (
-          <span className="flex items-center gap-1" key={label}>
-            <i className="h-2 w-2 rounded-sm" style={{ backgroundColor: segmentColors[index] }} />
-            {label}
-          </span>
-        ))}
-      </div>
+    <div className="h-full max-h-76 w-full">
+      <canvas aria-label="Sales overview for the last three completed months" ref={canvasRef} />
     </div>
   )
 }

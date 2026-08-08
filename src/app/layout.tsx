@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { Host_Grotesk } from "next/font/google";
+import { Host_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
 
 const hostGrotesk = Host_Grotesk({
   variable: "--font-host-grotesk",
@@ -20,9 +23,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${hostGrotesk.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", hostGrotesk.variable, "font-mono", jetbrainsMono.variable)}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col select-none">{children}</body>
     </html>
   );
 }

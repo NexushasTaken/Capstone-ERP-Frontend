@@ -15,7 +15,7 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
 
   return (
     <>
-    <aside className={`h-screen shrink-0 flex-col gap-4 bg-white p-4 select-none ${
+    <aside className={`flex h-full scrollbar-none shrink-0 flex-col gap-4 bg-white p-4 overflow-y-auto ${
       isOpen
         ? 'fixed inset-y-0 left-0 z-50 flex w-[min(20rem,calc(100vw-2rem))] shadow-xl lg:static lg:w-1/5 lg:shadow-none'
         : 'hidden lg:flex lg:w-1/5'
@@ -44,7 +44,7 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
           </div>
         </div>
 
-        <div className="flex w-full h-full bg-[#EBF3ED] rounded-lg"/>
+        <div className="flex w-full h-full bg-[#EBF3ED] rounded-lg shrink-0 lg:shrink"/>
 
         {/* PROFILE */}
         <button aria-label="Open profile" className="flex gap-2 w-full border-2 h-20 rounded-xl border-gray-200 py-1 pl-1 pr-4 shrink-0 text-left transition hover:border-[#A7AEAA] hover:bg-[#FAFBFA] cursor-pointer" onClick={() => setIsProfileOpen(true)} type="button">
@@ -67,7 +67,6 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
             <Bell className="text-[#0c0d0d] w-6 h-6"/>
           </div>
         </button>
-
     </aside>
     <ProfileModal
       isOpen={isProfileOpen}

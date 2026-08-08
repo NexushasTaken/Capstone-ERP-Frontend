@@ -7,7 +7,7 @@ import React from 'react'
 
 export default function RegisterForm() {
   return (
-     <div className="flex w-full h-screen p-4 bg-[#f9f9f9] items-center justify-center select-none">
+     <div className="flex w-full h-screen p-4 bg-[#f9f9f9] items-center justify-center">
         <Toaster richColors closeButton/>
         <div className="flex flex-col w-full sm:max-w-sm">
             <div className="flex flex-col gap-2 items-center">

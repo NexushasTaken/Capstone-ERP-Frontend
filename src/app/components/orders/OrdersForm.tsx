@@ -1,6 +1,10 @@
+'use client'
+
 import { Ellipsis, ArrowDownUp } from 'lucide-react'
 import { formatOrderId, formatPhilippineLocation, statusDotClass } from '@/app/utils/orderHelpers'
 import { mockOrders, orderStatusFilters } from '@/app/utils/orderMockData'
+import { useState } from 'react'
+import SeeMoreModal from '@/app/components/modals/SeeMoreModal'
 
 const tableColumns = [
   'Order ID',
@@ -12,8 +16,10 @@ const tableColumns = [
 ]
 
 export default function OrdersForm() {
+  const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false);
+
   return (
-    <section className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white p-4 lg:p-5">
+    <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-white p-4 lg:p-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-medium tracking-tight text-[#121514]">Orders</h1>
@@ -40,7 +46,7 @@ export default function OrdersForm() {
         </div>
       </div>
 
-      <div className="mt-5 min-h-0 overflow-auto">
+      <div className="mt-5 min-h-0 overflow-auto scrollbar-none">
         <table className="w-full min-w-235 border-separate border-spacing-y-2 text-left">
           <thead className="text-sm font-normal text-[#737A76]">
             <tr>
@@ -72,7 +78,7 @@ export default function OrdersForm() {
                 </td>
                 <td className="rounded-r-xl px-3 py-5">
                   <div className="flex items-center justify-end gap-2">
-                    <button className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-1.5 text-sm whitespace-nowrap" type="button">
+                    <button className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-1.5 text-sm whitespace-nowrap" type="button" onClick={() => setIsSeeMoreOpen(true)}>
                       See more
                     </button>
                     <button aria-label={`More actions for order ${order.id}`} className="cursor-pointer rounded-xl border border-[#DFE2E0] p-1.5" type="button">
@@ -85,6 +91,12 @@ export default function OrdersForm() {
           </tbody>
         </table>
       </div>
+
+      <SeeMoreModal onClose={() => setIsSeeMoreOpen(false)} open={isSeeMoreOpen}>
+        <div className=''>
+
+        </div>
+      </SeeMoreModal>
     </section>
   )
 }

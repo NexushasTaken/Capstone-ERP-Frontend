@@ -1,4 +1,4 @@
-import type { InventoryHealthStatus, MovementVelocityCategory, WarehouseCapacity } from '@/app/types/inventory'
+import type { InventoryHealthStatus, MovementVelocityCategory, RawMaterialStatus, WarehouseCapacity } from '@/app/types/inventory'
 
 const riskStyles: Record<InventoryHealthStatus, { label: string; className: string }> = {
   healthy: { label: 'Healthy', className: 'bg-[#E6F3E8] text-[#31723B]' },
@@ -18,6 +18,14 @@ export function formatNumber(value: number) {
   return new Intl.NumberFormat('en-US').format(value)
 }
 
+export function formatPeso(value: number) {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
+  }).format(value)
+}
+
 const velocityColors: Record<MovementVelocityCategory, string> = {
   fast: 'bg-[#187B49]',
   stable: 'bg-[#1769C2]',
@@ -26,4 +34,15 @@ const velocityColors: Record<MovementVelocityCategory, string> = {
 
 export function getVelocityColor(category: MovementVelocityCategory) {
   return velocityColors[category]
+}
+
+const rawMaterialStatusStyles: Record<RawMaterialStatus, { dotClassName: string; labelClassName: string }> = {
+  'In stock': { dotClassName: 'bg-[#31723B]', labelClassName: 'text-[#31723B]' },
+  'Low stock': { dotClassName: 'bg-[#D98C00]', labelClassName: 'text-[#9A6700]' },
+  Reorder: { dotClassName: 'bg-[#D92D20]', labelClassName: 'text-[#B42318]' },
+  Reserved: { dotClassName: 'bg-[#1769C2]', labelClassName: 'text-[#1769C2]' },
+}
+
+export function getRawMaterialStatusStyle(status: RawMaterialStatus) {
+  return rawMaterialStatusStyles[status]
 }
