@@ -20,7 +20,7 @@ export default async function DashboardLayout({
   const accessToken = cookieStore.get("AccessToken")?.value;
 
   if (!accessToken) {
-    return <SessionExpiredPage />;
+    return <AccessDeniedPage />;
   }
   
   const response = await fetch(`${process.env.BACKEND_API_URL}/api/View/authorize`, {
@@ -32,11 +32,11 @@ export default async function DashboardLayout({
   });
 
   if (response.status === 401) {
-    return <SessionExpiredPage />;
+    return <AccessDeniedPage />;
   }
 
   if (response.status === 403) {
-      return <AccessDeniedPage />;
+      return <SessionExpiredPage />;
   }
 
   if (!response.ok) {
