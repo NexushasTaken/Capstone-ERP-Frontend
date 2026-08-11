@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       cache: 'no-store',
     })
 
-    //console.log(upstream)
+    console.log(upstream)
     const headers = new Headers()
     const contentType = upstream.headers.get('content-type')
     const setCookies = upstream.headers.get('set-cookie')
@@ -32,7 +32,9 @@ export async function POST(request: NextRequest) {
       status: upstream.status,
       headers,
     })
-  } catch {
+  } catch (error) {
+    console.error("Login proxy failed:", error)
+
     return Response.json(
       { message: "Unable to reach the authentication service." },
       { status: 502 }
