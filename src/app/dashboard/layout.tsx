@@ -1,10 +1,6 @@
-import AccessDeniedPage from "@/app/components/auth/AccessDeniedPage";
 import AuthGuard from "@/app/components/auth/AuthGuard";
-import ErrorPage from "@/app/components/auth/ErrorPage";
-import SessionExpiredPage from "@/app/components/auth/SessionExpiredPage";
 import DashboardShell from "@/app/components/DashboardShell";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -16,34 +12,6 @@ export default async function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const cookieStore = await cookies();
-  // const accessToken = cookieStore.get("AccessToken")?.value;
-
-  // if (!accessToken) {
-  //   return <AccessDeniedPage />;
-  // }
-
-  const response = await fetch(
-    `${process.env.BACKEND_API_URL}/api/View/authorize`,
-    {
-      method: "GET",
-      cache: "no-store",
-      credentials: "include",
-    },
-  );
-
-  if (response.status === 401) {
-    return <AccessDeniedPage />;
-  }
-
-  if (response.status === 403) {
-    return <SessionExpiredPage />;
-  }
-
-  if (!response.ok) {
-    return <ErrorPage />;
-  }
-
   return (
     <AuthGuard>
       <DashboardShell>{children}</DashboardShell>
