@@ -4,8 +4,8 @@ import { cookies } from "next/headers";
 const backendUrl = process.env.BACKEND_API_URL;
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("AccessToken")?.value;
+  // const cookieStore = await cookies();
+  // const accessToken = cookieStore.get("AccessToken")?.value;
 
   // No need to check accessToken in front end.
   // if (!accessToken) {
@@ -25,10 +25,8 @@ export async function GET() {
   try {
     const upstream = await fetch(`${backendUrl}/api/View/authorize`, {
       method: "GET",
-      headers: {
-        Cookie: `AccessToken=${accessToken}`,
-      },
       cache: "no-store",
+      credentials: "include",
     });
 
     return new Response(await upstream.text(), {
