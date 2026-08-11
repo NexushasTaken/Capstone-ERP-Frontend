@@ -16,38 +16,37 @@ export default async function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("AccessToken")?.value;
+  // const cookieStore = await cookies();
+  // const accessToken = cookieStore.get("AccessToken")?.value;
 
-  if (!accessToken) {
-    return <AccessDeniedPage />;
-  }
-  
-  const response = await fetch(`${process.env.BACKEND_API_URL}/api/View/authorize`, {
-    method: "GET",
-    cache: "no-store",
-    headers: {
-      "Cookie": `AccessToken=${accessToken}`
-    }
-  });
+  // if (!accessToken) {
+  //   return <AccessDeniedPage />;
+  // }
+
+  const response = await fetch(
+    `${process.env.BACKEND_API_URL}/api/View/authorize`,
+    {
+      method: "GET",
+      cache: "no-store",
+      credentials: "include",
+    },
+  );
 
   if (response.status === 401) {
     return <AccessDeniedPage />;
   }
 
   if (response.status === 403) {
-      return <SessionExpiredPage />;
+    return <SessionExpiredPage />;
   }
 
   if (!response.ok) {
-      return <ErrorPage />;
+    return <ErrorPage />;
   }
 
   return (
     <AuthGuard>
-      <DashboardShell>
-        {children}
-      </DashboardShell>
+      <DashboardShell>{children}</DashboardShell>
     </AuthGuard>
-  )
+  );
 }
