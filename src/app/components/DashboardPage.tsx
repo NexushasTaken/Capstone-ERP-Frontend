@@ -31,7 +31,7 @@ export default function DashboardPage() {
           <div className='flex items-center justify-end w-full'>
             <button className='inline-flex gap-2 items-center h-fit p-4 rounded-2xl text-base text-white bg-[#0c0d0d]'>
               <Plus className='text-white h-5 w-5'/>
-              Add New Shipment
+              Add New Order
             </button>
           </div>
           <div className='flex flex-col lg:flex-row w-full'>
