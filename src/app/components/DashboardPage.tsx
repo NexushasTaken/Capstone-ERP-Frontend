@@ -1,10 +1,28 @@
-import { FulfillmentChart, SalesChart } from '@/app/components/DashboardCharts'
+'use client'
+
+import { FulfillmentChart, SalesChart, type SalesChartType } from '@/app/components/DashboardCharts'
 import InventoryOverview from '@/app/components/inventory/InventoryOverview'
 import OrdersForm from '@/app/components/orders/OrdersForm'
+import {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { ArrowUpDown, ArrowUpRight, Calendar, MoveUpRight, Plus, Settings2 } from 'lucide-react'
-import React from 'react'
+import { Check } from 'lucide-react'
+import { useState } from 'react'
+
+const salesChartOptions: { label: string; value: SalesChartType }[] = [
+  { label: 'Line chart', value: 'line' },
+  { label: 'Pie chart', value: 'pie' },
+  { label: 'Bar chart', value: 'bar' },
+]
 
 export default function DashboardPage() {
+  const [salesChartType, setSalesChartType] = useState<SalesChartType>('line')
+
   return (
     <div className="flex h-screen scrollbar-none w-full flex-col gap-4 overflow-y-auto p-3 md:p-4 lg:w-4/5 bg-white">
 
@@ -48,9 +66,39 @@ export default function DashboardPage() {
                   <button aria-label="Settings" type="button" className="bg-transparent border-2 border-[#C6C6C7] rounded-xl text-[#0c0d0d] font-medium p-2 cursor-pointer transition-all duration-300 hover:scale-105 group">
                     <Settings2 className="transition-all group-hover:scale-105"/>
                   </button>
-                  <button aria-label="ArrowUpDown" type="button" className="bg-transparent border-2 border-[#C6C6C7] rounded-xl text-[#0c0d0d] font-medium p-2 cursor-pointer transition-all duration-300 hover:scale-105 group">
-                    <ArrowUpDown className="transition-all group-hover:scale-105"/>
-                  </button>
+                  <Popover>
+                    <PopoverTrigger className="bg-transparent border-2 border-[#C6C6C7] rounded-xl text-[#0c0d0d] font-medium p-2 cursor-pointer transition-all duration-300 hover:scale-105 group">
+                      <ArrowUpDown className="transition-all group-hover:scale-105"/>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-60">
+                      <PopoverHeader className="border-b px-4 py-3">
+                        <PopoverTitle>Chart view</PopoverTitle>
+                      </PopoverHeader>
+
+                      <div className="flex flex-col">
+                        {salesChartOptions.map((option) => {
+                          const selected = salesChartType === option.value
+
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => setSalesChartType(option.value)}
+                              className={`flex w-full items-center justify-between px-4 py-2 text-sm transition-colors hover:bg-[#F7F9F7] ${
+                                selected ? 'bg-[#F7F9F7] font-medium' : ''
+                              }`}
+                            >
+                              <span>{option.label}</span>
+
+                              {selected && (
+                                <Check size={16} className="text-[#121514]" />
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
             
@@ -64,7 +112,7 @@ export default function DashboardPage() {
                     32.2% <MoveUpRight  className="h-4 w-4"/>
                   </span>
                 </div>
-                  <SalesChart />
+                  <SalesChart type={salesChartType} />
               </div>
             </div>
           </div>

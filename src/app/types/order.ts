@@ -11,7 +11,7 @@ export interface Order {
   assignedTo: string
   pickupAddress: PhilippineLocation
   deliveryAddress: PhilippineLocation
-  estimatedDelivery: string
+  price: number
   status: OrderStatus
 }
 

@@ -68,11 +68,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   }
 
   if (status === "unauthorized") {
-    return <SessionExpiredPage />;
+    return <AccessDeniedPage />;
   }
 
   if (status === "forbidden") {
-    return <AccessDeniedPage />;
+    return <SessionExpiredPage />;
   }
 
   if (status === "error") {

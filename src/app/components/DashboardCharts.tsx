@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  ArcElement,
   BarController,
   BarElement,
   CategoryScale,
@@ -8,13 +9,14 @@ import {
   LinearScale,
   LineController,
   LineElement,
+  PieController,
   PointElement,
   Tooltip,
   type ChartConfiguration,
 } from 'chart.js'
 import { useEffect, useRef } from 'react'
 
-Chart.register(BarController, BarElement, CategoryScale, LinearScale, LineController, LineElement, PointElement, Tooltip)
+Chart.register(ArcElement, BarController, BarElement, CategoryScale, LinearScale, LineController, LineElement, PieController, PointElement, Tooltip)
 
 const pesoFormatter = new Intl.NumberFormat('en-PH', {
   style: 'currency',
@@ -126,6 +128,8 @@ const salesOverviewData = [
   { total: 198116 },
 ]
 
+export type SalesChartType = 'line' | 'pie' | 'bar'
+
 function getLastCompletedMonthLabels(referenceDate = new Date()) {
   return Array.from({ length: 3 }, (_, index) => {
     const monthOffset = 3 - index
@@ -135,23 +139,36 @@ function getLastCompletedMonthLabels(referenceDate = new Date()) {
   })
 }
 
-export function SalesChart() {
+interface SalesChartProps {
+  type?: SalesChartType
+}
+
+export function SalesChart({ type = 'line' }: SalesChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     if (!canvasRef.current) return
 
-    const config: ChartConfiguration<'line'> = {
-      type: 'line',
+    const labels = getLastCompletedMonthLabels()
+    const totals = salesOverviewData.map((month) => month.total)
+
+    const config: ChartConfiguration = {
+      type,
       data: {
-        labels: getLastCompletedMonthLabels(),
+        labels,
         datasets: [
           {
             label: 'Sales',
-            data: salesOverviewData.map((month) => month.total),
+            data: totals,
             borderColor: '#111513',
-            backgroundColor: 'rgba(17, 21, 19, 0.12)',
+            backgroundColor: type === 'pie'
+              ? ['#111513', '#7A8B80', '#D6DED8']
+              : 'rgba(17, 21, 19, 0.12)',
             borderWidth: 3,
+            borderRadius: type === 'bar' ? 4 : undefined,
+            borderSkipped: type === 'bar' ? false : undefined,
+            barPercentage: type === 'bar' ? 0.5 : undefined,
+            categoryPercentage: type === 'bar' ? 0.8 : undefined,
             pointStyle: 'circle',
             pointRadius: 8,
             pointHoverRadius: 12,
@@ -173,7 +190,7 @@ export function SalesChart() {
             },
           },
         },
-        scales: {
+        scales: type === 'pie' ? undefined : {
           x: {
             border: { display: false },
             grid: { display: false },
@@ -197,11 +214,11 @@ export function SalesChart() {
 
     const chart = new Chart(canvasRef.current, config)
     return () => chart.destroy()
-  }, [])
+  }, [type])
 
   return (
     <div className="h-full max-h-76 w-full">
-      <canvas aria-label="Sales overview for the last three completed months" ref={canvasRef} />
+      <canvas aria-label={`Sales overview ${type} chart for the last three completed months`} ref={canvasRef} />
     </div>
   )
 }

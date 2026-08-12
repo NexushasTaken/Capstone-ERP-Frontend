@@ -13,7 +13,7 @@ export const mockOrders: Order[] = [
     assignedTo: 'Miguel Santos',
     pickupAddress: { city: 'Makati City', province: 'Metro Manila', flag: '🇵🇭' },
     deliveryAddress: { city: 'Quezon City', province: 'Metro Manila', flag: '🇵🇭' },
-    estimatedDelivery: '12 Sep, 2024',
+    price: 18900,
     status: 'Picked up',
   },
   {
@@ -21,7 +21,7 @@ export const mockOrders: Order[] = [
     assignedTo: 'Angela Reyes',
     pickupAddress: { city: 'Taguig City', province: 'Metro Manila', flag: '🇵🇭' },
     deliveryAddress: { city: 'Pasig City', province: 'Metro Manila', flag: '🇵🇭' },
-    estimatedDelivery: '14 Sep, 2024',
+    price: 12500,
     status: 'In transit',
   },
   {
@@ -29,7 +29,7 @@ export const mockOrders: Order[] = [
     assignedTo: 'Carlo Mendoza',
     pickupAddress: { city: 'Cebu City', province: 'Cebu', flag: '🇵🇭' },
     deliveryAddress: { city: 'Mandaue City', province: 'Cebu', flag: '🇵🇭' },
-    estimatedDelivery: '15 Sep, 2024',
+    price: 28500,
     status: 'Picked up',
   },
   {
@@ -37,7 +37,7 @@ export const mockOrders: Order[] = [
     assignedTo: 'Bea Garcia',
     pickupAddress: { city: 'Davao City', province: 'Davao del Sur', flag: '🇵🇭' },
     deliveryAddress: { city: 'General Santos', province: 'South Cotabato', flag: '🇵🇭' },
-    estimatedDelivery: '18 Sep, 2024',
+    price: 1960,
     status: 'In transit',
   },
   {
@@ -45,7 +45,7 @@ export const mockOrders: Order[] = [
     assignedTo: 'Paolo Villanueva',
     pickupAddress: { city: 'Iloilo City', province: 'Iloilo', flag: '🇵🇭' },
     deliveryAddress: { city: 'Bacolod City', province: 'Negros Occidental', flag: '🇵🇭' },
-    estimatedDelivery: '19 Sep, 2024',
+    price: 1780,
     status: 'Picked up',
   },
   {
@@ -53,7 +53,7 @@ export const mockOrders: Order[] = [
     assignedTo: 'Kyla Navarro',
     pickupAddress: { city: 'San Fernando', province: 'Pampanga', flag: '🇵🇭' },
     deliveryAddress: { city: 'Malolos', province: 'Bulacan', flag: '🇵🇭' },
-    estimatedDelivery: '20 Sep, 2024',
+    price: 1450,
     status: 'In transit',
   },
   {
@@ -61,7 +61,7 @@ export const mockOrders: Order[] = [
     assignedTo: 'Joshua Lim',
     pickupAddress: { city: 'Cagayan de Oro', province: 'Misamis Oriental', flag: '🇵🇭' },
     deliveryAddress: { city: 'Iligan City', province: 'Lanao del Norte', flag: '🇵🇭' },
-    estimatedDelivery: '21 Sep, 2024',
+    price: 22400,
     status: 'Picked up',
   },
   {
@@ -69,7 +69,7 @@ export const mockOrders: Order[] = [
     assignedTo: 'Trisha Aquino',
     pickupAddress: { city: 'Antipolo City', province: 'Rizal', flag: '🇵🇭' },
     deliveryAddress: { city: 'Calamba City', province: 'Laguna', flag: '🇵🇭' },
-    estimatedDelivery: '22 Sep, 2024',
+    price: 8700,
     status: 'In transit',
   },
   {
@@ -77,7 +77,7 @@ export const mockOrders: Order[] = [
     assignedTo: 'Ramon Castillo',
     pickupAddress: { city: 'Naga City', province: 'Camarines Sur', flag: '🇵🇭' },
     deliveryAddress: { city: 'Legazpi City', province: 'Albay', flag: '🇵🇭' },
-    estimatedDelivery: '23 Sep, 2024',
+    price: 15300,
     status: 'Picked up',
   },
   {
@@ -85,7 +85,7 @@ export const mockOrders: Order[] = [
     assignedTo: 'Lara Bautista',
     pickupAddress: { city: 'Baguio City', province: 'Benguet', flag: '🇵🇭' },
     deliveryAddress: { city: 'Dagupan City', province: 'Pangasinan', flag: '🇵🇭' },
-    estimatedDelivery: '24 Sep, 2024',
+    price: 6400,
     status: 'In transit',
   },
 ]

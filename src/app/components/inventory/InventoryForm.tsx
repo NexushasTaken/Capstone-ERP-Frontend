@@ -2,17 +2,18 @@
 
 import WarehouseCapacityChart from '@/app/components/inventory/WarehouseCapacityChart'
 import MovementVelocity from '@/app/components/inventory/MovementVelocity'
-import { inventoryDashboardData, mockRawMaterials } from '@/app/utils/inventoryMockData'
+import { inventoryDashboardData, mockRawMaterialMovements, mockRawMaterials } from '@/app/utils/inventoryMockData'
 import { formatNumber, formatPeso, getRawMaterialStatusStyle, getRiskStyle } from '@/app/utils/inventoryHelpers'
+import { exportToCSV } from '@/app/utils/exportToCsv'
 import { RAW_MATERIAL_STATUSES, RawMaterialSortBy, type RawMaterialFilter, type RawMaterialStatusFilter } from '@/app/types/inventory'
-import { AlertTriangle, Ellipsis, Search, Shapes, Truck, Warehouse, X } from 'lucide-react'
+import { AlertTriangle, Ellipsis, PackageMinus, PackagePlus, Search, Shapes, SlidersHorizontal, Truck, Warehouse, X } from 'lucide-react'
 import SeeMoreModal from '@/app/components/modals/SeeMoreModal'
 import { useState } from 'react'
 import CloseButton from '@/app/components/CloseButton'
 import SortPopover from '@/app/components/inventory/SortPopover'
 
 
-const rawMaterialColumns = ['Material ID', 'Raw material', 'Used for', 'Available', 'Reorder point', 'Supplier', 'Unit cost', 'Status']
+const rawMaterialColumns = ['Material ID', 'Raw material', 'Available', 'Reorder point', 'Supplier', 'Unit cost', 'Status']
 
 export default function InventoryForm() {
   const { health, forecastWarningCount, warehouseCapacity, movementVelocity, predictedStockouts } = inventoryDashboardData
@@ -87,9 +88,36 @@ export default function InventoryForm() {
     ? getRawMaterialStatusStyle(selectedItem.status)
     : null;
 
-  const percentage = selectedItem
-  ? Math.min((selectedItem.quantity / selectedItem.reorderPoint) * 100, 100)
-  : 0;
+  // const percentage = selectedItem
+  // ? Math.min((selectedItem.quantity / selectedItem.reorderPoint) * 100, 100)
+  // : 0;
+
+  const selectedMovements = selectedItem
+    ? mockRawMaterialMovements.filter((movement) => movement.materialId === selectedItem.id)
+    : []
+
+  const getMovementStyle = (type: (typeof mockRawMaterialMovements)[number]['type']) => {
+    switch (type) {
+      case 'Stock in':
+        return {
+          Icon: PackagePlus,
+          className: 'bg-[#EBF3ED] text-[#31723B]',
+          quantityPrefix: '+',
+        }
+      case 'Stock out':
+        return {
+          Icon: PackageMinus,
+          className: 'bg-[#FBE7E7] text-[#B42318]',
+          quantityPrefix: '-',
+        }
+      case 'Adjustment':
+        return {
+          Icon: SlidersHorizontal,
+          className: 'bg-[#F6EFE6] text-[#7A4E22]',
+          quantityPrefix: '',
+        }
+    }
+  }
 
   return (
     <main className="flex h-screen w-full p-6 lg:w-4/5 bg-white">
@@ -173,7 +201,8 @@ export default function InventoryForm() {
           </article>
         </section>
 
-        <section className="flex w-full flex-col rounded-2xl p-4 shadow-sm lg:p-5 border border-[#DCE4DE]">
+        <section id="RawMaterials" className="relative flex w-full scroll-mt-6 flex-col rounded-2xl p-4 shadow-sm lg:p-5 border border-[#DCE4DE]">
+          <span id="Risks" className="absolute -top-6" aria-hidden="true" />
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-medium tracking-tight text-[#121514]">Raw materials</h2>
@@ -204,7 +233,26 @@ export default function InventoryForm() {
                 
               </div>
               {/* EXPORT TO CSV */}
-              <button className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors hover:bg-[#DCE4DF]" type="button">
+              <button
+                className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors hover:bg-[#DCE4DF]"
+                type="button"
+                onClick={() =>
+                  exportToCSV(
+                    displayedRawMaterials,
+                    [
+                      { header: 'Material ID', value: (item) => item.id },
+                      { header: 'Raw material', value: (item) => item.material },
+                      { header: 'Category', value: (item) => item.category },
+                      { header: 'Available', value: (item) => `${item.quantity} ${item.unit}` },
+                      { header: 'Reorder point', value: (item) => `${item.reorderPoint} ${item.unit}` },
+                      { header: 'Supplier', value: (item) => item.warehouse },
+                      { header: 'Unit cost', value: (item) => item.unitCost },
+                      { header: 'Status', value: (item) => item.status },
+                    ],
+                    'raw-materials'
+                  )
+                }
+              >
                 Export to CSV
               </button>
               {/* FILTERS */}
@@ -264,7 +312,6 @@ export default function InventoryForm() {
                         <span className="block font-medium">{item.material}</span>
                         <span className="block text-xs text-[#737A76]">{item.category}</span>
                       </td>
-                      <td className="px-3 py-4 font-medium whitespace-nowrap">{item.usedFor}</td>
                       <td className="px-3 py-4 whitespace-nowrap">{formatNumber(item.quantity)} {item.unit}</td>
                       <td className="px-3 py-4 whitespace-nowrap">{formatNumber(item.reorderPoint)} {item.unit}</td>
                       <td className="px-3 py-4 font-medium whitespace-nowrap">{item.warehouse}</td>
@@ -332,16 +379,6 @@ export default function InventoryForm() {
                     <span className='text-base font-semibold'>{selectedItem?.category}</span>
                   </div>
                 </div>
-                <div className='flex items-center px-3 w-full gap-2 h-16 rounded-lg bg-[#F0F1F1]'>
-                  <span className='flex items-center justify-center w-10 h-10 rounded-xl bg-[#DCE4DF]'>
-                    <Shapes className='text-[#8A938E] w-6 h-6'/>
-                  </span>
-                  <div className='flex flex-col'>
-                    <span className='text-xs'>Used For</span>
-                    <span className='text-base font-semibold'>{selectedItem?.usedFor}</span>
-                  </div>
-                </div>
-              </div>
 
               <div className='flex items-center px-3 w-full gap-2 h-16 rounded-lg bg-[#F0F1F1]'>
                 <span className='flex shrink-0 items-center justify-center w-10 h-10 rounded-xl bg-[#1B1C1C]'>
@@ -352,6 +389,7 @@ export default function InventoryForm() {
                   <span className='text-base font-semibold'>{selectedItem?.warehouse}</span>
                 </div>
               </div>
+              </div>
           </div>
 
           <div className='flex flex-col w-full h-full p-4 mt-2'>
@@ -361,7 +399,7 @@ export default function InventoryForm() {
             </div>
 
             <div className='flex flex-col w-full h-40 bg-[#F0F1F1] mt-4 rounded-xl p-4'>
-              <div className='flex w-full justify-between items-end'>
+              <div className='flex w-full justify-between items-center h-full'>
                 <div className='flex flex-col'>
                 <span className='text-5xl font-semibold text-[#0c0d0d]'>
                   {selectedItem?.quantity}
@@ -378,7 +416,7 @@ export default function InventoryForm() {
                 </div>
               </div>
               
-              <div className='flex flex-col w-full h-full mt-4'>
+              {/* <div className='flex flex-col w-full h-full mt-4'>
                 <div className='flex w-full justify-between text-sm text-[#0c0d0d] mb-2'>
                   <span>Current Level</span>
                   <span>Reorder Point: {selectedItem?.reorderPoint}</span>
@@ -395,7 +433,7 @@ export default function InventoryForm() {
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className='flex flex-col gap-2 mt-8'>
@@ -406,8 +444,39 @@ export default function InventoryForm() {
               <div className='border-b border-[#E2E2E2] flex w-full h-px'/>
             </div>
 
-            <div className='flex w-full h-full bg-[#DCE4DF]'>
-              {/* put here the inventory movements, all raw materials */}
+            <div className='mt-4 flex w-full flex-col gap-2'>
+              {selectedMovements.length === 0 ? (
+                <div className='flex min-h-24 w-full items-center justify-center rounded-xl bg-[#F0F1F1] text-sm text-[#737A76]'>
+                  No movements found.
+                </div>
+              ) : (
+                selectedMovements.map((movement) => {
+                  const movementStyle = getMovementStyle(movement.type)
+                  const MovementIcon = movementStyle.Icon
+
+                  return (
+                    <div key={movement.id} className='flex items-center gap-3 rounded-xl border border-[#E2E2E2] bg-white p-3'>
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${movementStyle.className}`}>
+                        <MovementIcon className='h-5 w-5' />
+                      </span>
+
+                      <div className='min-w-0 flex-1'>
+                        <div className='flex items-center justify-between gap-3'>
+                          <span className='truncate text-sm font-medium text-[#0c0d0d]'>{movement.type}</span>
+                          <span className='shrink-0 text-sm font-semibold text-[#0c0d0d]'>
+                            {movementStyle.quantityPrefix}{formatNumber(movement.quantity)} {movement.unit}
+                          </span>
+                        </div>
+
+                        <div className='mt-1 flex items-center justify-between gap-3 text-xs text-[#737A76]'>
+                          <span className='truncate'>{movement.reference} by {movement.handledBy}</span>
+                          <span className='shrink-0'>{movement.date}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
             </div>
           </div>
         </div>

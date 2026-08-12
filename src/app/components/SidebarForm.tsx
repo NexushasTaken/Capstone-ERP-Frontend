@@ -2,6 +2,7 @@
 
 import type { SidebarFormProps } from '@/app/types/sidebar'
 import ProfileModal from '@/app/components/modals/ProfileModal'
+import { auditLogs } from '@/app/utils/auditLogMockData'
 import { buttonNav } from '@/app/utils/buttonNav'
 import { formatProfileDetails } from '@/app/utils/profileHelpers'
 import { sidebarProfile } from '@/app/utils/profileMockData'
@@ -44,7 +45,35 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
           </div>
         </div>
 
-        <div className="flex w-full h-full bg-[#EBF3ED] rounded-lg shrink-0 lg:shrink"/>
+        <section className="flex w-full h-full max-h-70 lg:max-h-full flex-col overflow-hidden rounded-2xl border border-[#E1E4E2] bg-[#FAFBFA] p-3 shrink-0 lg:shrink">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-[#0c0d0d]">Audit logs</span>
+              <span className="text-xs text-[#737A76]">Inventory, sales, orders</span>
+            </div>
+            <span className="text-xs text-[#737A76]">{auditLogs.length}</span>
+          </div>
+
+          <div className="mt-3 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto scrollbar-none">
+            {auditLogs.map(({ id, label, detail, firstName, time, Icon, className }) => (
+              <div key={id} className="flex items-center gap-2 rounded-xl bg-white p-2">
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${className}`}>
+                  <Icon className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate text-sm font-medium text-[#0c0d0d]">{label}</span>
+                    <span className="shrink-0 text-[11px] text-[#A2A7A4]">{time}</span>
+                  </div>
+                  <div className="relative flex min-w-0 items-center">
+                    <span className="min-w-0 flex-1 truncate pr-2 text-xs text-[#737A76]">{detail}</span>
+                    <span className="relative z-10 shrink-0 bg-white pl-1 text-xs font-medium text-[#0c0d0d]">{firstName}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* PROFILE */}
         <button aria-label="Open profile" className="flex gap-2 w-full border-2 h-20 rounded-xl border-gray-200 py-1 pl-1 pr-4 shrink-0 text-left transition hover:border-[#A7AEAA] hover:bg-[#FAFBFA] cursor-pointer" onClick={() => setIsProfileOpen(true)} type="button">
