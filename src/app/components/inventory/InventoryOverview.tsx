@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { AlertTriangle, Warehouse } from 'lucide-react'
+import { AlertTriangle, Plus, Warehouse } from 'lucide-react'
 
 import {
   inventoryDashboardData,
@@ -31,18 +31,15 @@ export default function InventoryOverview() {
     lowStock: mockRawMaterials.filter(
       (x) => x.status === 'Low stock'
     ).length,
-    reorder: mockRawMaterials.filter(
-      (x) => x.status === 'Reorder'
-    ).length,
-    reserved: mockRawMaterials.filter(
-      (x) => x.status === 'Reserved'
+    critical: mockRawMaterials.filter(
+      (x) => x.status === 'Critical'
     ).length,
   }
 
   const attentionMaterials = mockRawMaterials.filter(
     (item) =>
       item.status === 'Low stock' ||
-      item.status === 'Reorder'
+      item.status === 'Critical'
   )
 
   return (
@@ -57,12 +54,21 @@ export default function InventoryOverview() {
           </p>
         </div>
 
-        <Link
-          href="/dashboard/inventory"
-          className="flex items-center gap-1 text-sm font-medium text-[#767777] transition-all hover:text-[#121514]"
-        >
-          View
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/inventory#RawMaterials"
+            className="inline-flex h-fit items-center gap-2 rounded-2xl bg-[#0c0d0d] px-3 py-2 text-xs font-medium text-white transition-all hover:bg-[#1B1C1C]"
+          >
+            <Plus className="h-4 w-4 text-white" />
+            Add Raw Material
+          </Link>
+          <Link
+            href="/dashboard/inventory"
+            className="flex items-center gap-1 text-sm font-medium text-[#767777] transition-all hover:text-[#121514]"
+          >
+            View
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6 rounded-xl bg-white p-4">
@@ -109,7 +115,7 @@ export default function InventoryOverview() {
           </p>
         </div>
 
-        <div className="rounded-xl bg-white p-4">
+        <Link href="/dashboard/inventory#Risks" className="rounded-xl bg-white p-4 transition-colors hover:bg-[#FAFBFA]">
           <div className="flex items-center gap-2">
             <AlertTriangle
               size={18}
@@ -124,7 +130,7 @@ export default function InventoryOverview() {
           <p className="mt-3 text-2xl font-semibold text-[#121514]">
             {forecastWarningCount}
           </p>
-        </div>
+        </Link>
       </div>
 
       <div className="mt-5 rounded-xl bg-white p-4">
@@ -148,18 +154,12 @@ export default function InventoryOverview() {
           </div>
 
           <div className="flex justify-between">
-            <span>Reorder</span>
+            <span>Critical</span>
             <span className="font-medium">
-              {statusCounts.reorder}
+              {statusCounts.critical}
             </span>
           </div>
 
-          <div className="flex justify-between">
-            <span>Reserved</span>
-            <span className="font-medium">
-              {statusCounts.reserved}
-            </span>
-          </div>
         </div>
       </div>
 
@@ -184,7 +184,7 @@ export default function InventoryOverview() {
                   </p>
 
                   <p className="text-xs text-[#68716C]">
-                    {item.supplier}
+                    {item.warehouse}
                   </p>
                 </div>
 

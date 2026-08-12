@@ -39,8 +39,7 @@ export function getVelocityColor(category: MovementVelocityCategory) {
 const rawMaterialStatusStyles: Record<RawMaterialStatus, { dotClassName: string; labelClassName: string }> = {
   'In stock': { dotClassName: 'bg-[#31723B]', labelClassName: 'text-[#31723B]' },
   'Low stock': { dotClassName: 'bg-[#D98C00]', labelClassName: 'text-[#9A6700]' },
-  Reorder: { dotClassName: 'bg-[#D92D20]', labelClassName: 'text-[#B42318]' },
-  Reserved: { dotClassName: 'bg-[#1769C2]', labelClassName: 'text-[#1769C2]' },
+  Critical: { dotClassName: 'bg-[#D92D20]', labelClassName: 'text-[#B42318]' },
 }
 
 export function getRawMaterialStatusStyle(status: RawMaterialStatus) {

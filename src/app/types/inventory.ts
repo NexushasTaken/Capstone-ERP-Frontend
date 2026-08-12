@@ -40,8 +40,7 @@ export interface InventoryDashboardData {
 export const RAW_MATERIAL_STATUSES = [
   'In stock',
   'Low stock',
-  'Reorder',
-  'Reserved',
+  'Critical',
 ] as const
 
 export type RawMaterialStatus =
@@ -55,13 +54,28 @@ export interface RawMaterialInventoryItem {
   id: string
   material: string
   category: string
-  usedFor: string
   quantity: number
   unit: string
   reorderPoint: number
   warehouse: string
   unitCost: number
   status: RawMaterialStatus
+}
+
+export type RawMaterialMovementType =
+  | 'Stock in'
+  | 'Stock out'
+  | 'Adjustment'
+
+export interface RawMaterialMovement {
+  id: string
+  materialId: string
+  type: RawMaterialMovementType
+  quantity: number
+  unit: string
+  date: string
+  reference: string
+  handledBy: string
 }
 
 export interface RawMaterialStatusFilter {

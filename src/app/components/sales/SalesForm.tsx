@@ -1,10 +1,29 @@
-import { ArrowDownUp, Ellipsis } from 'lucide-react'
+'use client'
+
+import { ArrowDownUp, Ellipsis, Search, X } from 'lucide-react'
 import { formatPeso, formatSaleId, saleStatusDotClass } from '@/app/utils/saleHelpers'
-import { mockSales, saleStatusFilters } from '@/app/utils/saleMockData'
+import { mockSales } from '@/app/utils/saleMockData'
+import { exportToCSV } from '@/app/utils/exportToCsv'
+import { useState } from 'react'
 
 const tableColumns = ['Sale ID', 'Product', 'Customer', 'Quantity', 'Total', 'Sale date', 'Status']
 
 export default function SalesForm() {
+  const [search, setSearch] = useState('')
+
+  const filteredSales = mockSales.filter((sale) => {
+    const searchValue = search.toLowerCase()
+
+    return (
+      search === '' ||
+      sale.id.toLowerCase().includes(searchValue) ||
+      sale.productName.toLowerCase().includes(searchValue) ||
+      sale.sku.toLowerCase().includes(searchValue) ||
+      sale.customer.toLowerCase().includes(searchValue) ||
+      sale.status.toLowerCase().includes(searchValue)
+    )
+  })
+
   return (
     <section className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white p-4 lg:p-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -14,19 +33,48 @@ export default function SalesForm() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {saleStatusFilters.map((filter) => (
-            <button
-              className={`cursor-pointer rounded-xl border px-3 py-2 text-sm whitespace-nowrap ${
-                filter.label === 'Paid'
-                  ? 'border-[#121514] bg-[#121514] text-white'
-                  : 'border-[#E1E4E2] bg-white text-[#121514]'
-              }`}
-              key={filter.label}
-              type="button"
-            >
-              {filter.label} <span className="ml-1">{filter.count}</span>
-            </button>
-          ))}
+          <div className="relative">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search sales"
+              className="w-full rounded-xl border border-[#DFE2E0] bg-white px-3 py-2 text-sm text-[#121514] placeholder:text-[#737A76] focus:border-[#121514] focus:outline-none focus:ring-1 focus:ring-[#121514]"
+            />
+            {search ? (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737A76] cursor-pointer transition-colors hover:text-[#121514]"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            ) : (
+              <Search className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#737A76]" />
+            )}
+          </div>
+          <button
+            className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors hover:bg-[#DCE4DF]"
+            type="button"
+            onClick={() =>
+              exportToCSV(
+                filteredSales,
+                [
+                  { header: 'Sale ID', value: (sale) => formatSaleId(sale.id) },
+                  { header: 'Product', value: (sale) => sale.productName },
+                  { header: 'SKU', value: (sale) => sale.sku },
+                  { header: 'Customer', value: (sale) => sale.customer },
+                  { header: 'Quantity', value: (sale) => sale.quantity },
+                  { header: 'Total', value: (sale) => sale.total },
+                  { header: 'Sale date', value: (sale) => sale.saleDate },
+                  { header: 'Status', value: (sale) => sale.status },
+                ],
+                'sales'
+              )
+            }
+          >
+            Export to CSV
+          </button>
           <button aria-label="Sort sales" className="cursor-pointer rounded-xl border border-[#E1E4E2] p-2 text-[#121514]" type="button">
             <ArrowDownUp size={18} />
           </button>
@@ -46,7 +94,14 @@ export default function SalesForm() {
             </tr>
           </thead>
           <tbody>
-            {mockSales.map((sale) => {
+            {filteredSales.length === 0 ? (
+              <tr>
+                <td colSpan={tableColumns.length + 1} className="px-3 py-4 text-center text-sm text-[#737A76]">
+                  No sales found.
+                </td>
+              </tr>
+            ) : (
+              filteredSales.map((sale) => {
               const ProductIcon = sale.productIcon
 
               return (
@@ -83,9 +138,15 @@ export default function SalesForm() {
                   </td>
                 </tr>
               )
-            })}
+            }))}
           </tbody>
         </table>
+      </div>
+
+      <div className="mt-4 flex w-full justify-between gap-2">
+        <span className="text-sm text-[#737A76]">
+          Showing {filteredSales.length} of {mockSales.length} sales
+        </span>
       </div>
     </section>
   )
