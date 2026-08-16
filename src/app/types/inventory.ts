@@ -17,6 +17,8 @@ export interface PredictedStockout {
   product: string
   warehouse: string
   availableUnits: number
+  unit: string
+  reorderPoint: number
   estimatedStockoutDate: string
   risk: InventoryHealthStatus
 }
@@ -52,6 +54,7 @@ export type RawMaterialFilter =
 
 export interface RawMaterialInventoryItem {
   id: string
+  productId: string
   material: string
   category: string
   quantity: number
@@ -96,12 +99,9 @@ export interface RawMaterialSortOption {
   order: 'asc' | 'desc'
 }
 
-export interface SortPopoverProps {
-  value: RawMaterialSortBy
-  order: 'asc' | 'desc'
-  onChange: (
-    value: RawMaterialSortBy,
-    order: 'asc' | 'desc'
-  ) => void
-  trigger?: React.ReactNode
+export interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 }
+

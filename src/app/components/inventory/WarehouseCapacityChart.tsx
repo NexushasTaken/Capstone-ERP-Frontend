@@ -55,7 +55,7 @@ export default function WarehouseCapacityChart({ capacity }: WarehouseCapacityCh
           <span className="mt-1 text-xs text-[#68716C]">space used</span>
         </div>
       </div>
-      <p className="mt-4 text-sm text-[#68716C]">
+      <p className="my-4 text-sm text-[#68716C]">
         <span className="font-medium text-[#0c0d0d]">{formatNumber(capacity.used)}</span> of {formatNumber(capacity.total)} units
       </p>
     </div>

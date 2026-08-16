@@ -1,4 +1,4 @@
-import React from 'react'
+import type { ReactNode } from 'react'
 import { ArrowDownUp, Check } from 'lucide-react'
 
 import {
@@ -9,20 +9,33 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-import { rawMaterialSortOptions } from '@/app/utils/inventoryMockData'
-import { SortPopoverProps } from '@/app/types/inventory'
+export interface SortOption<TSortBy extends string> {
+  label: string
+  value: TSortBy
+  order: 'asc' | 'desc'
+}
 
-export default function SortPopover({
+interface SortPopoverProps<TSortBy extends string> {
+  value: TSortBy
+  order: 'asc' | 'desc'
+  options: SortOption<TSortBy>[]
+  onChange: (
+    value: TSortBy,
+    order: 'asc' | 'desc'
+  ) => void
+  trigger?: ReactNode
+}
+
+export default function SortPopover<TSortBy extends string>({
   value,
   order,
+  options,
   onChange,
   trigger,
-}: SortPopoverProps) {
+}: SortPopoverProps<TSortBy>) {
   return (
     <Popover>
-      <PopoverTrigger
-        className="cursor-pointer rounded-xl border border-[#E1E4E2] p-2 text-[#121514] transition-colors hover:bg-[#DCE4DF]"
-        >
+      <PopoverTrigger className="cursor-pointer rounded-xl border border-[#E1E4E2] p-2 text-[#121514] transition-colors hover:bg-[#DCE4DF]">
         {trigger ?? <ArrowDownUp size={18} />}
       </PopoverTrigger>
 
@@ -32,7 +45,7 @@ export default function SortPopover({
         </PopoverHeader>
 
         <div className="flex flex-col">
-          {rawMaterialSortOptions.map((option) => {
+          {options.map((option) => {
             const selected =
               value === option.value &&
               order === option.order

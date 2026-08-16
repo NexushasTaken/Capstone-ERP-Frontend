@@ -1,91 +1,117 @@
-import type { Order, OrderStatusFilter } from '@/app/types/order'
+import type { Order, OrderSortOption, OrderStatusFilter } from '@/app/types/order'
+import { ORDER_STATUSES } from '@/app/types/order'
+import { mockRawMaterials } from '@/app/utils/inventoryMockData'
+import { mockSales } from '@/app/utils/saleMockData'
 
-export const orderStatusFilters: OrderStatusFilter[] = [
-  { label: 'Pending', count: 70 },
-  { label: 'Responded', count: 85 },
-  { label: 'Assigned', count: 53 },
-  { label: 'Completed', count: 56 },
+const pickupAddresses = [
+  { city: 'Makati City', province: 'Metro Manila', flag: 'PH' },
+  { city: 'Cebu City', province: 'Cebu', flag: 'PH' },
+  { city: 'Davao City', province: 'Davao del Sur', flag: 'PH' },
+  { city: 'Iloilo City', province: 'Iloilo', flag: 'PH' },
+  { city: 'San Fernando', province: 'Pampanga', flag: 'PH' },
+  { city: 'Cagayan de Oro', province: 'Misamis Oriental', flag: 'PH' },
 ]
 
-export const mockOrders: Order[] = [
+const deliveryAddresses = [
+  { city: 'Quezon City', province: 'Metro Manila', flag: 'PH' },
+  { city: 'Pasig City', province: 'Metro Manila', flag: 'PH' },
+  { city: 'Mandaue City', province: 'Cebu', flag: 'PH' },
+  { city: 'General Santos', province: 'South Cotabato', flag: 'PH' },
+  { city: 'Bacolod City', province: 'Negros Occidental', flag: 'PH' },
+  { city: 'Malolos', province: 'Bulacan', flag: 'PH' },
+]
+
+const assignedStaff = [
+  'Miguel Santos',
+  'Angela Reyes',
+  'Carlo Mendoza',
+  'Bea Garcia',
+  'Paolo Villanueva',
+  'Kyla Navarro',
+]
+
+export const mockOrders: Order[] = mockSales.map((sale, index) => {
+  const inventoryItem = mockRawMaterials[index]
+  const orderType = index % 2 === 0 ? 'Deliver' : 'Walk-in'
+
+  return {
+    id: `OR-${sale.id.replace('SA-', '')}`,
+    inventoryId: inventoryItem.id,
+    customerName: sale.customer,
+    productName: sale.productName,
+    quantity: sale.quantity,
+    price: sale.total,
+    orderDate: sale.saleDate,
+    orderType,
+    assignedTo: assignedStaff[index],
+    pickupAddress: pickupAddresses[index],
+    deliveryAddress: deliveryAddresses[index],
+    status: ORDER_STATUSES[index % ORDER_STATUSES.length],
+  }
+})
+
+export const orderStatusFilters: OrderStatusFilter[] = [
+  { label: 'All', count: mockOrders.length },
+  ...ORDER_STATUSES.map((status) => ({
+    label: status,
+    count: mockOrders.filter((order) => order.status === status).length,
+  })),
+]
+
+export const orderSortOptions: OrderSortOption[] = [
   {
-    id: '324561324',
-    assignedTo: 'Miguel Santos',
-    pickupAddress: { city: 'Makati City', province: 'Metro Manila', flag: '🇵🇭' },
-    deliveryAddress: { city: 'Quezon City', province: 'Metro Manila', flag: '🇵🇭' },
-    price: 18900,
-    status: 'Picked up',
+    label: 'Order Date (Newest first)',
+    value: 'orderDate',
+    order: 'desc',
   },
   {
-    id: '183896772',
-    assignedTo: 'Angela Reyes',
-    pickupAddress: { city: 'Taguig City', province: 'Metro Manila', flag: '🇵🇭' },
-    deliveryAddress: { city: 'Pasig City', province: 'Metro Manila', flag: '🇵🇭' },
-    price: 12500,
-    status: 'In transit',
+    label: 'Order Date (Oldest first)',
+    value: 'orderDate',
+    order: 'asc',
   },
   {
-    id: '267189302',
-    assignedTo: 'Carlo Mendoza',
-    pickupAddress: { city: 'Cebu City', province: 'Cebu', flag: '🇵🇭' },
-    deliveryAddress: { city: 'Mandaue City', province: 'Cebu', flag: '🇵🇭' },
-    price: 28500,
-    status: 'Picked up',
+    label: 'Customer (A to Z)',
+    value: 'customerName',
+    order: 'asc',
   },
   {
-    id: '942625346',
-    assignedTo: 'Bea Garcia',
-    pickupAddress: { city: 'Davao City', province: 'Davao del Sur', flag: '🇵🇭' },
-    deliveryAddress: { city: 'General Santos', province: 'South Cotabato', flag: '🇵🇭' },
-    price: 1960,
-    status: 'In transit',
+    label: 'Customer (Z to A)',
+    value: 'customerName',
+    order: 'desc',
   },
   {
-    id: '581274903',
-    assignedTo: 'Paolo Villanueva',
-    pickupAddress: { city: 'Iloilo City', province: 'Iloilo', flag: '🇵🇭' },
-    deliveryAddress: { city: 'Bacolod City', province: 'Negros Occidental', flag: '🇵🇭' },
-    price: 1780,
-    status: 'Picked up',
+    label: 'Product (A to Z)',
+    value: 'productName',
+    order: 'asc',
   },
   {
-    id: '716305842',
-    assignedTo: 'Kyla Navarro',
-    pickupAddress: { city: 'San Fernando', province: 'Pampanga', flag: '🇵🇭' },
-    deliveryAddress: { city: 'Malolos', province: 'Bulacan', flag: '🇵🇭' },
-    price: 1450,
-    status: 'In transit',
+    label: 'Product (Z to A)',
+    value: 'productName',
+    order: 'desc',
   },
   {
-    id: '408631957',
-    assignedTo: 'Joshua Lim',
-    pickupAddress: { city: 'Cagayan de Oro', province: 'Misamis Oriental', flag: '🇵🇭' },
-    deliveryAddress: { city: 'Iligan City', province: 'Lanao del Norte', flag: '🇵🇭' },
-    price: 22400,
-    status: 'Picked up',
+    label: 'Quantity (High to low)',
+    value: 'quantity',
+    order: 'desc',
   },
   {
-    id: '659218740',
-    assignedTo: 'Trisha Aquino',
-    pickupAddress: { city: 'Antipolo City', province: 'Rizal', flag: '🇵🇭' },
-    deliveryAddress: { city: 'Calamba City', province: 'Laguna', flag: '🇵🇭' },
-    price: 8700,
-    status: 'In transit',
+    label: 'Quantity (Low to high)',
+    value: 'quantity',
+    order: 'asc',
   },
   {
-    id: '870496125',
-    assignedTo: 'Ramon Castillo',
-    pickupAddress: { city: 'Naga City', province: 'Camarines Sur', flag: '🇵🇭' },
-    deliveryAddress: { city: 'Legazpi City', province: 'Albay', flag: '🇵🇭' },
-    price: 15300,
-    status: 'Picked up',
+    label: 'Price (High to low)',
+    value: 'price',
+    order: 'desc',
   },
   {
-    id: '193764258',
-    assignedTo: 'Lara Bautista',
-    pickupAddress: { city: 'Baguio City', province: 'Benguet', flag: '🇵🇭' },
-    deliveryAddress: { city: 'Dagupan City', province: 'Pangasinan', flag: '🇵🇭' },
-    price: 6400,
-    status: 'In transit',
+    label: 'Price (Low to high)',
+    value: 'price',
+    order: 'asc',
+  },
+  {
+    label: 'Status (A to Z)',
+    value: 'status',
+    order: 'asc',
   },
 ]
