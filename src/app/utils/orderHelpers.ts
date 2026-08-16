@@ -1,4 +1,4 @@
-import type { OrderStatus, PhilippineLocation } from '@/app/types/order'
+import type { OrderStatus, OrderType, PhilippineLocation } from '@/app/types/order'
 
 export function formatOrderId(orderId: string) {
   return `#${orderId}`
@@ -9,5 +9,25 @@ export function formatPhilippineLocation(location: PhilippineLocation) {
 }
 
 export function statusDotClass(status: OrderStatus) {
-  return status === 'In transit' ? 'bg-[#39B82C]' : 'bg-[#FF7A2F]'
+  const statusColors: Record<OrderStatus, string> = {
+    Processing: 'bg-[#FFB020]',
+    Completed: 'bg-[#39B82C]',
+    Cancelled: 'bg-[#D92D20]',
+  }
+
+  return statusColors[status]
+}
+
+export function statusTextClass(status: OrderStatus) {
+  const statusColors: Record<OrderStatus, string> = {
+    Processing: 'text-[#9A5B00]',
+    Completed: 'text-[#1F7A1F]',
+    Cancelled: 'text-[#B42318]',
+  }
+
+  return statusColors[status]
+}
+
+export function orderTypeLabel(type: OrderType) {
+  return type === 'Deliver' ? 'Deliver' : 'Walk-in'
 }

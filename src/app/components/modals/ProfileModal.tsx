@@ -1,6 +1,6 @@
 'use client'
 
-import { LogOut, X } from 'lucide-react'
+import { LogOut, Settings, X } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect } from 'react'
 import type { ProfileModalProps } from '@/app/types/profile'
@@ -80,15 +80,26 @@ export default function ProfileModal({
           </div>
         </div>
 
-        <button
-          aria-label="Log out"
-          className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0c0d0d] px-4 py-3 font-medium text-white cursor-pointer transition-all hover:scale-105 duration-300"
-          onClick={handleLogout}
-          type="button"
-        >
-          <LogOut className="h-5 w-5" />
-          Log out
-        </button>
+        <div className='flex mt-8 gap-2'>
+          <button
+            aria-label="Settings"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0c0d0d] px-4 py-3 font-medium text-white cursor-pointer transition-all hover:scale-105 duration-300"
+            type="button"
+          >
+            <Settings className="h-5 w-5" />
+            Settings
+          </button>
+
+          <button
+            aria-label="Log out"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0c0d0d] px-4 py-3 font-medium text-white cursor-pointer transition-all hover:scale-105 duration-300"
+            onClick={handleLogout}
+            type="button"
+          >
+            <LogOut className="h-5 w-5" />
+            Log out
+          </button>
+        </div>
       </div>
     </div>
   )

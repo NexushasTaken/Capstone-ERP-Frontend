@@ -1,23 +1,25 @@
 'use client'
 
-import WarehouseCapacityChart from '@/app/components/inventory/WarehouseCapacityChart'
+import WarehouseCapacitySection from '@/app/components/inventory/WarehouseCapacitySection'
 import MovementVelocity from '@/app/components/inventory/MovementVelocity'
-import { inventoryDashboardData, mockRawMaterialMovements, mockRawMaterials } from '@/app/utils/inventoryMockData'
+import { inventoryDashboardData, mockRawMaterialMovements, mockRawMaterials, rawMaterialSortOptions } from '@/app/utils/inventoryMockData'
 import { formatNumber, formatPeso, getRawMaterialStatusStyle, getRiskStyle } from '@/app/utils/inventoryHelpers'
 import { exportToCSV } from '@/app/utils/exportToCsv'
 import { RAW_MATERIAL_STATUSES, RawMaterialSortBy, type RawMaterialFilter, type RawMaterialStatusFilter } from '@/app/types/inventory'
-import { AlertTriangle, Ellipsis, PackageMinus, PackagePlus, Search, Shapes, SlidersHorizontal, Truck, Warehouse, X } from 'lucide-react'
+import { AlertTriangle, PackageMinus, PackagePlus, Search, Shapes, SlidersHorizontal, Truck, X } from 'lucide-react'
 import SeeMoreModal from '@/app/components/modals/SeeMoreModal'
 import { useState } from 'react'
 import CloseButton from '@/app/components/CloseButton'
-import SortPopover from '@/app/components/inventory/SortPopover'
+import SortPopover from '@/app/components/SortPopover'
+import { PaginationDemo } from '@/app/components/Pagination'
+import StatusAction from '@/app/components/StatusAction'
+import { editDeleteActions } from '@/app/utils/statusActionHelpers'
 
 
-const rawMaterialColumns = ['Material ID', 'Raw material', 'Available', 'Reorder point', 'Supplier', 'Unit cost', 'Status']
+const rawMaterialColumns = ['Inventory ID', 'Product ID', 'Raw material', 'Available', 'Reorder point', 'Warehouse', 'Unit cost', 'Status']
 
 export default function InventoryForm() {
-  const { health, forecastWarningCount, warehouseCapacity, movementVelocity, predictedStockouts } = inventoryDashboardData
-  const healthStyle = getRiskStyle(health.status)
+  const { forecastWarningCount, warehouseCapacity, movementVelocity, predictedStockouts } = inventoryDashboardData
 
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false);
   const [sortBy, setSortBy] = useState<RawMaterialSortBy>('material')
@@ -26,6 +28,10 @@ export default function InventoryForm() {
     useState<(typeof mockRawMaterials)[number] | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<RawMaterialFilter>('All')
   const [search, setSearch] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [stockoutCurrentPage, setStockoutCurrentPage] = useState(1)
+  const itemsPerPage = 10
+  const stockoutItemsPerPage = 10
 
   const rawMaterialStatusFilters: RawMaterialStatusFilter[] = [
     {
@@ -51,6 +57,10 @@ export default function InventoryForm() {
 
     return matchesFilter && matchesSearch
   })
+
+  const totalPages = Math.ceil(
+    filteredRawMaterials.length / itemsPerPage
+  )
 
   const displayedRawMaterials = [...filteredRawMaterials].sort((a, b) => {
     switch (sortBy) {
@@ -83,6 +93,20 @@ export default function InventoryForm() {
         return 0
     }
   })
+
+  const paginatedRawMaterials = displayedRawMaterials.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  const stockoutTotalPages = Math.ceil(
+    predictedStockouts.length / stockoutItemsPerPage
+  )
+
+  const paginatedStockouts = predictedStockouts.slice(
+    (stockoutCurrentPage - 1) * stockoutItemsPerPage,
+    stockoutCurrentPage * stockoutItemsPerPage
+  )
 
   const selectedStatusStyle = selectedItem
     ? getRawMaterialStatusStyle(selectedItem.status)
@@ -127,78 +151,71 @@ export default function InventoryForm() {
           <p className="mt-2 text-sm text-[#68716C]">Forecast inventory health and act on upcoming stockouts.</p>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 columns-1">
-          <article className="flex flex-col rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm xl:col-span-1">
-            <div className="flex flex-1 items-start justify-between gap-3">
-              <div>
-                <p className="text-sm text-[#68716C]">Inventory health</p>
-                <p className="mt-8 text-7xl font-semibold text-[#0c0d0d]">{health.score}<span className="text-4xl text-[#909994]">/100</span></p>
-              </div>
-              <span className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${healthStyle.className}`}>{healthStyle.label}</span>
-            </div>
-            <p className="mt-4 text-sm leading-6 text-[#68716C]">{health.summary}</p>
-          </article>
-
-          <article className="flex flex-col rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm xl:col-span-1">
-            <div className="flex items-start justify-between">
-              <p className="text-sm text-[#68716C]">Forecast risks</p>
-              <span className="rounded-xl bg-[#FBE7E7] p-2 text-[#B42318]"><AlertTriangle className="h-5 w-5" /></span>
-            </div>
-            <p className="flex flex-1 mt-4 text-7xl font-semibold text-[#0c0d0d]">{forecastWarningCount}</p>
-            <p className="mt-2 text-sm text-[#68716C]">products predicted to run out in the next 30 days</p>
-          </article>
-
-          <div className="max-w-2xl">
-            <MovementVelocity items={movementVelocity} />
-          </div>
-        </section>
-
-        <section className="grid gap-5 xl:grid-cols-5">
-          <article className="flex flex-col min-h-85 rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm xl:col-span-2">
-            <div className="flex items-center gap-2">
-              <span className="rounded-lg bg-[#EBF3ED] p-2 text-[#0c0d0d]"><Warehouse className="h-5 w-5" /></span>
-              <div>
-                <h2 className="font-semibold text-[#0c0d0d]">Warehouse capacity</h2>
-                <p className="text-sm text-[#68716C]">{warehouseCapacity.warehouse}</p>
-              </div>
-            </div>
-            <div className="flex flex-1 justify-center"><WarehouseCapacityChart capacity={warehouseCapacity} /></div>
-          </article>
-
-          <article className="min-h-85 overflow-hidden rounded-2xl border border-[#DCE4DE] bg-white shadow-sm xl:col-span-3">
+        <section className="grid gap-4 lg:grid-cols-2 min-w-0 columns-1">
+          {/* PREDICTED STOCKOUTS */}
+          <article className="min-w-0 rounded-2xl border border-[#DCE4DE] bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-[#E7ECE8] p-5">
               <div>
                 <h2 className="font-semibold text-[#0c0d0d]">Predicted stockouts</h2>
-                <p className="mt-1 text-sm text-[#68716C]">Products projected to stock out within 30 days</p>
+                <p className="mt-1 text-xs lg:text-sm text-[#68716C]">Raw materials projected to stock out within 30 days</p>
               </div>
               <span className="rounded-lg bg-[#FBE7E7] px-2.5 py-1 text-xs font-semibold text-[#B42318]">{forecastWarningCount} risks</span>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-162.5 text-left text-sm">
-                <thead className="bg-[#F7F9F7] text-xs uppercase tracking-wide text-[#68716C]">
-                  <tr>
-                    <th className="px-5 py-3 font-medium">Product</th>
-                    <th className="px-4 py-3 font-medium">Available</th>
-                    <th className="px-4 py-3 font-medium">Stockout date</th>
-                    <th className="px-5 py-3 text-right font-medium">Risk</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E7ECE8]">
-                  {predictedStockouts.map((item) => {
-                    const riskStyle = getRiskStyle(item.risk)
-                    return (
-                      <tr className="text-[#0c0d0d]" key={item.sku}>
-                        <td className="px-5 py-4"><p className="font-medium">{item.product}</p><p className="mt-0.5 text-xs text-[#68716C]">{item.sku} · {item.warehouse}</p></td>
-                        <td className="px-4 py-4">{item.availableUnits} units</td>
-                        <td className="px-4 py-4 text-[#68716C]">{item.estimatedStockoutDate}</td>
-                        <td className="px-5 py-4 text-right"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${riskStyle.className}`}>{riskStyle.label}</span></td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+            <div className="max-h-85 overflow-auto">
+            <table className="w-full min-w-162.5 text-left text-sm">
+              <thead className="sticky top-0 z-10 bg-[#F7F9F7] text-xs uppercase tracking-wide text-[#68716C]">
+                <tr>
+                  <th className="px-5 py-3 font-medium">Material</th>
+                  <th className="px-4 py-3 font-medium">Available</th>
+                  <th className="px-4 py-3 font-medium">Reorder point</th>
+                  <th className="px-4 py-3 font-medium">Stockout date</th>
+                  <th className="px-5 py-3 text-right font-medium">Risk</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E7ECE8]">
+                {paginatedStockouts.map((item) => {
+                  const riskStyle = getRiskStyle(item.risk)
+                  return (
+                    <tr className="text-[#0c0d0d]" key={item.sku}>
+                      <td className="px-5 py-4"><p className="font-medium">{item.product}</p><p className="mt-0.5 text-xs text-[#68716C]">{item.sku} · {item.warehouse}</p></td>
+                      <td className="px-4 py-4">{formatNumber(item.availableUnits)} {item.unit}</td>
+                      <td className="px-4 py-4">{formatNumber(item.reorderPoint)} {item.unit}</td>
+                      <td className="px-4 py-4 text-[#68716C]">{item.estimatedStockoutDate}</td>
+                      <td className="px-5 py-4 text-right"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${riskStyle.className}`}>{riskStyle.label}</span></td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+            </div>
+
+            <div className="flex flex-col items-center justify-between gap-4 border-t border-[#E7ECE8] p-4 lg:flex-row lg:gap-0">
+              <span className="text-sm text-[#737A76]">
+                Showing {paginatedStockouts.length} of {predictedStockouts.length} predicted stockouts
+              </span>
+
+              <div className='flex'>
+                <PaginationDemo
+                  currentPage={stockoutCurrentPage}
+                  totalPages={stockoutTotalPages}
+                  onPageChange={setStockoutCurrentPage}
+                />
+              </div>
             </div>
           </article>
+
+            <div className='flex flex-col justify-between gap-4'>
+              <article className="flex flex-col rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm h-full">
+                <div className="flex items-start justify-between">
+                  <p className="text-sm text-[#68716C]">Forecast risks</p>
+                  <span className="rounded-xl bg-[#FBE7E7] p-2 text-[#B42318]"><AlertTriangle className="h-5 w-5" /></span>
+                </div>
+                <p className="flex flex-1 mt-4 text-7xl font-semibold text-[#0c0d0d]">{forecastWarningCount}</p>
+                <p className="mt-2 text-sm text-[#68716C]">raw materials predicted to run out in the next 30 days</p>
+              </article>
+              
+              <MovementVelocity items={movementVelocity} />
+            </div>
         </section>
 
         <section id="RawMaterials" className="relative flex w-full scroll-mt-6 flex-col rounded-2xl p-4 shadow-sm lg:p-5 border border-[#DCE4DE]">
@@ -215,7 +232,10 @@ export default function InventoryForm() {
                 <input
                   type="text"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => {
+                    setSearch(e.target.value)
+                    setCurrentPage(1)
+                  }}
                   placeholder="Search raw materials"
                   className="w-full rounded-xl border border-[#DFE2E0] bg-white px-3 py-2 text-sm text-[#121514] placeholder:text-[#737A76] focus:border-[#121514] focus:outline-none focus:ring-1 focus:ring-[#121514]"
                 />
@@ -240,12 +260,12 @@ export default function InventoryForm() {
                   exportToCSV(
                     displayedRawMaterials,
                     [
-                      { header: 'Material ID', value: (item) => item.id },
+                      { header: 'Inventory ID', value: (item) => item.id },
                       { header: 'Raw material', value: (item) => item.material },
                       { header: 'Category', value: (item) => item.category },
                       { header: 'Available', value: (item) => `${item.quantity} ${item.unit}` },
                       { header: 'Reorder point', value: (item) => `${item.reorderPoint} ${item.unit}` },
-                      { header: 'Supplier', value: (item) => item.warehouse },
+                      { header: 'Warehouse', value: (item) => item.warehouse },
                       { header: 'Unit cost', value: (item) => item.unitCost },
                       { header: 'Status', value: (item) => item.status },
                     ],
@@ -274,9 +294,11 @@ export default function InventoryForm() {
               <SortPopover
                 value={sortBy}
                 order={sortOrder}
+                options={rawMaterialSortOptions}
                 onChange={(value, order) => {
                   setSortBy(value)
                   setSortOrder(order)
+                  setCurrentPage(1)
                 }}
               />
             </div>
@@ -295,19 +317,20 @@ export default function InventoryForm() {
                 </tr>
               </thead>
               <tbody>
-                {displayedRawMaterials.length === 0 ? (
+                {paginatedRawMaterials.length === 0 ? (
                   <tr>
                     <td colSpan={rawMaterialColumns.length + 1} className="px-3 py-4 text-center text-sm text-[#737A76]">
                       No raw materials found.
                     </td>
                   </tr>
                 ) : 
-                  displayedRawMaterials.map((item) => {
+                  paginatedRawMaterials.map((item) => {
                     const statusStyle = getRawMaterialStatusStyle(item.status)
 
                   return (
                     <tr className="bg-[#FAFBFA] text-sm text-[#121514]" key={item.id}>
                       <td className="rounded-l-xl px-3 py-4 font-medium whitespace-nowrap">{item.id}</td>
+                      <td className="rounded-l-xl px-3 py-4 font-medium whitespace-nowrap">{item.productId}</td>
                       <td className="px-3 py-4">
                         <span className="block font-medium">{item.material}</span>
                         <span className="block text-xs text-[#737A76]">{item.category}</span>
@@ -328,9 +351,13 @@ export default function InventoryForm() {
                             }}>
                             See more
                           </button>
-                          <button aria-label={`More actions for material ${item.id}`} className="cursor-pointer rounded-xl border border-[#DFE2E0] p-1.5" type="button">
-                            <Ellipsis size={18} />
-                          </button>
+                          <StatusAction
+                            actions={editDeleteActions}
+                            label={`More actions for material ${item.id}`}
+                            onAction={() => {
+                              setSelectedItem(item)
+                            }}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -340,12 +367,22 @@ export default function InventoryForm() {
             </table>
           </div>
 
-          <div className="mt-4 flex w-full justify-between gap-2">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-0 w-full justify-between items-center">
             <span className="text-sm text-[#737A76]">
-              Showing {displayedRawMaterials.length} of {filteredRawMaterials.length} raw materials
+              Showing {paginatedRawMaterials.length} of {filteredRawMaterials.length} raw materials
             </span>
+
+            <div className='flex'>
+              <PaginationDemo 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
           </div>
         </section>
+
+        <WarehouseCapacitySection initialCapacity={warehouseCapacity} />
       </div>
 
       <SeeMoreModal open={isSeeMoreOpen} onClose={() => setIsSeeMoreOpen(false)} className='flex flex-col h-full lg:max-h-[70vh]'>
