@@ -11,11 +11,3 @@ export function formatCategoryDate(dateString: string | null) {
     day: 'numeric',
   })
 }
-
-export function formatCategoryText(value: string | null) {
-  return value?.trim() || '-'
-}
-
-export function formatCategoryStatus(isActive: boolean) {
-  return isActive ? 'Active' : 'Inactive'
-}

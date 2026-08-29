@@ -1,6 +1,6 @@
 import type { InventoryListItem } from '@/app/types/inventory'
-import { ApiEnvelope } from '@/app/utils/apiEnvelope'
-import { FetchInventoriesParams, InventoryListContent } from '@/app/utils/types/inventory'
+import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/apiEnvelope'
+import { FetchInventoriesParams, InsertInventoryPayload, InventoryListContent } from '@/app/utils/types/inventory'
 
 // GET
 export async function fetchInventories(params: FetchInventoriesParams = {}): Promise<{
@@ -35,21 +35,6 @@ export async function fetchInventories(params: FetchInventoriesParams = {}): Pro
     pageCount: data.content.pageCount,
     rows: data.content.rows,
   }
-}
-
-export interface InsertInventoryPayload {
-  name: string
-  quantity: number
-  productId: number
-  warehouseId: number
-  dateArrived: string
-  reorderPoint: number
-}
-
-interface ApiEnvelopeNoContent {
-  status: number
-  success: boolean
-  message: string
 }
 
 export async function insertInventory(

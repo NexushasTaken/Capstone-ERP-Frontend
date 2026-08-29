@@ -13,3 +13,12 @@ export interface FetchInventoriesParams {
   filter?: number
   statusId?: number
 }
+
+export interface InsertInventoryPayload {
+  name: string
+  quantity: number
+  productId: number
+  warehouseId: number
+  dateArrived: string
+  reorderPoint: number
+}
