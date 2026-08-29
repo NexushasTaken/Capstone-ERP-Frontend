@@ -1,35 +1,43 @@
 'use client'
 
-import { Search, X, MapPin, PackageCheck, Truck, UserRound } from 'lucide-react'
-import { formatOrderId, formatPhilippineLocation, orderTypeLabel, statusDotClass, statusTextClass } from '@/app/utils/orderHelpers'
-import { mockOrders, orderSortOptions, orderStatusFilters } from '@/app/utils/orderMockData'
-import { formatPeso } from '@/app/utils/saleHelpers'
+import { Search, X, MapPin, PackageCheck, UserRound } from 'lucide-react'
+import {
+  formatOrderId,
+  formatDate,
+  getProductById,
+  getOrderTypeLabel,
+  getOrderStatusLabel,
+  getDeliveryDriverName,
+  statusDotClass,
+  statusTextClass,
+} from '@/app/utils/helpers/orderHelpers'
+import { mockOrders, orderSortOptions, orderStatusFilters } from '@/app/utils/mock/orderMockData'
+import { formatPeso } from '@/app/utils/helpers/saleHelpers'
 import { exportToCSV } from '@/app/utils/exportToCsv'
 import { useState } from 'react'
 import SeeMoreModal from '@/app/components/modals/SeeMoreModal'
 import CloseButton from '@/app/components/CloseButton'
-import type { OrdersSortBy, OrderStatus } from '@/app/types/order'
+import type { Order, OrdersSortBy, OrderStatusLabel } from '@/app/types/order'
 import { PaginationDemo } from '@/app/components/Pagination'
 import SortPopover from '@/app/components/SortPopover'
 import StatusAction from '@/app/components/StatusAction'
-import { editDeleteActions } from '@/app/utils/statusActionHelpers'
+import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
 
 const tableColumns = [
   'Order ID',
-  'Inventory ID',
-  'Customer Name',
-  'Product Name',
+  'Product',
+  'Order Type',
+  'Status',
   'Quantity',
-  'Price',
-  'Order Date',
-  'Status'
+  'Active',
+  'Amount',
 ]
 
 export default function OrdersForm() {
-  const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<(typeof mockOrders)[number] | null>(null)
-  const [selectedFilter, setSelectedFilter] = useState<'All' | OrderStatus>('All')
-  const [sortBy, setSortBy] = useState<OrdersSortBy>('orderDate')
+  const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [selectedFilter, setSelectedFilter] = useState<'All' | OrderStatusLabel>('All')
+  const [sortBy, setSortBy] = useState<OrdersSortBy>('createdAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -37,21 +45,21 @@ export default function OrdersForm() {
 
   const filteredOrders = mockOrders.filter((order) => {
     const searchValue = search.toLowerCase()
-    const matchesFilter = selectedFilter === 'All' || order.status === selectedFilter
+    const orderStatusLabel = getOrderStatusLabel(order.orderStatusId)
+    const orderTypeLabelValue = getOrderTypeLabel(order.orderTypeId)
+    const product = getProductById(order.productId)
+
+    const matchesFilter = selectedFilter === 'All' || orderStatusLabel === selectedFilter
+
     const matchesSearch =
       search === '' ||
       order.id.toLowerCase().includes(searchValue) ||
-      order.inventoryId.toLowerCase().includes(searchValue) ||
       order.customerName.toLowerCase().includes(searchValue) ||
-      order.productName.toLowerCase().includes(searchValue) ||
-      order.orderDate.toLowerCase().includes(searchValue) ||
-      order.assignedTo.toLowerCase().includes(searchValue) ||
-      order.pickupAddress.city.toLowerCase().includes(searchValue) ||
-      order.pickupAddress.province.toLowerCase().includes(searchValue) ||
-      order.deliveryAddress.city.toLowerCase().includes(searchValue) ||
-      order.deliveryAddress.province.toLowerCase().includes(searchValue) ||
-      order.orderType.toLowerCase().includes(searchValue) ||
-      order.status.toLowerCase().includes(searchValue)
+      (product?.name.toLowerCase().includes(searchValue) ?? false) ||
+      order.pickupAddress.toLowerCase().includes(searchValue) ||
+      order.deliveryAddress.toLowerCase().includes(searchValue) ||
+      orderTypeLabelValue.toLowerCase().includes(searchValue) ||
+      orderStatusLabel.toLowerCase().includes(searchValue)
 
     return matchesFilter && matchesSearch
   })
@@ -63,30 +71,20 @@ export default function OrdersForm() {
           ? a.customerName.localeCompare(b.customerName)
           : b.customerName.localeCompare(a.customerName)
 
-      case 'productName':
-        return sortOrder === 'asc'
-          ? a.productName.localeCompare(b.productName)
-          : b.productName.localeCompare(a.productName)
-
       case 'quantity':
         return sortOrder === 'asc'
           ? a.quantity - b.quantity
           : b.quantity - a.quantity
 
-      case 'price':
+      case 'amount':
         return sortOrder === 'asc'
-          ? a.price - b.price
-          : b.price - a.price
+          ? a.amount - b.amount
+          : b.amount - a.amount
 
-      case 'status':
+      case 'createdAt':
         return sortOrder === 'asc'
-          ? a.status.localeCompare(b.status)
-          : b.status.localeCompare(a.status)
-
-      case 'orderDate':
-        return sortOrder === 'asc'
-          ? Date.parse(a.orderDate) - Date.parse(b.orderDate)
-          : Date.parse(b.orderDate) - Date.parse(a.orderDate)
+          ? Date.parse(a.createdAt) - Date.parse(b.createdAt)
+          : Date.parse(b.createdAt) - Date.parse(a.createdAt)
 
       default:
         return 0
@@ -99,7 +97,7 @@ export default function OrdersForm() {
     currentPage * itemsPerPage
   )
 
-  const selectedStatusClass = selectedOrder ? statusTextClass(selectedOrder.status) : ''
+  const selectedStatusClass = selectedOrder ? statusTextClass(selectedOrder.orderStatusId) : ''
 
   return (
     <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-white p-4 lg:p-5">
@@ -161,17 +159,17 @@ export default function OrdersForm() {
                 filteredOrders,
                 [
                   { header: 'Order ID', value: (order) => formatOrderId(order.id) },
-                  { header: 'Inventory ID', value: (order) => order.inventoryId },
+                  { header: 'Product', value: (order) => getProductById(order.productId)?.name ?? 'Unknown' },
                   { header: 'Customer name', value: (order) => order.customerName },
-                  { header: 'Product name', value: (order) => order.productName },
                   { header: 'Quantity', value: (order) => order.quantity },
-                  { header: 'Price', value: (order) => order.price },
-                  { header: 'Order date', value: (order) => order.orderDate },
-                  { header: 'Order type', value: (order) => order.orderType },
-                  { header: 'Order assigned to', value: (order) => order.assignedTo },
-                  { header: 'Pickup address', value: (order) => formatPhilippineLocation(order.pickupAddress) },
-                  { header: 'Delivery address', value: (order) => formatPhilippineLocation(order.deliveryAddress) },
-                  { header: 'Status', value: (order) => order.status },
+                  { header: 'Amount', value: (order) => order.amount },
+                  { header: 'Order date', value: (order) => formatDate(order.createdAt) },
+                  { header: 'Order type', value: (order) => getOrderTypeLabel(order.orderTypeId) },
+                  { header: 'Order assigned to', value: (order) => getDeliveryDriverName(order.deliveryDriverId) },
+                  { header: 'Pickup address', value: (order) => order.pickupAddress },
+                  { header: 'Delivery address', value: (order) => order.deliveryAddress },
+                  { header: 'Bundle code', value: (order) => order.bundleCode ?? '—' },
+                  { header: 'Status', value: (order) => getOrderStatusLabel(order.orderStatusId) },
                 ],
                 'orders'
               )
@@ -212,40 +210,56 @@ export default function OrdersForm() {
                 </td>
               </tr>
             ) : (
-              paginatedOrders.map((order) => (
-                <tr className="bg-[#FAFBFA] text-sm text-[#121514]" key={order.id}>
-                  <td className="rounded-l-xl px-3 py-5 font-medium">{formatOrderId(order.id)}</td>
-                  <td className="px-3 py-5 font-medium whitespace-nowrap">{order.inventoryId}</td>
-                  <td className="px-3 py-5 font-medium whitespace-nowrap">{order.customerName}</td>
-                  <td className="px-3 py-5 whitespace-nowrap">{order.productName}</td>
-                  <td className="px-3 py-5 font-medium">{order.quantity}</td>
-                  <td className="px-3 py-5 font-medium whitespace-nowrap">{formatPeso(order.price)}</td>
-                  <td className="px-3 py-5 whitespace-nowrap">{order.orderDate}</td>
-                  <td className={`px-3 py-5 font-medium whitespace-nowrap ${statusTextClass(order.status)}`}>
-                    <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${statusDotClass(order.status)}`} />
-                    {order.status}
-                  </td>
-                  <td className="rounded-r-xl px-3 py-5">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]" type="button" 
-                      onClick={() => {
-                        setSelectedOrder(order)
-                        setIsSeeMoreOpen(true)
-                      }}
+              paginatedOrders.map((order) => {
+                const product = getProductById(order.productId)
+                const orderStatusLabel = getOrderStatusLabel(order.orderStatusId)
+                const orderTypeLabel = getOrderTypeLabel(order.orderTypeId)
+
+                return (
+                  <tr className="bg-[#FAFBFA] text-sm text-[#121514]" key={order.id}>
+                    <td className="rounded-l-xl px-3 py-5 font-medium">{formatOrderId(order.id)}</td>
+                    <td className="px-3 py-5 whitespace-nowrap">{product?.name ?? 'Unknown'}</td>
+                    <td className="px-3 py-5 whitespace-nowrap">{orderTypeLabel}</td>
+                    <td className={`px-3 py-5 font-medium whitespace-nowrap ${statusTextClass(order.orderStatusId)}`}>
+                      <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${statusDotClass(order.orderStatusId)}`} />
+                      {orderStatusLabel}
+                    </td>
+                    <td className="px-3 py-5 font-medium">{order.quantity}</td>
+                    <td className="px-3 py-5 font-medium whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+                          order.isActive ? 'bg-[#EBF3ED] text-[#1F7A1F]' : 'bg-[#F5EAEA] text-[#B42318]'
+                        }`}
                       >
-                        See more
-                      </button>
-                      <StatusAction
-                        actions={editDeleteActions}
-                        label={`More actions for order ${order.id}`}
-                        onAction={() => {
-                          setSelectedOrder(order)
-                        }}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))
+                        <span className={`h-1.5 w-1.5 rounded-full ${order.isActive ? 'bg-[#39B82C]' : 'bg-[#D92D20]'}`} />
+                        {order.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="rounded-r-xl px-3 py-5 font-medium whitespace-nowrap">{formatPeso(order.amount)}</td>
+                      <td className="px-3 py-5">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
+                            type="button"
+                            onClick={() => {
+                              setSelectedOrder(order)
+                              setIsSeeMoreOpen(true)
+                            }}
+                          >
+                            See more
+                          </button>
+                          <StatusAction
+                            actions={editDeleteActions}
+                            label={`More actions for order ${order.id}`}
+                            onAction={() => {
+                              setSelectedOrder(order)
+                            }}
+                          />
+                        </div>
+                      </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>
@@ -272,12 +286,14 @@ export default function OrdersForm() {
               <span className="text-xs">{selectedOrder ? formatOrderId(selectedOrder.id) : ''}</span>
               {selectedOrder && (
                 <span className={`inline-flex items-center gap-1 text-sm font-medium ${selectedStatusClass}`}>
-                  <span className={`h-1.5 w-1.5 rounded-full ${statusDotClass(selectedOrder.status)}`} />
-                  {selectedOrder.status}
+                  <span className={`h-1.5 w-1.5 rounded-full ${statusDotClass(selectedOrder.orderStatusId)}`} />
+                  {getOrderStatusLabel(selectedOrder.orderStatusId)}
                 </span>
               )}
             </div>
-            <span className="text-xl font-medium text-[#0c0d0d]">{selectedOrder?.productName}</span>
+            <span className="text-xl font-medium text-[#0c0d0d]">
+              {selectedOrder ? getProductById(selectedOrder.productId)?.name ?? 'Unknown' : ''}
+            </span>
           </div>
           <CloseButton onClick={() => setIsSeeMoreOpen(false)} />
         </div>
@@ -289,18 +305,22 @@ export default function OrdersForm() {
                 <UserRound className="h-6 w-6 text-[#777777]" />
               </span>
               <div className="flex min-w-0 flex-col">
-                <span className="text-xs">Order assigned to</span>
-                <span className="truncate text-base font-semibold">{selectedOrder?.assignedTo}</span>
+                <span className="text-xs">Driver</span>
+                <span className="truncate text-base font-semibold">
+                  {selectedOrder ? getDeliveryDriverName(selectedOrder.deliveryDriverId) : ''}
+                </span>
               </div>
             </div>
 
             <div className="flex h-16 w-full items-center gap-2 rounded-lg bg-[#F0F1F1] px-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#1B1C1C]">
-                <Truck className="h-6 w-6 text-[#777777]" />
+                <UserRound className="h-6 w-6 text-[#777777]" />
               </span>
               <div className="flex min-w-0 flex-col">
-                <span className="text-xs">Order type</span>
-                <span className="truncate text-base font-semibold">{selectedOrder ? orderTypeLabel(selectedOrder.orderType) : ''}</span>
+                <span className="text-xs">Customer</span>
+                <span className="truncate text-base font-semibold">
+                  {selectedOrder?.customerName ?? ''}
+                </span>
               </div>
             </div>
           </div>
@@ -318,7 +338,7 @@ export default function OrdersForm() {
               <div className="flex min-w-0 flex-col">
                 <span className="text-xs text-[#737A76]">Delivery address</span>
                 <span className="text-sm font-medium text-[#0c0d0d]">
-                  {selectedOrder ? formatPhilippineLocation(selectedOrder.deliveryAddress) : ''}
+                  {selectedOrder?.deliveryAddress ?? ''}
                 </span>
               </div>
             </div>
@@ -330,7 +350,7 @@ export default function OrdersForm() {
               <div className="flex min-w-0 flex-col">
                 <span className="text-xs text-[#737A76]">Pick up address</span>
                 <span className="text-sm font-medium text-[#0c0d0d]">
-                  {selectedOrder ? formatPhilippineLocation(selectedOrder.pickupAddress) : ''}
+                  {selectedOrder?.pickupAddress ?? ''}
                 </span>
               </div>
             </div>
@@ -342,22 +362,33 @@ export default function OrdersForm() {
           </div>
 
           <div className="mt-4 rounded-xl bg-[#F0F1F1] p-4">
+            <div className="grid grid-cols-1 gap-4 text-sm">
+              <div>
+                <span className="block text-xs text-[#737A76]">Bundle code</span>
+                <span className="font-semibold text-[#0c0d0d]">{selectedOrder?.bundleCode ?? '—'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl bg-[#F0F1F1] p-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="block text-xs text-[#737A76]">Customer</span>
                 <span className="font-semibold text-[#0c0d0d]">{selectedOrder?.customerName}</span>
               </div>
               <div>
-                <span className="block text-xs text-[#737A76]">Inventory ID</span>
-                <span className="font-semibold text-[#0c0d0d]">{selectedOrder?.inventoryId}</span>
+                <span className="block text-xs text-[#737A76]">Bundle code</span>
+                <span className="font-semibold text-[#0c0d0d]">{selectedOrder?.bundleCode ?? '—'}</span>
               </div>
               <div>
                 <span className="block text-xs text-[#737A76]">Quantity</span>
                 <span className="font-semibold text-[#0c0d0d]">{selectedOrder?.quantity}</span>
               </div>
               <div>
-                <span className="block text-xs text-[#737A76]">Price</span>
-                <span className="font-semibold text-[#0c0d0d]">{selectedOrder ? formatPeso(selectedOrder.price) : ''}</span>
+                <span className="block text-xs text-[#737A76]">Amount</span>
+                <span className="font-semibold text-[#0c0d0d]">
+                  {selectedOrder ? formatPeso(selectedOrder.amount) : ''}
+                </span>
               </div>
             </div>
           </div>

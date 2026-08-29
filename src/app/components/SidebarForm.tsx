@@ -2,50 +2,67 @@
 
 import type { SidebarFormProps } from '@/app/types/sidebar'
 import ProfileModal from '@/app/components/modals/ProfileModal'
-import { auditLogs } from '@/app/utils/auditLogMockData'
+import { auditLogs } from '@/app/utils/mock/auditLogMockData'
 import { buttonNav } from '@/app/utils/buttonNav'
-import { formatProfileDetails } from '@/app/utils/profileHelpers'
-import { sidebarProfile } from '@/app/utils/profileMockData'
+import { formatProfileDetails } from '@/app/utils/helpers/profileHelpers'
+import { sidebarProfile } from '@/app/utils/mock/profileMockData'
 import { Bell, LayoutDashboard, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const pathname = usePathname()
+
+  const getLinkClasses = (isActive: boolean) =>
+    isActive
+      ? 'bg-[#0c0d0d] text-[#F2F0F0] hover:bg-[#1B1C1C] duration-300 transition-all'
+      : 'bg-[#FFFFFF] border-2 border-[#F0F1F1] text-[#0c0d0d] hover:bg-[#F0F1F1] hover:border-none'
+
+  const dashboardActive = pathname === '/dashboard'
 
   return (
     <>
-    <aside className={`flex h-full scrollbar-none shrink-0 flex-col gap-4 bg-white p-4 overflow-y-auto ${
+    <aside className={`flex h-full scrollbar-none shrink-0 flex-col gap-3 bg-white p-3 overflow-y-auto sm:gap-4${
       isOpen
-        ? 'fixed inset-y-0 left-0 z-50 flex w-[min(20rem,calc(100vw-2rem))] shadow-xl lg:static lg:w-1/5 lg:shadow-none'
-        : 'hidden lg:flex lg:w-1/5'
+        ? 'fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.5rem))] shadow-xl sm:w-[min(20rem,calc(100vw-2rem))] xl:static xl:w-1/5 xl:shadow-none'
+        : 'hidden xl:flex xl:w-1/5'
     }`}>
         <div className="flex items-center justify-between">
-          <span className="text-4xl text-[#0c0d0d] font-semibold">CPro Home</span>
-          <button aria-label="Close navigation" className="cursor-pointer p-2 text-[#0c0d0d] lg:hidden" onClick={onClose} type="button">
+          <span className="text-2xl text-[#0c0d0d] font-semibold sm:text-3xl md:text-4xl">CPro Home</span>
+          <button aria-label="Close navigation" className="cursor-pointer p-2 text-[#0c0d0d] xl:hidden" onClick={onClose} type="button">
             <X className="h-6 w-6" />
           </button>
         </div>
 
         <div className="flex flex-1 flex-col gap-2 w-full">
 
-          <Link href="/dashboard" className="flex items-center justify-center gap-4 bg-[#0c0d0d] text-[#F2F0F0] h-32 py-2 rounded-2xl hover:bg-[#1B1C1C] duration-300 transition-all cursor-pointer group" onClick={onClose}>
-            <LayoutDashboard className="w-8 h-8 text-[#F2F0F0] group-hover:rotate-90 transition-all duration-300"/>
-            <span className="text-[#F2F0F0] text-lg font-medium group-hover:scale-105 transition-all duration-300">Dashboard</span>
+          <Link href="/dashboard" className={`flex items-center justify-center gap-3 rounded-2xl py-2 cursor-pointer group sm:gap-4 h-32
+            ${getLinkClasses(dashboardActive)}
+            `} onClick={onClose}>
+            <LayoutDashboard className={`h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 ${dashboardActive ? 'text-[#F2F0F0]' : 'text-[#0c0d0d]'} group-hover:rotate-90 transition-all duration-300`}/>
+            <span className={`${dashboardActive ? 'text-[#F2F0F0]' : 'text-[#0c0d0d]'} text-base font-medium group-hover:scale-105 transition-all duration-300 sm:text-lg`}>Dashboard</span>
           </Link>
 
-          <div className="grid grid-cols-2 gap-1 w-full">
-            {buttonNav.map(({ icon: Icon, name, link }) => (
-              <Link key={name} href={link} className="flex flex-col items-center justify-center bg-[#FFFFFF] border-2 border-[#F0F1F1] rounded-2xl text-[#0c0d0d] h-32 cursor-pointer hover:bg-[#F0F1F1] hover:border-none group" onClick={onClose}>
-                <Icon className="w-8 h-8 text-[#0c0d0d] group-hover:rotate-12 transition-all duration-300" />
-                <span className="text-[#0c0d0d] text-lg font-medium group-hover:scale-105 transition-all duration-300 cursor-pointer">{name}</span>
-              </Link>
-            ))}
+          <div className="grid w-full grid-cols-2 gap-1">
+            {buttonNav.map(({ icon: Icon, name, link }) => {
+              const isActive = pathname === link
+
+              return (
+                <Link key={name} href={link} className={`flex flex-col items-center justify-center rounded-2xl cursor-pointer group h-32
+                ${getLinkClasses(isActive)}
+                `} onClick={onClose}>
+                  <Icon className={`h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 ${isActive ? 'text-[#F2F0F0]' : 'text-[#0c0d0d]'} group-hover:rotate-12 transition-all duration-300`} />
+                  <span className={`${isActive ? 'text-[#F2F0F0]' : 'text-[#0c0d0d]'} text-sm font-medium group-hover:scale-105 transition-all duration-300 cursor-pointer sm:text-base md:text-lg`}>{name}</span>
+                </Link>
+              )
+            })}
           </div>
         </div>
 
-        <section className="flex w-full h-full max-h-70 lg:max-h-full flex-col overflow-hidden rounded-2xl border border-[#E1E4E2] bg-[#FAFBFA] p-3 shrink-0 lg:shrink">
+        <section className="flex w-full h-full max-h-56 flex-col overflow-hidden rounded-2xl border border-[#E1E4E2] bg-[#FAFBFA] p-3 shrink-0 sm:max-h-64 md:max-h-full md:shrink">
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-sm font-medium text-[#0c0d0d]">Audit logs</span>
@@ -76,20 +93,20 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
         </section>
 
         {/* PROFILE */}
-        <button aria-label="Open profile" className="flex gap-2 w-full border-2 h-20 rounded-xl border-gray-200 py-1 pl-1 pr-4 shrink-0 text-left transition hover:border-[#A7AEAA] hover:bg-[#FAFBFA] cursor-pointer" onClick={() => setIsProfileOpen(true)} type="button">
-          <span className="relative block h-full w-20 shrink-0 overflow-hidden rounded-xl bg-[#F2F0F0]">
+        <button aria-label="Open profile" className="flex h-16 w-full gap-2 rounded-xl border-2 border-gray-200 py-1 pl-1 pr-3 shrink-0 text-left transition hover:border-[#A7AEAA] hover:bg-[#FAFBFA] cursor-pointer sm:h-20 sm:pr-4" onClick={() => setIsProfileOpen(true)} type="button">
+          <span className="relative block h-full w-16 shrink-0 overflow-hidden rounded-xl bg-[#F2F0F0] sm:w-20">
             <Image
               alt="Juan Dela Cruz profile"
               className="object-cover"
               fill
-              sizes="80px"
+              sizes="(min-width: 640px) 80px, 64px"
               src={sidebarProfile.avatarSrc}
             />
           </span>
 
           <div className="flex flex-col w-full h-full justify-center">
-            <span className="text-[#0c0d0d] font-medium text-lg">{sidebarProfile.firstName}</span>
-            <span className="text-[#ACABAA] text-base">{formatProfileDetails(sidebarProfile)}</span>
+            <span className="text-[#0c0d0d] font-medium text-base sm:text-lg">{sidebarProfile.firstName}</span>
+            <span className="text-[#ACABAA] text-sm sm:text-base">{formatProfileDetails(sidebarProfile)}</span>
           </div>
 
           <div className="flex items-center justify-center shrink-0">

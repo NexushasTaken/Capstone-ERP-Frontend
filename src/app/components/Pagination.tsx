@@ -1,5 +1,5 @@
 import { PaginationProps } from "@/app/types/inventory"
-import { getPaginationPages } from "@/app/utils/paginationHelpers"
+import { getPaginationPages } from "@/app/utils/helpers/paginationHelpers"
 import {
   Pagination,
   PaginationContent,

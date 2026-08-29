@@ -26,7 +26,7 @@ export default function RootLayout({
       lang="en"
       className={cn("h-full", "antialiased", hostGrotesk.variable, "font-mono", jetbrainsMono.variable)}
     >
-      <body className="min-h-full flex flex-col select-none">
+      <body className="flex flex-col h-full overflow-hidden select-none">
         {children}
         <Toaster richColors closeButton />
       </body>

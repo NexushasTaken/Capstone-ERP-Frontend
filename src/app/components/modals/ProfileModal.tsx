@@ -4,7 +4,7 @@ import { LogOut, Settings, X } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect } from 'react'
 import type { ProfileModalProps } from '@/app/types/profile'
-import { formatProfileDetails } from '@/app/utils/profileHelpers'
+import { formatProfileDetails } from '@/app/utils/helpers/profileHelpers'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 

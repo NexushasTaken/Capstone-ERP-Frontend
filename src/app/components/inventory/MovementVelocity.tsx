@@ -1,5 +1,5 @@
 import type { MovementVelocityItem } from '@/app/types/inventory'
-import { getVelocityColor } from '@/app/utils/inventoryHelpers'
+import { getVelocityColor } from '@/app/utils/helpers/inventoryHelpers'
 
 interface MovementVelocityProps {
   items: MovementVelocityItem[]
@@ -7,7 +7,7 @@ interface MovementVelocityProps {
 
 export default function MovementVelocity({ items }: MovementVelocityProps) {
   return (
-    <article className="rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm">
+    <article className="rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm flex h-96 lg:h-full">
       <h2 className="font-semibold text-[#0c0d0d]">Movement Velocity <span className="text-sm font-normal text-[#68716C]">(Top 50)</span></h2>
       <div className="mt-5 space-y-5">
         {items.map((item) => (

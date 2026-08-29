@@ -22,3 +22,11 @@ export interface StoredWarehouseCapacityState {
 export interface WarehouseCapacitySectionProps {
   initialCapacity: WarehouseCapacity
 }
+
+export interface WarehouseListItem {
+  id: number
+  name: string
+  address: string
+  stocks: number
+  capacity: number
+}

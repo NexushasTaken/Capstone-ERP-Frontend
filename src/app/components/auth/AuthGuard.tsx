@@ -64,7 +64,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   }, [pathname]);
 
   if (status === "loading") {
-    return <Loading />;
+    return <div className="flex h-screen"><Loading /></div>;
   }
 
   if (status === "unauthorized") {

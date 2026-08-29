@@ -14,7 +14,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
     <div className="flex h-screen w-full">
       <button
         aria-label="Open navigation"
-        className="absolute top-4 left-1/2 -translate-x-1/2 z-40 cursor-pointer rounded-full border border-[#E1E4E2] bg-[#121514] p-2 text-white lg:hidden"
+        className="absolute top-4 left-1/2 -translate-x-1/2 z-40 cursor-pointer rounded-full border border-[#E1E4E2] bg-[#121514] p-2 text-white xl:hidden"
         onClick={() => setIsSidebarOpen(true)}
         type="button"
       >
@@ -24,14 +24,16 @@ export default function DashboardShell({ children }: DashboardShellProps) {
       {isSidebarOpen && (
         <button
           aria-label="Close navigation"
-          className="fixed inset-0 z-40 cursor-pointer bg-black/25 lg:hidden"
+          className="fixed inset-0 z-40 cursor-pointer bg-black/25 xl:hidden"
           onClick={closeSidebar}
           type="button"
         />
       )}
 
       <SidebarForm isOpen={isSidebarOpen} onClose={closeSidebar} />
-      {children}
+      <div className="min-w-0 w-0 flex-1 overflow-x-auto">
+        {children}
+      </div>
     </div>
   )
 }

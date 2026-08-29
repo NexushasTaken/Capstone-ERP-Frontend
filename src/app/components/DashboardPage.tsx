@@ -23,7 +23,7 @@ export default function DashboardPage() {
   const [salesChartType, setSalesChartType] = useState<SalesChartType>('line')
 
   return (
-    <div className="flex h-screen scrollbar-none w-full flex-col gap-4 overflow-y-auto p-3 md:p-4 lg:w-4/5 bg-white">
+    <div className="flex h-screen scrollbar-none w-full flex-col gap-4 overflow-auto p-3 md:p-4 bg-white">
 
       {/* Charts Overview */}
       <div className="flex shrink-0 flex-col gap-4 rounded-lg bg-[#EBF3ED] p-4">
