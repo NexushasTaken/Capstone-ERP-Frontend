@@ -14,21 +14,22 @@ export interface Product {
 
 export interface ProductListItem {
   id: number
-  categoryId: number
+  categoryId: number | null
   name: string
   price: number
-  categoryName: string
+  categoryName: string | null
   created_At: string
 }
 
 export interface InsertProductPayload {
-  categoryId: number
+  categoryId: number | null
   name: string
   price: number
 }
 
-export interface ApiEnvelopeNoContent {
-  status: number
-  success: boolean
-  message: string
+export interface UpdateProductPayload {
+  categoryId: number
+  name: string
+  price: number
+  id: number
 }

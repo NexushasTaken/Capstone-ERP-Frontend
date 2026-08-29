@@ -1,11 +1,10 @@
 import type {
-  ApiEnvelopeNoContent,
   CategoryListItem,
   InsertCategoryPayload,
   RawCategoryListItem,
   UpdateCategoryPayload,
 } from '@/app/types/category'
-import { ApiEnvelope } from '@/app/utils/apiEnvelope'
+import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/apiEnvelope'
 
 let categoriesCache: CategoryListItem[] | null = null
 let inFlightRequest: Promise<CategoryListItem[]> | null = null
@@ -14,13 +13,7 @@ function mapCategory(item: RawCategoryListItem): CategoryListItem {
   return {
     id: item.id ?? item.Id ?? 0,
     type: item.type ?? item.Type ?? '',
-    created_By: item.created_By ?? item.Created_By ?? null,
     created_At: item.created_At ?? item.Created_At ?? '',
-    updated_By: item.updated_By ?? item.Updated_By ?? null,
-    updated_At: item.updated_At ?? item.Updated_At ?? null,
-    deleted_By: item.deleted_By ?? item.Deleted_By ?? null,
-    deleted_At: item.deleted_At ?? item.Deleted_At ?? null,
-    isActive: item.isActive ?? item.IsActive ?? false,
   }
 }
 

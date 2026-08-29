@@ -14,22 +14,15 @@ import { deleteCategory, fetchCategories, insertCategory, updateCategory } from 
 import {
   formatCategoryDate,
   formatCategoryId,
-  formatCategoryStatus,
-  formatCategoryText,
 } from '@/app/utils/helpers/categoryHelper'
 import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
 import Loading from '@/app/components/loaders/Loading'
+import { runOptimisticMutation } from '@/app/utils/helpers/optimisticMutation'
 
 const tableColumns = [
   'Id',
   'Type',
-  'Created By',
   'Created At',
-  'Updated By',
-  'Updated At',
-  'Deleted By',
-  'Deleted At',
-  'IsActive',
   'Action',
 ]
 const ITEMS_PER_PAGE = 10
@@ -110,36 +103,55 @@ export default function CategoryForm() {
   async function handleAddCategory() {
     if (!formCanSubmit) return
 
-    setIsSubmitting(true)
-    try {
-      await insertCategory({ categoryName: form.type.trim() })
-      toast.success('Category added successfully')
-      setIsAddModalOpen(false)
-      resetForm()
-      setCurrentPage(1)
-      await loadCategories(true)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to add category')
-    } finally {
-      setIsSubmitting(false)
+    const previousCategories = categories
+    const categoryName = form.type.trim()
+    const tempCategory: CategoryListItem = {
+      id: -Date.now(),
+      type: categoryName,
+      created_At: new Date().toISOString(),
     }
+
+    setIsSubmitting(true)
+    setIsAddModalOpen(false)
+    resetForm()
+    setCurrentPage(1)
+
+    await runOptimisticMutation({
+      optimisticUpdate: () => setCategories((prev) => [tempCategory, ...prev]),
+      rollback: () => setCategories(previousCategories),
+      mutation: () => insertCategory({ categoryName }),
+      reconcile: () => loadCategories(true, false),
+      successMessage: 'Category added successfully',
+      errorMessage: 'Failed to add category',
+      onSettled: () => setIsSubmitting(false),
+    })
   }
 
   async function handleUpdateCategory() {
     if (!formCanSubmit || !selectedCategory) return
 
+    const previousCategories = categories
+    const categoryId = selectedCategory.id
+    const categoryType = form.type.trim()
+
     setIsSubmitting(true)
-    try {
-      await updateCategory({ id: selectedCategory.id, type: form.type.trim() })
-      toast.success('Category updated successfully')
-      setIsEditModalOpen(false)
-      resetForm()
-      await loadCategories(true)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update category')
-    } finally {
-      setIsSubmitting(false)
-    }
+    setIsEditModalOpen(false)
+    resetForm()
+
+    await runOptimisticMutation({
+      optimisticUpdate: () =>
+        setCategories((prev) =>
+          prev.map((category) =>
+            category.id === categoryId ? { ...category, type: categoryType } : category
+          )
+        ),
+      rollback: () => setCategories(previousCategories),
+      mutation: () => updateCategory({ id: categoryId, type: categoryType }),
+      reconcile: () => loadCategories(true, false),
+      successMessage: 'Category updated successfully',
+      errorMessage: 'Failed to update category',
+      onSettled: () => setIsSubmitting(false),
+    })
   }
 
   async function handleDeleteCategory() {
@@ -223,7 +235,7 @@ export default function CategoryForm() {
       </div>
 
       <div className="mt-5 min-h-0 overflow-auto scrollbar-none">
-        <table className="w-full min-w-7xl border-separate border-spacing-y-2 text-left">
+        <table className="w-full min-w-150 border-separate border-spacing-y-2 text-left">
           <thead className="text-sm font-normal text-[#737A76]">
             <tr>
               {tableColumns.map((column) => (
@@ -261,13 +273,7 @@ export default function CategoryForm() {
                 <tr className="bg-[#FAFBFA] text-sm text-[#121514]" key={category.id}>
                   <td className="rounded-l-xl px-3 py-5 font-medium whitespace-nowrap">{formatCategoryId(category.id)}</td>
                   <td className="px-3 py-5 font-medium whitespace-nowrap capitalize">{category.type}</td>
-                  <td className="px-3 py-5 whitespace-nowrap">{formatCategoryText(category.created_By)}</td>
                   <td className="px-3 py-5 whitespace-nowrap">{formatCategoryDate(category.created_At)}</td>
-                  <td className="px-3 py-5 whitespace-nowrap">{formatCategoryText(category.updated_By)}</td>
-                  <td className="px-3 py-5 whitespace-nowrap">{formatCategoryDate(category.updated_At)}</td>
-                  <td className="px-3 py-5 whitespace-nowrap">{formatCategoryText(category.deleted_By)}</td>
-                  <td className="px-3 py-5 whitespace-nowrap">{formatCategoryDate(category.deleted_At)}</td>
-                  <td className="px-3 py-5 font-medium whitespace-nowrap">{formatCategoryStatus(category.isActive)}</td>
                   <td className="rounded-r-xl px-3 py-5">
                     <div className="flex items-center justify-end">
                       <StatusAction

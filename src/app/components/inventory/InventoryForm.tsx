@@ -47,6 +47,7 @@ import { fetchProducts } from '@/app/utils/api/productApi'
 import { ProductListItem } from '@/app/types/product'
 import { WarehouseListItem } from '@/app/types/warehouseCapacity'
 import { fetchWarehouses } from '@/app/utils/api/warehouseApi'
+import { runOptimisticMutation } from '@/app/utils/helpers/optimisticMutation'
 
 const inventoryColumns = ['Inventory ID', 'Name', 'Quantity', 'Reorder point', 'Warehouse', 'Status']
 
@@ -118,6 +119,7 @@ export default function InventoryForm() {
   async function handleAddInventory() {
     if (!formCanSubmit) return
 
+    const previousInventories = inventories
     const tempId = -Date.now()
 
     const optimisticItem: InventoryListItem = {
@@ -132,31 +134,30 @@ export default function InventoryForm() {
       dateArrived: form.dateArrived,
     }
 
-    setInventories((prev) => [optimisticItem, ...prev])
     setIsAddModalOpen(false)
     setIsSubmitting(true)
 
-    try {
-      await insertInventory({
+    await runOptimisticMutation({
+      optimisticUpdate: () => setInventories((prev) => [optimisticItem, ...prev]),
+      rollback: () => setInventories(previousInventories),
+      mutation: () =>
+        insertInventory({
         name: form.name,
         quantity: Number(form.quantity),
         productId: Number(form.productId),
         warehouseId: Number(form.warehouseId),
         dateArrived: formatDateForApi(form.dateArrived),
         reorderPoint: Number(form.reorderPoint),
-      })
-
+      }),
+      reconcile: async () => {
       const { items } = await fetchInventories({ page: 1, pageSize: 100 })
       setInventories(items)
-
-      toast.success('Inventory item added successfully.')
-      resetForm()
-    } catch (err) {
-      setInventories((prev) => prev.filter((item) => item.id !== tempId))
-      toast.error(err instanceof Error ? err.message : 'Failed to add inventory item.')
-    } finally {
-      setIsSubmitting(false)
-    }
+      },
+      successMessage: 'Inventory item added successfully.',
+      errorMessage: 'Failed to add inventory item.',
+      onSuccess: resetForm,
+      onSettled: () => setIsSubmitting(false),
+    })
   }
 
   useEffect(() => {

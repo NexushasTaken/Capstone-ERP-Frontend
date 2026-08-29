@@ -1,8 +1,12 @@
-import type { ApiEnvelopeNoContent, InsertProductPayload, ProductListItem } from '@/app/types/product'
-import { ApiEnvelope } from '@/app/utils/apiEnvelope'
+import type {
+  InsertProductPayload,
+  ProductListItem,
+  UpdateProductPayload,
+} from '@/app/types/product'
+import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/apiEnvelope'
 import { FetchProductsParams, ProductListContent } from '@/app/utils/types/product'
 
-//#region GET
+// GET
 export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
   items: ProductListItem[]
   pageCount: number
@@ -34,9 +38,8 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
     rows: data.content.rows,
   }
 }
-//#endregion
 
-//#region INSERT
+// INSERT
 export async function insertProduct(
   payload: InsertProductPayload,
   existingId?: number
@@ -58,4 +61,59 @@ export async function insertProduct(
 
   return data
 }
-//#endregion
+
+// PATCH
+export async function updateProduct(payload: UpdateProductPayload): Promise<ApiEnvelopeNoContent> {
+  const response = await fetch('/api/Product/patch', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  })
+
+  const data: ApiEnvelopeNoContent = await response.json()
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || 'Failed to update product')
+  }
+
+  return data
+}
+
+// DELETE
+export async function deleteProduct(id: number): Promise<ApiEnvelopeNoContent> {
+  const query = new URLSearchParams({ id: String(id) })
+
+  const response = await fetch(`/api/Product/delete?${query.toString()}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  })
+
+  const data: ApiEnvelopeNoContent = await response.json()
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || 'Failed to delete product')
+  }
+
+  return data
+}
+
+// NO CATEGORY COUNT
+export async function fetchNoCategoryProductCount(): Promise<number> {
+  const response = await fetch('/api/Product/product/nocategoryCount', {
+    method: 'GET',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch uncategorized product count: ${response.status}`)
+  }
+
+  const data: ApiEnvelope<number> = await response.json()
+
+  if (!data.success) {
+    throw new Error(data.message || 'Failed to fetch uncategorized product count')
+  }
+
+  return data.content
+}
