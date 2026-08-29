@@ -11,6 +11,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
+import cproLogo from "../../../public/cproLogo.png"
 
 export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -31,7 +32,12 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
         : 'hidden xl:flex xl:w-1/5'
     }`}>
         <div className="flex items-center justify-between">
-          <span className="text-2xl text-[#0c0d0d] font-semibold sm:text-3xl md:text-4xl">CPro Home</span>
+          <span className="inline-flex items-center text-2xl text-[#0c0d0d] font-semibold sm:text-3xl md:text-4xl">
+            <div className='relative w-10 h-10 lg:w-20 lg:h-20 rounded-full'>
+              <Image src={cproLogo} alt="Cpro Logo" className='object-contain' fill priority/>
+            </div>
+            CPro Home
+          </span>
           <button aria-label="Close navigation" className="cursor-pointer p-2 text-[#0c0d0d] xl:hidden" onClick={onClose} type="button">
             <X className="h-6 w-6" />
           </button>

@@ -83,7 +83,7 @@ export default function EntityDropdown({
         <ChevronDown className="h-4 w-4 shrink-0 text-[#737A76]" />
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="flex h-72 w-(--anchor-width) flex-col overflow-hidden p-0">
+      <DropdownMenuContent className="flex max-h-72 w-(--anchor-width) flex-col overflow-hidden p-0">
         {onSearch && (
           <div className="flex items-center gap-2 border-b border-[#E7ECE8] px-2.5 py-2">
             <Search className="h-4 w-4 shrink-0 text-[#737A76]" />

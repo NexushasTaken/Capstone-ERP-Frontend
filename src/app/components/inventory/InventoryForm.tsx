@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import WarehouseCapacitySection from '@/app/components/inventory/WarehouseCapacitySection'
 import MovementVelocity from '@/app/components/inventory/MovementVelocity'
-import { fetchInventories, insertInventory } from '@/app/utils/api/inventoryApi'
+import { deleteInventory, fetchInventories, insertInventory, updateInventory } from '@/app/utils/api/inventoryApi'
 import {
   formatNumber,
   formatDate,
@@ -52,6 +52,7 @@ import { runOptimisticMutation } from '@/app/utils/helpers/optimisticMutation'
 const inventoryColumns = ['Inventory ID', 'Name', 'Quantity', 'Reorder point', 'Warehouse', 'Status']
 
 const inventorySortOptions = [
+  { label: 'Latest added', value: 'latest' as InventorySortBy, order: 'desc' as const },
   { label: 'Name (A → Z)', value: 'name' as InventorySortBy, order: 'asc' as const },
   { label: 'Name (Z → A)', value: 'name' as InventorySortBy, order: 'desc' as const },
   { label: 'Quantity (High → Low)', value: 'quantity' as InventorySortBy, order: 'desc' as const },
@@ -59,14 +60,18 @@ const inventorySortOptions = [
   { label: 'Reorder point', value: 'reorderPoint' as InventorySortBy, order: 'desc' as const },
 ]
 
+function isSelectableWarehouse(warehouse: WarehouseListItem) {
+  return warehouse.name.toLowerCase() !== 'all warehouse record'
+}
+
 export default function InventoryForm() {
   const [inventories, setInventories] = useState<InventoryListItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
-  const [sortBy, setSortBy] = useState<InventorySortBy>('name')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [sortBy, setSortBy] = useState<InventorySortBy>('latest')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedItem, setSelectedItem] = useState<InventoryListItem | null>(null)
   const [selectedFilter, setSelectedFilter] = useState<InventoryFilter>('All')
   const [search, setSearch] = useState('')
@@ -79,6 +84,8 @@ export default function InventoryForm() {
   const selectedDamagedRecords: never[] = []
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [products, setProducts] = useState<ProductListItem[]>([])
   const [isLoadingProducts, setIsLoadingProducts] = useState(false)
@@ -102,6 +109,13 @@ export default function InventoryForm() {
     form.productId.trim() !== '' &&
     form.warehouseId.trim() !== '' &&
     form.dateArrived.trim() !== '' &&
+    form.reorderPoint.trim() !== '' &&
+    Number(form.reorderPoint) >= 0
+
+  const editFormCanSubmit =
+    form.name.trim() !== '' &&
+    form.productId.trim() !== '' &&
+    form.warehouseId.trim() !== '' &&
     form.reorderPoint.trim() !== '' &&
     Number(form.reorderPoint) >= 0
 
@@ -160,6 +174,92 @@ export default function InventoryForm() {
     })
   }
 
+  async function reloadInventories() {
+    const { items } = await fetchInventories({ page: 1, pageSize: 100 })
+    setInventories(items)
+  }
+
+  async function handleUpdateInventory() {
+    if (!selectedItem || !editFormCanSubmit) return
+
+    const previousInventories = inventories
+    const inventoryId = selectedItem.id
+    const productId = Number(form.productId)
+    const warehouseId = Number(form.warehouseId)
+    const nextItem: InventoryListItem = {
+      ...selectedItem,
+      productId,
+      name: form.name.trim(),
+      warehouseId,
+      warehouseName: warehouses.find((warehouse) => warehouse.id === warehouseId)?.name ?? selectedItem.warehouseName,
+      reorderPoint: Number(form.reorderPoint),
+    }
+
+    setIsSubmitting(true)
+    setIsEditModalOpen(false)
+    resetForm()
+
+    await runOptimisticMutation({
+      optimisticUpdate: () =>
+        setInventories((prev) =>
+          prev.map((item) => (item.id === inventoryId ? nextItem : item))
+        ),
+      rollback: () => setInventories(previousInventories),
+      mutation: () =>
+        updateInventory({
+          id: inventoryId,
+          name: nextItem.name,
+          productId,
+          warehouseId,
+          reorderPoint: nextItem.reorderPoint,
+        }),
+      reconcile: reloadInventories,
+      successMessage: 'Inventory item updated successfully.',
+      errorMessage: 'Failed to update inventory item.',
+      onSettled: () => setIsSubmitting(false),
+    })
+  }
+
+  async function handleDeleteInventory() {
+    if (!selectedItem) return
+
+    const previousInventories = inventories
+    const inventoryId = selectedItem.id
+
+    setIsSubmitting(true)
+    setIsDeleteModalOpen(false)
+    resetForm()
+
+    await runOptimisticMutation({
+      optimisticUpdate: () =>
+        setInventories((prev) => prev.filter((item) => item.id !== inventoryId)),
+      rollback: () => setInventories(previousInventories),
+      mutation: () => deleteInventory(inventoryId),
+      reconcile: reloadInventories,
+      successMessage: 'Inventory item deleted successfully.',
+      errorMessage: 'Failed to delete inventory item.',
+      onSettled: () => setIsSubmitting(false),
+    })
+  }
+
+  function openEditModal(item: InventoryListItem) {
+    setSelectedItem(item)
+    setForm({
+      name: item.name,
+      quantity: String(item.quantity),
+      productId: String(item.productId),
+      warehouseId: String(item.warehouseId),
+      dateArrived: item.dateArrived,
+      reorderPoint: String(item.reorderPoint),
+    })
+    setIsEditModalOpen(true)
+  }
+
+  function openDeleteModal(item: InventoryListItem) {
+    setSelectedItem(item)
+    setIsDeleteModalOpen(true)
+  }
+
   useEffect(() => {
     let cancelled = false
 
@@ -183,7 +283,7 @@ export default function InventoryForm() {
   }, [])
 
   useEffect(() => {
-    if (!isAddModalOpen) return
+    if (!isAddModalOpen && !isEditModalOpen) return
     let cancelled = false
 
     async function loadOptions() {
@@ -196,7 +296,7 @@ export default function InventoryForm() {
         ])
         if (!cancelled) {
           setProducts(productResponse.items)
-          setWarehouses(warehouseItems)
+          setWarehouses(warehouseItems.filter(isSelectableWarehouse))
         }
       } catch (err) {
         if (!cancelled) {
@@ -214,7 +314,7 @@ export default function InventoryForm() {
     return () => {
       cancelled = true
     }
-  }, [isAddModalOpen])
+  }, [isAddModalOpen, isEditModalOpen])
 
   const criticalInventories = inventories.filter((item) => item.status === 'critical')
 
@@ -260,6 +360,9 @@ export default function InventoryForm() {
   const totalPages = Math.ceil(filteredInventories.length / itemsPerPage)
   const displayedInventories = [...filteredInventories].sort((a, b) => {
     switch (sortBy) {
+      case 'latest':
+        return sortOrder === 'asc' ? a.id - b.id : b.id - a.id
+
       case 'name':
         return sortOrder === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
 
@@ -548,8 +651,9 @@ export default function InventoryForm() {
                             <StatusAction
                               actions={editDeleteActions}
                               label={`More actions for inventory ${item.id}`}
-                              onAction={() => {
-                                setSelectedItem(item)
+                              onAction={(action) => {
+                                if (action === 'edit') openEditModal(item)
+                                if (action === 'delete') openDeleteModal(item)
                               }}
                             />
                           </div>
@@ -687,7 +791,7 @@ export default function InventoryForm() {
           <label className="flex flex-col gap-1 text-sm text-[#121514]">
             <span className="text-xs text-[#68716C]">Name</span>
             <input
-              className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+              className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
               onChange={(event) => updateFormField('name', event.target.value)}
               value={form.name}
             />
@@ -782,6 +886,165 @@ export default function InventoryForm() {
           >
             <Plus className="h-4 w-4" />
             Add inventory
+          </Button>
+        </div>
+      </AppModal>
+
+      <AppModal
+        className="flex max-h-[90vh] flex-col"
+        onClose={() => {
+          setIsEditModalOpen(false)
+          resetForm()
+        }}
+        open={isEditModalOpen}
+      >
+        <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
+          <div className="flex flex-col">
+            <span className="text-xs text-[#737A76]">{selectedItem ? formatInventoryId(String(selectedItem.id)) : ''}</span>
+            <span className="text-xl font-medium text-[#0c0d0d]">Edit inventory</span>
+          </div>
+          <CloseButton
+            onClick={() => {
+              setIsEditModalOpen(false)
+              resetForm()
+            }}
+          />
+        </div>
+
+        <div className="flex flex-col gap-4 p-4">
+          <label className="flex flex-col gap-1 text-sm text-[#121514]">
+            <span className="text-xs text-[#68716C]">Name</span>
+            <input
+              className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+              onChange={(event) => updateFormField('name', event.target.value)}
+              value={form.name}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm text-[#121514]">
+            <span className="text-xs text-[#68716C]">Product</span>
+            <EntityDropdown
+              options={products.map((p) => ({
+                id: p.id,
+                label: p.name,
+                sublabel: `${p.categoryName} Â· ${formatPeso(p.price)}`,
+              }))}
+              value={selectedProductLabel}
+              placeholder="Select a product"
+              emptyLabel="No products found."
+              addHref="/dashboard/product"
+              addLabel="Add product"
+              isLoading={isLoadingProducts}
+              onSearch={handleProductSearch}
+              isSearching={isSearchingProducts}
+              searchPlaceholder="Search products..."
+              onSelect={(id) => updateFormField('productId', String(id))}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm text-[#121514]">
+            <span className="text-xs text-[#68716C]">Warehouse</span>
+            <EntityDropdown
+              options={warehouses.map((w) => ({
+                id: w.id,
+                label: w.name,
+                sublabel: w.address,
+              }))}
+              value={selectedWarehouseLabel}
+              placeholder="Select a warehouse"
+              emptyLabel="No warehouses found."
+              addHref="/dashboard/inventory#WarehouseCapacity"
+              addLabel="Add warehouse"
+              isLoading={isLoadingWarehouses}
+              onSelect={(id) => updateFormField('warehouseId', String(id))}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm text-[#121514]">
+            <span className="text-xs text-[#68716C]">Reorder point</span>
+            <input
+              className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+              min={0}
+              onChange={(event) => updateFormField('reorderPoint', event.target.value)}
+              type="number"
+              value={form.reorderPoint}
+            />
+          </label>
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
+          <Button
+            className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
+            onClick={() => {
+              setIsEditModalOpen(false)
+              resetForm()
+            }}
+            type="button"
+            variant="outline"
+          >
+            Cancel
+          </Button>
+          <Button
+            className="rounded-xl px-3 py-2 text-sm"
+            disabled={!editFormCanSubmit || isSubmitting}
+            onClick={handleUpdateInventory}
+            type="button"
+          >
+            Save changes
+          </Button>
+        </div>
+      </AppModal>
+
+      <AppModal
+        className="flex max-h-[90vh] flex-col"
+        onClose={() => {
+          setIsDeleteModalOpen(false)
+          resetForm()
+        }}
+        open={isDeleteModalOpen}
+      >
+        <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
+          <div className="flex flex-col">
+            <span className="text-xs text-[#737A76]">{selectedItem ? formatInventoryId(String(selectedItem.id)) : ''}</span>
+            <span className="text-xl font-medium text-[#0c0d0d]">Delete inventory</span>
+          </div>
+          <CloseButton
+            onClick={() => {
+              setIsDeleteModalOpen(false)
+              resetForm()
+            }}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 p-4">
+          <span className="text-sm text-[#121514]">
+            Are you sure you want to delete this inventory item?
+          </span>
+          <span className="text-sm font-medium text-[#0c0d0d] capitalize">
+            {selectedItem?.name}
+          </span>
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
+          <Button
+            className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
+            onClick={() => {
+              setIsDeleteModalOpen(false)
+              resetForm()
+            }}
+            type="button"
+            variant="outline"
+          >
+            Cancel
+          </Button>
+          <Button
+            className="rounded-xl px-3 py-2 text-sm"
+            disabled={isSubmitting || !selectedItem}
+            onClick={handleDeleteInventory}
+            type="button"
+            variant="destructive"
+          >
+            Delete inventory
           </Button>
         </div>
       </AppModal>
