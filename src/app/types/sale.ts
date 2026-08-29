@@ -1,17 +1,16 @@
-import type { LucideIcon } from 'lucide-react'
-
 export type SaleStatus = 'Paid' | 'Processing' | 'Delivered' | 'Refunded'
 
 export interface Sale {
   id: string
-  productName: string
-  sku: string
-  productIcon: LucideIcon
-  customer: string
-  quantity: number
-  total: number
-  saleDate: string
-  status: SaleStatus
+  orderId: string
+  totalAmount: number
+  createdBy: string
+  createdAt: string
+  updatedBy: string | null
+  updatedAt: string | null
+  deletedBy: string | null
+  deletedAt: string | null
+  isActive: boolean
 }
 
 export interface SaleStatusFilter {

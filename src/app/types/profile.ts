@@ -2,7 +2,7 @@ export type ProfileRole = 'Admin' | 'Staff' | 'Manager'
 
 export type PositionType = 'CEO' | 'Operations Manager' | 'Sales Associate' | 'Warehouse Staff'
 
-interface StaffProfile {
+export interface StaffProfile {
   firstName: string
   type: ProfileRole
   positionType: PositionType

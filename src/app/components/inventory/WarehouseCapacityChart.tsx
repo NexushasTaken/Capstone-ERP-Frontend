@@ -3,7 +3,7 @@
 import { ArcElement, Chart, DoughnutController, Tooltip, type ChartConfiguration } from 'chart.js'
 import { useEffect, useRef } from 'react'
 import type { WarehouseCapacity } from '@/app/types/inventory'
-import { formatNumber, getCapacityPercentage } from '@/app/utils/inventoryHelpers'
+import { formatNumber, getCapacityPercentage } from '@/app/utils/helpers/inventoryHelpers'
 
 Chart.register(ArcElement, DoughnutController, Tooltip)
 

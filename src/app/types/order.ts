@@ -1,50 +1,73 @@
-export const ORDER_STATUSES = [
-  'Processing',
-  'Completed',
-  'Cancelled',
-] as const
+export const ORDER_STATUSES = ['Processing', 'Completed', 'Cancelled'] as const
+export const ORDER_TYPES = ['Deliver', 'Walk-in'] as const
 
-export const ORDER_TYPES = [
-  'Deliver',
-  'Walk-in',
-] as const
+export type OrderStatusLabel = (typeof ORDER_STATUSES)[number]
+export type OrderTypeLabel = (typeof ORDER_TYPES)[number]
 
-export type OrderStatus = (typeof ORDER_STATUSES)[number]
-export type OrderType = (typeof ORDER_TYPES)[number]
+export interface OrderStatus {
+  id: string
+  status: OrderStatusLabel
+  createdBy: string
+  createdAt: string
+  updatedBy: string | null
+  updatedAt: string | null
+  deletedBy: string | null
+  deletedAt: string | null
+  isActive: boolean
+}
 
-export interface PhilippineLocation {
-  city: string
-  province: string
-  flag: string
+export interface OrderType {
+  id: string
+  type: OrderTypeLabel
+  createdBy: string
+  createdAt: string
+  updatedBy: string | null
+  updatedAt: string | null
+  deletedBy: string | null
+  deletedAt: string | null
+  isActive: boolean
+}
+
+export interface DeliveryDriver {
+  id: string
+  firstName: string
+  lastName: string
+  createdBy: string
+  createdAt: string
+  updatedBy: string | null
+  updatedAt: string | null
+  deletedBy: string | null
+  deletedAt: string | null
+  isActive: boolean
 }
 
 export interface Order {
   id: string
-  inventoryId: string
-  customerName: string
-  productName: string
+  productId: string
+  orderTypeId: string
+  orderStatusId: string
+  deliveryDriverId: string | null
   quantity: number
-  price: number
-  orderDate: string
-  orderType: OrderType
-  assignedTo: string
-  pickupAddress: PhilippineLocation
-  deliveryAddress: PhilippineLocation
-  status: OrderStatus
+  customerName: string
+  pickupAddress: string
+  deliveryAddress: string
+  bundleCode: string | null
+  createdBy: string
+  createdAt: string
+  updatedBy: string | null
+  updatedAt: string | null
+  deletedBy: string | null
+  deletedAt: string | null
+  isActive: boolean
+  amount: number
 }
 
 export interface OrderStatusFilter {
-  label: 'All' | OrderStatus
+  label: 'All' | OrderStatusLabel
   count: number
 }
 
-export type OrdersSortBy =
-  | 'orderDate'
-  | 'customerName'
-  | 'productName'
-  | 'quantity'
-  | 'price'
-  | 'status'
+export type OrdersSortBy = 'createdAt' | 'customerName' | 'quantity' | 'amount'
 
 export interface OrderSortOption {
   label: string

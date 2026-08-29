@@ -6,7 +6,7 @@ import { Check, CheckSquare, Plus, Warehouse } from 'lucide-react'
 import CloseButton from '@/app/components/CloseButton'
 import AppModal from '@/app/components/modals/AppModal'
 import WarehouseCapacityChart from '@/app/components/inventory/WarehouseCapacityChart'
-import { formatNumber } from '@/app/utils/inventoryHelpers'
+import { formatNumber } from '@/app/utils/helpers/inventoryHelpers'
 import {
   canAddWarehouseCapacity,
   createWarehouseCapacityRecord,
@@ -18,7 +18,7 @@ import {
   toWarehouseCapacity,
   toggleSelectedWarehouseId,
   WAREHOUSE_CAPACITY_STORAGE_KEY,
-} from '@/app/utils/warehouseCapacityHelpers'
+} from '@/app/utils/helpers/warehouseCapacityHelpers'
 import type {
   StoredWarehouseCapacityState,
   WarehouseCapacityFormState,
@@ -131,7 +131,7 @@ export default function WarehouseCapacitySection({
   }
 
   return (
-    <section className="grid gap-5">
+    <section id="WarehouseCapacity" className="grid scroll-mt-6 gap-5">
       <article className="flex min-h-85 flex-col rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-4 border-b border-[#E7ECE8] pb-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="flex items-center gap-2">
