@@ -1,6 +1,11 @@
 import type { InventoryListItem } from '@/app/types/inventory'
 import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/apiEnvelope'
-import { FetchInventoriesParams, InsertInventoryPayload, InventoryListContent } from '@/app/utils/types/inventory'
+import {
+  FetchInventoriesParams,
+  InsertInventoryPayload,
+  InventoryListContent,
+  UpdateInventoryPayload,
+} from '@/app/utils/types/inventory'
 
 // GET
 export async function fetchInventories(params: FetchInventoriesParams = {}): Promise<{
@@ -37,6 +42,7 @@ export async function fetchInventories(params: FetchInventoriesParams = {}): Pro
   }
 }
 
+// INSERT
 export async function insertInventory(
   payload: InsertInventoryPayload,
   existingId?: number
@@ -54,6 +60,42 @@ export async function insertInventory(
 
   if (!response.ok || !data.success) {
     throw new Error(data.message || 'Failed to add inventory item')
+  }
+
+  return data
+}
+
+// PATCH
+export async function updateInventory(payload: UpdateInventoryPayload): Promise<ApiEnvelopeNoContent> {
+  const response = await fetch('/api/Inventory/patch', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  })
+
+  const data: ApiEnvelopeNoContent = await response.json()
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || 'Failed to update inventory item')
+  }
+
+  return data
+}
+
+// DELETE
+export async function deleteInventory(id: number): Promise<ApiEnvelopeNoContent> {
+  const query = new URLSearchParams({ id: String(id) })
+
+  const response = await fetch(`/api/Inventory/delete?${query.toString()}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  })
+
+  const data: ApiEnvelopeNoContent = await response.json()
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || 'Failed to delete inventory item')
   }
 
   return data

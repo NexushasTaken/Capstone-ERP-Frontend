@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { Check, CheckSquare, Plus, Warehouse } from 'lucide-react'
+import { toast } from 'sonner'
 
 import CloseButton from '@/app/components/CloseButton'
 import AppModal from '@/app/components/modals/AppModal'
+import StatusAction from '@/app/components/StatusAction'
 import WarehouseCapacityChart from '@/app/components/inventory/WarehouseCapacityChart'
+import Loading from '@/app/components/loaders/Loading'
 import { formatNumber } from '@/app/utils/helpers/inventoryHelpers'
 import {
   canAddWarehouseCapacity,
@@ -13,11 +16,8 @@ import {
   emptyWarehouseCapacityForm,
   getTotalWarehouseCapacity,
   MAX_SELECTED_WAREHOUSES,
-  parseStoredWarehouseCapacity,
-  serializeWarehouseCapacity,
   toWarehouseCapacity,
   toggleSelectedWarehouseId,
-  WAREHOUSE_CAPACITY_STORAGE_KEY,
 } from '@/app/utils/helpers/warehouseCapacityHelpers'
 import type {
   StoredWarehouseCapacityState,
@@ -34,6 +34,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  deleteWarehouse,
+  fetchWarehouses,
+  insertWarehouse,
+  updateWarehouse,
+} from '@/app/utils/api/warehouseApi'
+import type { WarehouseListItem } from '@/app/types/warehouseCapacity'
+import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
+import { runOptimisticMutation } from '@/app/utils/helpers/optimisticMutation'
 
 function createInitialWarehouseState(
   initialCapacity: WarehouseCapacitySectionProps['initialCapacity']
@@ -52,44 +61,100 @@ function createInitialWarehouseState(
   }
 }
 
+function toWarehouseCapacityRecord(warehouse: WarehouseListItem): WarehouseCapacityRecord {
+  return {
+    id: String(warehouse.id),
+    warehouseName: warehouse.name,
+    address: warehouse.address,
+    maximumCapacity: warehouse.capacity,
+    usedCapacity: warehouse.stocks,
+  }
+}
+
+function isAllWarehouseRecord(warehouse: WarehouseCapacityRecord) {
+  return warehouse.warehouseName.toLowerCase() === 'all warehouse record'
+}
+
 export default function WarehouseCapacitySection({
   initialCapacity,
 }: WarehouseCapacitySectionProps) {
   const [capacityState, setCapacityState] = useState<StoredWarehouseCapacityState>(
-    () => {
-      const initialState = createInitialWarehouseState(initialCapacity)
-
-      if (typeof window === 'undefined') {
-        return initialState
-      }
-
-      return parseStoredWarehouseCapacity(
-        window.localStorage.getItem(WAREHOUSE_CAPACITY_STORAGE_KEY),
-        initialState
-      )
-    }
+    () => createInitialWarehouseState(initialCapacity)
   )
   const [form, setForm] = useState<WarehouseCapacityFormState>(
     emptyWarehouseCapacityForm
   )
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingWarehouses, setIsLoadingWarehouses] = useState(true)
+  const [selectedWarehouse, setSelectedWarehouse] = useState<WarehouseCapacityRecord | null>(null)
   const [warehouseSearch, setWarehouseSearch] = useState('')
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
+  async function reloadWarehouses() {
+    const warehouseItems = await fetchWarehouses({ force: true })
+    const warehouses = warehouseItems.map(toWarehouseCapacityRecord)
+    const chartWarehouses = warehouses.filter((warehouse) => !isAllWarehouseRecord(warehouse))
 
-    window.localStorage.setItem(
-      WAREHOUSE_CAPACITY_STORAGE_KEY,
-      serializeWarehouseCapacity(capacityState)
-    )
-  }, [capacityState])
+    setCapacityState((currentState) => {
+      const selectedWarehouseIds = currentState.selectedWarehouseIds
+        .filter((id) => chartWarehouses.some((warehouse) => warehouse.id === id))
+        .slice(0, MAX_SELECTED_WAREHOUSES)
+
+      return {
+        warehouses,
+        selectedWarehouseIds:
+          selectedWarehouseIds.length > 0
+            ? selectedWarehouseIds
+            : chartWarehouses.slice(0, MAX_SELECTED_WAREHOUSES).map((warehouse) => warehouse.id),
+      }
+    })
+  }
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadWarehouses() {
+      setIsLoadingWarehouses(true)
+
+      try {
+        const warehouseItems = await fetchWarehouses()
+        if (cancelled) return
+
+        const warehouses = warehouseItems.map(toWarehouseCapacityRecord)
+        const chartWarehouses = warehouses.filter((warehouse) => !isAllWarehouseRecord(warehouse))
+        const selectedWarehouseIds = chartWarehouses
+          .slice(0, MAX_SELECTED_WAREHOUSES)
+          .map((warehouse) => warehouse.id)
+
+        setCapacityState({
+          warehouses,
+          selectedWarehouseIds,
+        })
+      } catch (err) {
+        if (!cancelled) {
+          toast.error(err instanceof Error ? err.message : 'Failed to load warehouses.')
+        }
+      } finally {
+        if (!cancelled) setIsLoadingWarehouses(false)
+      }
+    }
+
+    loadWarehouses()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const { selectedWarehouseIds, warehouses } = capacityState
+  const allWarehouseRecord = warehouses.find(isAllWarehouseRecord)
+  const chartWarehouses = warehouses.filter((warehouse) => !isAllWarehouseRecord(warehouse))
 
-  const selectedWarehouses = warehouses.filter((warehouse) =>
+  const selectedWarehouses = chartWarehouses.filter((warehouse) =>
     selectedWarehouseIds.includes(warehouse.id)
   )
-  const filteredWarehouses = warehouses.filter((warehouse) => {
+  const filteredWarehouses = chartWarehouses.filter((warehouse) => {
     const searchValue = warehouseSearch.toLowerCase()
 
     return (
@@ -98,7 +163,9 @@ export default function WarehouseCapacitySection({
       warehouse.address.toLowerCase().includes(searchValue)
     )
   })
-  const totalCapacity = getTotalWarehouseCapacity(warehouses)
+  const totalCapacity = allWarehouseRecord
+    ? toWarehouseCapacity(allWarehouseRecord)
+    : getTotalWarehouseCapacity(chartWarehouses)
   const formCanSubmit = canAddWarehouseCapacity(form)
 
   function updateFormField(
@@ -111,23 +178,129 @@ export default function WarehouseCapacitySection({
     }))
   }
 
-  function handleAddWarehouse() {
+  function resetForm() {
+    setForm(emptyWarehouseCapacityForm)
+    setSelectedWarehouse(null)
+  }
+
+  async function handleAddWarehouse() {
     if (!formCanSubmit) return
 
-    const newWarehouse = createWarehouseCapacityRecord(form)
+    const previousState = capacityState
+    const newWarehouse = {
+      ...createWarehouseCapacityRecord(form),
+      id: String(-Date.now()),
+    }
+    const payload = {
+      name: newWarehouse.warehouseName,
+      address: newWarehouse.address,
+      capicity: newWarehouse.maximumCapacity,
+    }
 
-    setCapacityState((currentState) => ({
-      warehouses: [
-        ...currentState.warehouses,
-        newWarehouse,
-      ],
-      selectedWarehouseIds:
-        currentState.selectedWarehouseIds.length < MAX_SELECTED_WAREHOUSES
-          ? [...currentState.selectedWarehouseIds, newWarehouse.id]
-          : currentState.selectedWarehouseIds,
-    }))
-    setForm(emptyWarehouseCapacityForm)
+    setIsSubmitting(true)
     setIsAddModalOpen(false)
+
+    await runOptimisticMutation({
+      optimisticUpdate: () =>
+        setCapacityState((currentState) => ({
+          warehouses: [newWarehouse, ...currentState.warehouses],
+          selectedWarehouseIds:
+            currentState.selectedWarehouseIds.length < MAX_SELECTED_WAREHOUSES
+              ? [newWarehouse.id, ...currentState.selectedWarehouseIds]
+              : currentState.selectedWarehouseIds,
+        })),
+      rollback: () => setCapacityState(previousState),
+      mutation: () => insertWarehouse(payload),
+      reconcile: reloadWarehouses,
+      successMessage: 'Warehouse added successfully.',
+      errorMessage: 'Failed to add warehouse.',
+      onSuccess: resetForm,
+      onSettled: () => setIsSubmitting(false),
+    })
+  }
+
+  async function handleUpdateWarehouse() {
+    if (!selectedWarehouse || !formCanSubmit) return
+
+    const warehouseId = Number(selectedWarehouse.id)
+    if (!Number.isFinite(warehouseId)) return
+
+    const previousState = capacityState
+    const updatedWarehouse: WarehouseCapacityRecord = {
+      ...selectedWarehouse,
+      warehouseName: form.warehouseName.trim(),
+      address: form.address.trim(),
+      maximumCapacity: Number(form.maximumCapacity),
+    }
+    const payload = {
+      id: warehouseId,
+      name: updatedWarehouse.warehouseName,
+      address: updatedWarehouse.address,
+      capicity: updatedWarehouse.maximumCapacity,
+    }
+
+    setIsSubmitting(true)
+    setIsEditModalOpen(false)
+    resetForm()
+
+    await runOptimisticMutation({
+      optimisticUpdate: () =>
+        setCapacityState((currentState) => ({
+          ...currentState,
+          warehouses: currentState.warehouses.map((warehouse) =>
+            warehouse.id === updatedWarehouse.id ? updatedWarehouse : warehouse
+          ),
+        })),
+      rollback: () => setCapacityState(previousState),
+      mutation: () => updateWarehouse(payload),
+      reconcile: reloadWarehouses,
+      successMessage: 'Warehouse updated successfully.',
+      errorMessage: 'Failed to update warehouse.',
+      onSettled: () => setIsSubmitting(false),
+    })
+  }
+
+  async function handleDeleteWarehouse() {
+    if (!selectedWarehouse) return
+
+    const warehouseId = Number(selectedWarehouse.id)
+    if (!Number.isFinite(warehouseId)) return
+
+    const previousState = capacityState
+    const selectedWarehouseId = selectedWarehouse.id
+
+    setIsSubmitting(true)
+    setIsDeleteModalOpen(false)
+    resetForm()
+
+    await runOptimisticMutation({
+      optimisticUpdate: () =>
+        setCapacityState((currentState) => ({
+          warehouses: currentState.warehouses.filter((warehouse) => warehouse.id !== selectedWarehouseId),
+          selectedWarehouseIds: currentState.selectedWarehouseIds.filter((id) => id !== selectedWarehouseId),
+        })),
+      rollback: () => setCapacityState(previousState),
+      mutation: () => deleteWarehouse(warehouseId),
+      reconcile: reloadWarehouses,
+      successMessage: 'Warehouse deleted successfully.',
+      errorMessage: 'Failed to delete warehouse.',
+      onSettled: () => setIsSubmitting(false),
+    })
+  }
+
+  function openEditModal(warehouse: WarehouseCapacityRecord) {
+    setSelectedWarehouse(warehouse)
+    setForm({
+      warehouseName: warehouse.warehouseName,
+      address: warehouse.address,
+      maximumCapacity: String(warehouse.maximumCapacity),
+    })
+    setIsEditModalOpen(true)
+  }
+
+  function openDeleteModal(warehouse: WarehouseCapacityRecord) {
+    setSelectedWarehouse(warehouse)
+    setIsDeleteModalOpen(true)
   }
 
   return (
@@ -141,7 +314,7 @@ export default function WarehouseCapacitySection({
             <div>
               <h2 className="font-semibold text-[#0c0d0d]">Warehouse capacity</h2>
               <p className="text-sm text-[#68716C]">
-                {formatNumber(warehouses.length)} warehouses tracked
+                {formatNumber(chartWarehouses.length)} warehouses tracked
               </p>
             </div>
           </div>
@@ -212,7 +385,7 @@ export default function WarehouseCapacitySection({
                               {checked && <Check className="h-3 w-3" />}
                             </span>
                             <span className="flex min-w-0 flex-col">
-                              <span className="truncate">{warehouse.warehouseName}</span>
+                              <span className="truncate capitalize">{warehouse.warehouseName}</span>
                               <span className="truncate text-xs text-[#737A76]">
                                 {warehouse.address}
                               </span>
@@ -247,7 +420,11 @@ export default function WarehouseCapacitySection({
           </div>
 
           <div className="grid gap-4 xl:col-span-3 xl:grid-cols-3">
-            {selectedWarehouses.length === 0 ? (
+            {isLoadingWarehouses ? (
+              <div className="flex min-h-72 items-center justify-center rounded-xl border border-dashed border-[#DCE4DE] bg-[#FAFBFA] text-sm text-[#737A76] xl:col-span-3">
+                <Loading />
+              </div>
+            ) : selectedWarehouses.length === 0 ? (
               <div className="flex min-h-72 items-center justify-center rounded-xl border border-dashed border-[#DCE4DE] bg-[#FAFBFA] text-sm text-[#737A76] xl:col-span-3">
                 Select warehouse charts from the dropdown.
               </div>
@@ -257,13 +434,23 @@ export default function WarehouseCapacitySection({
                   className="rounded-xl border border-[#E2E2E2] bg-white p-4"
                   key={warehouse.id}
                 >
-                  <div className="flex flex-col">
-                    <h3 className="truncate text-sm font-semibold text-[#0c0d0d]">
-                      {warehouse.warehouseName}
-                    </h3>
-                    <p className="truncate text-xs text-[#68716C]">
-                      {warehouse.address}
-                    </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 flex-col">
+                      <h3 className="truncate text-sm font-semibold text-[#0c0d0d] capitalize">
+                        {warehouse.warehouseName}
+                      </h3>
+                      <p className="truncate text-xs text-[#68716C]">
+                        {warehouse.address}
+                      </p>
+                    </div>
+                    <StatusAction
+                      actions={editDeleteActions}
+                      label={`More actions for warehouse ${warehouse.warehouseName}`}
+                      onAction={(action) => {
+                        if (action === 'edit') openEditModal(warehouse)
+                        if (action === 'delete') openDeleteModal(warehouse)
+                      }}
+                    />
                   </div>
                   <WarehouseCapacityChart
                     capacity={toWarehouseCapacity(warehouse)}
@@ -276,7 +463,10 @@ export default function WarehouseCapacitySection({
 
         <AppModal
           className="flex max-h-[90vh] flex-col"
-          onClose={() => setIsAddModalOpen(false)}
+          onClose={() => {
+            setIsAddModalOpen(false)
+            resetForm()
+          }}
           open={isAddModalOpen}
         >
           <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
@@ -284,14 +474,19 @@ export default function WarehouseCapacitySection({
               <span className="text-xs text-[#737A76]">Warehouse capacity</span>
               <span className="text-xl font-medium text-[#0c0d0d]">Add warehouse</span>
             </div>
-            <CloseButton onClick={() => setIsAddModalOpen(false)} />
+            <CloseButton
+              onClick={() => {
+                setIsAddModalOpen(false)
+                resetForm()
+              }}
+            />
           </div>
 
           <div className="flex flex-col gap-4 p-4">
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Warehouse name</span>
               <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
                 onChange={(event) =>
                   updateFormField('warehouseName', event.target.value)
                 }
@@ -302,7 +497,7 @@ export default function WarehouseCapacitySection({
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Address</span>
               <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
                 onChange={(event) =>
                   updateFormField('address', event.target.value)
                 }
@@ -327,7 +522,10 @@ export default function WarehouseCapacitySection({
           <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
             <Button
               className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
-              onClick={() => setIsAddModalOpen(false)}
+              onClick={() => {
+                setIsAddModalOpen(false)
+                resetForm()
+              }}
               type="button"
               variant="outline"
             >
@@ -335,12 +533,147 @@ export default function WarehouseCapacitySection({
             </Button>
             <Button
               className="rounded-xl px-3 py-2 text-sm"
-              disabled={!formCanSubmit}
+              disabled={!formCanSubmit || isSubmitting}
               onClick={handleAddWarehouse}
               type="button"
             >
               <Plus className="h-4 w-4" />
               Add warehouse
+            </Button>
+          </div>
+        </AppModal>
+
+        <AppModal
+          className="flex max-h-[90vh] flex-col"
+          onClose={() => {
+            setIsEditModalOpen(false)
+            resetForm()
+          }}
+          open={isEditModalOpen}
+        >
+          <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
+            <div className="flex flex-col">
+              <span className="text-xs text-[#737A76]">Warehouse capacity</span>
+              <span className="text-xl font-medium text-[#0c0d0d]">Edit warehouse</span>
+            </div>
+            <CloseButton
+              onClick={() => {
+                setIsEditModalOpen(false)
+                resetForm()
+              }}
+            />
+          </div>
+
+          <div className="flex flex-col gap-4 p-4">
+            <label className="flex flex-col gap-1 text-sm text-[#121514]">
+              <span className="text-xs text-[#68716C]">Warehouse name</span>
+              <input
+                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
+                onChange={(event) =>
+                  updateFormField('warehouseName', event.target.value)
+                }
+                value={form.warehouseName}
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 text-sm text-[#121514]">
+              <span className="text-xs text-[#68716C]">Address</span>
+              <input
+                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
+                onChange={(event) =>
+                  updateFormField('address', event.target.value)
+                }
+                value={form.address}
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 text-sm text-[#121514]">
+              <span className="text-xs text-[#68716C]">Maximum capacity</span>
+              <input
+                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                min={1}
+                onChange={(event) =>
+                  updateFormField('maximumCapacity', event.target.value)
+                }
+                type="number"
+                value={form.maximumCapacity}
+              />
+            </label>
+          </div>
+
+          <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
+            <Button
+              className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
+              onClick={() => {
+                setIsEditModalOpen(false)
+                resetForm()
+              }}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              className="rounded-xl px-3 py-2 text-sm"
+              disabled={!formCanSubmit || isSubmitting}
+              onClick={handleUpdateWarehouse}
+              type="button"
+            >
+              Save changes
+            </Button>
+          </div>
+        </AppModal>
+
+        <AppModal
+          className="flex max-h-[90vh] flex-col"
+          onClose={() => {
+            setIsDeleteModalOpen(false)
+            resetForm()
+          }}
+          open={isDeleteModalOpen}
+        >
+          <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
+            <div className="flex flex-col">
+              <span className="text-xs text-[#737A76]">Warehouse capacity</span>
+              <span className="text-xl font-medium text-[#0c0d0d]">Delete warehouse</span>
+            </div>
+            <CloseButton
+              onClick={() => {
+                setIsDeleteModalOpen(false)
+                resetForm()
+              }}
+            />
+          </div>
+
+          <div className="flex flex-col gap-2 p-4">
+            <span className="text-sm text-[#121514]">
+              Are you sure you want to delete this warehouse?
+            </span>
+            <span className="text-sm font-medium text-[#0c0d0d] capitalize">
+              {selectedWarehouse?.warehouseName}
+            </span>
+          </div>
+
+          <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
+            <Button
+              className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
+              onClick={() => {
+                setIsDeleteModalOpen(false)
+                resetForm()
+              }}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              className="rounded-xl px-3 py-2 text-sm"
+              disabled={isSubmitting || !selectedWarehouse}
+              onClick={handleDeleteWarehouse}
+              type="button"
+              variant="destructive"
+            >
+              Delete warehouse
             </Button>
           </div>
         </AppModal>

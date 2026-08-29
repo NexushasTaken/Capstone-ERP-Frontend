@@ -22,3 +22,11 @@ export interface InsertInventoryPayload {
   dateArrived: string
   reorderPoint: number
 }
+
+export interface UpdateInventoryPayload {
+  id: number
+  name: string
+  productId: number
+  warehouseId: number
+  reorderPoint: number
+}

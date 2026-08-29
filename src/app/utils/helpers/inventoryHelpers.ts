@@ -25,11 +25,12 @@ export function getRiskStyle(status: InventoryHealthStatus) {
 }
 
 export function getCapacityPercentage({ used, total }: WarehouseCapacity) {
-  if (total <= 0) return 0
+  if (!Number.isFinite(used) || !Number.isFinite(total) || total <= 0) return 0
   return Math.round((used / total) * 100)
 }
 
 export function formatNumber(value: number) {
+  if (!Number.isFinite(value)) return '0'
   return new Intl.NumberFormat('en-US').format(value)
 }
 
