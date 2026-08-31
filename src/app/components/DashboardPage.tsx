@@ -30,6 +30,7 @@ const salesChartOptions: { label: string; value: SalesChartType }[] = [
 
 export default function DashboardPage() {
   const [salesChartType, setSalesChartType] = useState<SalesChartType>('line')
+  //const [isRobotAnimationPlaying, setIsRobotAnimationPlaying] = useState(false)
   
   const [stockoutCurrentPage, setStockoutCurrentPage] = useState(1)
   const stockoutItemsPerPage = 10
@@ -160,17 +161,21 @@ export default function DashboardPage() {
       <div className="flex flex-col xl:flex-row gap-4 w-full">
         <div className="flex flex-col w-full h-full gap-4">
           {/* AI KUNO NAMED STEVEN */}
-          <div className='flex w-full'>
+          <div
+            className='flex w-fit'
+            // onBlur={() => setIsRobotAnimationPlaying(false)}
+            // onFocus={() => setIsRobotAnimationPlaying(true)}
+            // onMouseEnter={() => setIsRobotAnimationPlaying(true)}
+            // onMouseLeave={() => setIsRobotAnimationPlaying(false)}
+            // tabIndex={0}
+          >
             <Lottie
               src={animatedRobot}
+              //autoplay={isRobotAnimationPlaying}
               autoplay
               loop
               style={{ width: 160, height: 160 }}
             />
-
-            <div>
-              
-            </div>
           </div>
 
           {/* PREDICTED STOCKOUTS */}
