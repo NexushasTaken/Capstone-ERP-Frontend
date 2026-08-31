@@ -74,7 +74,7 @@ function toWarehouseCapacityRecord(warehouse: WarehouseListItem): WarehouseCapac
 }
 
 function isAllWarehouseRecord(warehouse: WarehouseCapacityRecord) {
-  return warehouse.warehouseName.toLowerCase() === 'all warehouse record'
+  return warehouse.warehouseName.trim().toLowerCase() === 'all warehouse record'
 }
 
 export default function WarehouseCapacitySection({
@@ -83,6 +83,10 @@ export default function WarehouseCapacitySection({
   const [capacityState, setCapacityState] = useState<StoredWarehouseCapacityState>(
     () => createInitialWarehouseState(initialCapacity)
   )
+  const [selectedWarehouseIds, setSelectedWarehouseIds] = useState<string[]>(
+    () => capacityState.selectedWarehouseIds
+  )
+  const [hasCustomWarehouseSelection, setHasCustomWarehouseSelection] = useState(false)
   const [form, setForm] = useState<WarehouseCapacityFormState>(
     emptyWarehouseCapacityForm
   )
@@ -93,38 +97,31 @@ export default function WarehouseCapacitySection({
   const [warehouseSearch, setWarehouseSearch] = useState('')
   const queryClient = useQueryClient()
   const {
+    data: warehouseItems = [],
     isLoading: isLoadingWarehouses,
   } = useQuery({
     queryKey: queryKeys.warehouses.all,
     queryFn: () => fetchWarehouses(),
-    onSuccess: syncCapacityState,
   })
 
-  function syncCapacityState(warehouseItems: WarehouseListItem[]) {
-    const warehouses = warehouseItems.map(toWarehouseCapacityRecord)
-    const chartWarehouses = warehouses.filter((warehouse) => !isAllWarehouseRecord(warehouse))
-
-    setCapacityState((currentState) => {
-      const selectedWarehouseIds = currentState.selectedWarehouseIds
-        .filter((id) => chartWarehouses.some((warehouse) => warehouse.id === id))
-        .slice(0, MAX_SELECTED_WAREHOUSES)
-
-      return {
-        warehouses,
-        selectedWarehouseIds:
-          selectedWarehouseIds.length > 0
-            ? selectedWarehouseIds
-            : chartWarehouses.slice(0, MAX_SELECTED_WAREHOUSES).map((warehouse) => warehouse.id),
-      }
-    })
-  }
-
-  const { selectedWarehouseIds, warehouses } = capacityState
+  const warehouses =
+    warehouseItems.length > 0
+      ? warehouseItems.map(toWarehouseCapacityRecord)
+      : capacityState.warehouses
   const allWarehouseRecord = warehouses.find(isAllWarehouseRecord)
   const chartWarehouses = warehouses.filter((warehouse) => !isAllWarehouseRecord(warehouse))
+  const validSelectedWarehouseIds = selectedWarehouseIds
+    .filter((id) => chartWarehouses.some((warehouse) => warehouse.id === id))
+    .slice(0, MAX_SELECTED_WAREHOUSES)
+  const visibleSelectedWarehouseIds =
+    hasCustomWarehouseSelection
+      ? validSelectedWarehouseIds
+      : validSelectedWarehouseIds.length > 0
+      ? validSelectedWarehouseIds
+      : chartWarehouses.slice(0, MAX_SELECTED_WAREHOUSES).map((warehouse) => warehouse.id)
 
   const selectedWarehouses = chartWarehouses.filter((warehouse) =>
-    selectedWarehouseIds.includes(warehouse.id)
+    visibleSelectedWarehouseIds.includes(warehouse.id)
   )
   const filteredWarehouses = chartWarehouses.filter((warehouse) => {
     const searchValue = warehouseSearch.toLowerCase()
@@ -159,11 +156,14 @@ export default function WarehouseCapacitySection({
 
       setCapacityState((currentState) => ({
         warehouses: [newWarehouse, ...currentState.warehouses],
-        selectedWarehouseIds:
-          currentState.selectedWarehouseIds.length < MAX_SELECTED_WAREHOUSES
-            ? [newWarehouse.id, ...currentState.selectedWarehouseIds]
-            : currentState.selectedWarehouseIds,
+        selectedWarehouseIds: currentState.selectedWarehouseIds,
       }))
+      setSelectedWarehouseIds((currentIds) =>
+        currentIds.length < MAX_SELECTED_WAREHOUSES
+          ? [newWarehouse.id, ...currentIds]
+          : currentIds
+      )
+      setHasCustomWarehouseSelection(true)
 
       return { previousState }
     },
@@ -223,6 +223,7 @@ export default function WarehouseCapacitySection({
         warehouses: currentState.warehouses.filter((warehouse) => warehouse.id !== selectedWarehouseId),
         selectedWarehouseIds: currentState.selectedWarehouseIds.filter((id) => id !== selectedWarehouseId),
       }))
+      setSelectedWarehouseIds((currentIds) => currentIds.filter((id) => id !== selectedWarehouseId))
 
       return { previousState }
     },
@@ -350,7 +351,7 @@ export default function WarehouseCapacitySection({
               <DropdownMenuContent align="end" className="w-80">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>
-                    {selectedWarehouseIds.length} of {MAX_SELECTED_WAREHOUSES} charts selected
+                    {visibleSelectedWarehouseIds.length} of {MAX_SELECTED_WAREHOUSES} charts selected
                   </DropdownMenuLabel>
                   <div className="px-1.5 pb-2">
                     <input
@@ -371,10 +372,10 @@ export default function WarehouseCapacitySection({
                       </div>
                     ) : (
                       filteredWarehouses.map((warehouse) => {
-                        const checked = selectedWarehouseIds.includes(warehouse.id)
+                        const checked = visibleSelectedWarehouseIds.includes(warehouse.id)
                         const disabled =
                           !checked &&
-                          selectedWarehouseIds.length >= MAX_SELECTED_WAREHOUSES
+                          visibleSelectedWarehouseIds.length >= MAX_SELECTED_WAREHOUSES
 
                         return (
                           <DropdownMenuItem
@@ -384,13 +385,15 @@ export default function WarehouseCapacitySection({
                             onClick={() => {
                               if (disabled) return
 
-                              setCapacityState((currentState) => ({
-                                ...currentState,
-                                selectedWarehouseIds: toggleSelectedWarehouseId(
-                                  currentState.selectedWarehouseIds,
+                              setHasCustomWarehouseSelection(true)
+                              setSelectedWarehouseIds(
+                                toggleSelectedWarehouseId(
+                                  hasCustomWarehouseSelection
+                                    ? validSelectedWarehouseIds
+                                    : visibleSelectedWarehouseIds,
                                   warehouse.id
-                                ),
-                              }))
+                                )
+                              )
                             }}
                             className="cursor-pointer items-start gap-2 px-2 py-2"
                           >

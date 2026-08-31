@@ -6,6 +6,10 @@ export function invalidateProducts(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: ['products'] })
 }
 
+export function invalidateOrders(queryClient: QueryClient) {
+  return queryClient.invalidateQueries({ queryKey: ['orders'] })
+}
+
 export function invalidateInventories(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: ['inventories'] })
 }

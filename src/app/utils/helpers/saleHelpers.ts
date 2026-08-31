@@ -1,6 +1,4 @@
 import type { Sale } from '@/app/types/sale'
-import { mockOrders } from '@/app/utils/mock/orderMockData'
-import { getProductById, getOrderStatusLabel } from '@/app/utils/helpers/orderHelpers'
 
 export function formatSaleId(saleId: string) {
   return `#${saleId}`
@@ -23,28 +21,29 @@ export function formatDate(dateString: string | null) {
   })
 }
 
-export function getOrderForSale(sale: Sale) {
-  return mockOrders.find((order) => order.id === sale.orderId) ?? null
+export function getOrderForSale(_sale: Sale) {
+  void _sale
+  return null
 }
 
-export function getSaleProductName(sale: Sale): string {
-  const order = getOrderForSale(sale)
-  if (!order) return 'Unknown'
-  return getProductById(order.productId)?.name ?? 'Unknown'
+export function getSaleProductName(_sale: Sale): string {
+  void _sale
+  return 'Unknown'
 }
 
-export function getSaleCustomerName(sale: Sale): string {
-  return getOrderForSale(sale)?.customerName ?? 'Unknown'
+export function getSaleCustomerName(_sale: Sale): string {
+  void _sale
+  return 'Unknown'
 }
 
-export function getSaleQuantity(sale: Sale): number {
-  return getOrderForSale(sale)?.quantity ?? 0
+export function getSaleQuantity(_sale: Sale): number {
+  void _sale
+  return 0
 }
 
-export function getSaleStatusLabel(sale: Sale): string {
-  const order = getOrderForSale(sale)
-  if (!order) return 'Unknown'
-  return getOrderStatusLabel(order.orderStatusId)
+export function getSaleStatusLabel(_sale: Sale): string {
+  void _sale
+  return 'Unknown'
 }
 
 const statusDotColors: Record<string, string> = {

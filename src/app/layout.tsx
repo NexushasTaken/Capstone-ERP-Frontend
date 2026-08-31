@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Host_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { Toaster } from 'sonner'
 import Providers from "@/app/providers";
+import { ResponsiveToaster } from "@/app/components/toast/ResponsiveToaster";
 
 const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
 
@@ -27,11 +27,11 @@ export default function RootLayout({
       lang="en"
       className={cn("h-full", "antialiased", hostGrotesk.variable, "font-mono", jetbrainsMono.variable)}
     >
-      <body className="flex flex-col h-full overflow-hidden select-none">
+      <body className="flex flex-col h-full overflow-hidden select-none outline-none focus:outline-none">
         <Providers>
           {children}
         </Providers>
-        <Toaster richColors closeButton />
+        <ResponsiveToaster />
       </body>
     </html>
   );

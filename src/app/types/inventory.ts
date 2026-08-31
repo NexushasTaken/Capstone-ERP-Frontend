@@ -153,12 +153,6 @@ export interface InventoryStatusFilter {
 
 export type InventorySortBy = 'latest' | 'name' | 'quantity' | 'reorderPoint' | 'warehouse'
 
-export interface InventorySortOption {
-  label: string
-  value: InventorySortBy
-  order: 'asc' | 'desc'
-}
-
 export interface PaginationProps {
   currentPage: number
   totalPages: number

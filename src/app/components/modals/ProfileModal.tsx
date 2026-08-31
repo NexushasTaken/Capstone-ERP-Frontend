@@ -7,6 +7,9 @@ import type { ProfileModalProps } from '@/app/types/profile'
 import { formatProfileDetails } from '@/app/utils/helpers/profileHelpers'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/app/utils/api/queryKeys'
+import { storeCurrentUser } from '@/app/utils/api/profileApi'
 
 export default function ProfileModal({
   isOpen,
@@ -15,6 +18,7 @@ export default function ProfileModal({
 }: ProfileModalProps) {
 
   const router = useRouter()
+  const queryClient = useQueryClient()
   async function handleLogout() {
     try {
       const response = await fetch('/api/User/Logout', {
@@ -30,6 +34,8 @@ export default function ProfileModal({
       }
 
       onClose()
+      storeCurrentUser(null)
+      queryClient.removeQueries({ queryKey: queryKeys.auth.currentUser })
       toast.success("You're logged out successfully!")
       router.push('/')
       router.refresh()

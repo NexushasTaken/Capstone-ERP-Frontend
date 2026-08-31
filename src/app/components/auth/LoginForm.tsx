@@ -4,9 +4,15 @@ import { LockKeyhole, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import React, { ChangeEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
+import type { CurrentUser } from '@/app/types/profile'
+import type { ApiEnvelope } from '@/app/utils/apiEnvelope'
+import { queryKeys } from '@/app/utils/api/queryKeys'
+import { storeCurrentUser } from '@/app/utils/api/profileApi'
 
 export default function LoginForm() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -29,12 +35,20 @@ export default function LoginForm() {
         },
       )
 
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null)
-        const message = payload?.message ?? payload?.title ?? 'Invalid email or password.'
+      const payload: ApiEnvelope<CurrentUser> | { message?: string; title?: string } | null =
+        await response.json().catch(() => null)
+
+      if (!response.ok || !payload || !('success' in payload) || !payload.success) {
+        const message =
+          payload && 'title' in payload
+            ? payload.title ?? payload.message ?? 'Invalid email or password.'
+            : payload?.message ?? 'Invalid email or password.'
         throw new Error(message)
       }
 
+      const currentUser = payload.content ?? null
+      storeCurrentUser(currentUser)
+      queryClient.setQueryData(queryKeys.auth.currentUser, currentUser)
       toast.success("You're logged in successfully!")
       router.push('/dashboard')
       router.refresh()

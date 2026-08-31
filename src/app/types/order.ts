@@ -1,70 +1,31 @@
-export const ORDER_STATUSES = ['Processing', 'Completed', 'Cancelled'] as const
-export const ORDER_TYPES = ['Deliver', 'Walk-in'] as const
-
-export type OrderStatusLabel = (typeof ORDER_STATUSES)[number]
-export type OrderTypeLabel = (typeof ORDER_TYPES)[number]
-
-export interface OrderStatus {
-  id: string
-  status: OrderStatusLabel
-  createdBy: string
-  createdAt: string
-  updatedBy: string | null
-  updatedAt: string | null
-  deletedBy: string | null
-  deletedAt: string | null
-  isActive: boolean
-}
-
-export interface OrderType {
-  id: string
-  type: OrderTypeLabel
-  createdBy: string
-  createdAt: string
-  updatedBy: string | null
-  updatedAt: string | null
-  deletedBy: string | null
-  deletedAt: string | null
-  isActive: boolean
-}
-
-export interface DeliveryDriver {
-  id: string
-  firstName: string
-  lastName: string
-  createdBy: string
-  createdAt: string
-  updatedBy: string | null
-  updatedAt: string | null
-  deletedBy: string | null
-  deletedAt: string | null
-  isActive: boolean
-}
-
 export interface Order {
-  id: string
-  productId: string
-  orderTypeId: string
-  orderStatusId: string
-  deliveryDriverId: string | null
+  id: number
+  productName: string
+  orderType: string
+  orderStatus: string
+  driverName: string
   quantity: number
   customerName: string
-  pickupAddress: string
-  deliveryAddress: string
-  bundleCode: string | null
-  createdBy: string
-  createdAt: string
-  updatedBy: string | null
-  updatedAt: string | null
-  deletedBy: string | null
-  deletedAt: string | null
-  isActive: boolean
+  pickUpAddress: string | null
+  deliveryAddress: string | null
   amount: number
+  bundleCode: string | null
+  created_At: string
 }
 
-export interface OrderStatusFilter {
-  label: 'All' | OrderStatusLabel
-  count: number
+export interface OrderGroup {
+  orders: Order[]
+  total: number
+}
+
+export interface InsertOrderPayloadItem {
+  productId: number
+  orderTypeId: number
+  deliveryRiderId: number
+  quantity: number
+  customerName: string
+  pickUpAddress: string
+  deliveryAddress: string
 }
 
 export type OrdersSortBy = 'createdAt' | 'customerName' | 'quantity' | 'amount'
@@ -73,4 +34,9 @@ export interface OrderSortOption {
   label: string
   value: OrdersSortBy
   order: 'asc' | 'desc'
+}
+
+export interface OrderLineForm {
+  productId: string
+  quantity: string
 }

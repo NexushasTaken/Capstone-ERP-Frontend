@@ -21,4 +21,9 @@ export const buttonNav = [
         icon: PackageOpen,
         link: '/dashboard/product'
     },
+    {
+        name: 'Category',
+        icon: PackageOpen,
+        link: '/dashboard/category'
+    },
 ]
