@@ -12,9 +12,11 @@ import {
   saleStatusDotClass,
 } from '@/app/utils/helpers/saleHelpers'
 import { formatOrderId } from '@/app/utils/helpers/orderHelpers'
-import { mockSales } from '@/app/utils/mock/saleMockData'
 import { exportToCSV } from '@/app/utils/exportToCsv'
 import { useState } from 'react'
+import type { Sale } from '@/app/types/sale'
+
+const sales: Sale[] = []
 
 const tableColumns = [
   'Sale ID',
@@ -31,7 +33,7 @@ const tableColumns = [
 export default function SalesForm() {
   const [search, setSearch] = useState('')
 
-  const filteredSales = mockSales.filter((sale) => {
+  const filteredSales = sales.filter((sale) => {
     const searchValue = search.toLowerCase()
     const productName = getSaleProductName(sale)
     const customerName = getSaleCustomerName(sale)
@@ -53,7 +55,7 @@ export default function SalesForm() {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-medium tracking-tight text-[#121514]">Sales</h1>
           <span className="rounded-md border border-[#DFE2E0] px-3 py-1 text-sm text-[#121514]">
-            {mockSales.length}
+            {sales.length}
           </span>
         </div>
 
@@ -165,7 +167,7 @@ export default function SalesForm() {
 
       <div className="mt-4 flex w-full justify-between gap-2">
         <span className="text-sm text-[#737A76]">
-          Showing {filteredSales.length} of {mockSales.length} sales
+          Showing {filteredSales.length} of {sales.length} sales
         </span>
       </div>
     </section>

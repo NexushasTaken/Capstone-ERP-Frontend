@@ -5,20 +5,34 @@ import ProfileModal from '@/app/components/modals/ProfileModal'
 import { auditLogs } from '@/app/utils/mock/auditLogMockData'
 import { buttonNav } from '@/app/utils/buttonNav'
 import { formatProfileDetails } from '@/app/utils/helpers/profileHelpers'
-import { sidebarProfile } from '@/app/utils/mock/profileMockData'
 import { Bell, LayoutDashboard, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import cproLogo from "../../../public/cproLogo.png"
-import { getLinkClasses } from '@/app/utils/helpers/sidebarHelper'
+import { getLinkClasses, profileFallback } from '@/app/utils/helpers/sidebarHelper'
+import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/app/utils/api/queryKeys'
+import { fetchCurrentUser, readStoredCurrentUser } from '@/app/utils/api/profileApi'
 
 export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const pathname = usePathname()
+  const { data: currentUser, isLoading: isLoadingCurrentUser } = useQuery({
+    queryKey: queryKeys.auth.currentUser,
+    queryFn: fetchCurrentUser,
+    initialData: readStoredCurrentUser,
+  })
 
   const dashboardActive = pathname === '/dashboard'
+  const profile = {
+    ...profileFallback,
+    firstName: currentUser?.firstName ?? profileFallback.firstName,
+    lastName: currentUser?.lastName ?? profileFallback.lastName,
+    position: currentUser?.position ?? profileFallback.position,
+    type: currentUser?.type ?? profileFallback.type,
+  }
 
   return (
     <>
@@ -67,7 +81,7 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
         </div>
       
         {/* AUDIT LOGS */}
-        <section className="flex w-full h-full flex-col overflow-hidden rounded-2xl border border-[#E1E4E2] bg-[#FAFBFA] p-3">
+        <section className="flex w-full min-h-96 flex-col overflow-hidden rounded-2xl border border-[#E1E4E2] bg-[#FAFBFA] p-3">
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-sm font-medium text-[#0c0d0d]">Audit logs</span>
@@ -98,20 +112,22 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
         </section>
 
         {/* PROFILE */}
-        <button aria-label="Open profile" className="flex h-16 w-full gap-2 rounded-xl border-2 border-gray-200 py-1 pl-1 pr-3 shrink-0 text-left transition hover:border-[#A7AEAA] hover:bg-[#FAFBFA] cursor-pointer sm:h-20 sm:pr-4" onClick={() => setIsProfileOpen(true)} type="button">
+        <button aria-label="Open profile" className="flex h-16 w-full gap-2 rounded-2xl border-2 border-gray-200 py-1 pl-1 pr-3 shrink-0 text-left transition hover:border-[#A7AEAA] hover:bg-[#FAFBFA] cursor-pointer sm:h-20 sm:pr-4" onClick={() => setIsProfileOpen(true)} type="button">
           <span className="relative block h-full w-16 shrink-0 overflow-hidden rounded-xl bg-[#F2F0F0] sm:w-20">
             <Image
-              alt="Juan Dela Cruz profile"
+              alt="Profile"
               className="object-cover"
               fill
               sizes="(min-width: 640px) 80px, 64px"
-              src={sidebarProfile.avatarSrc}
+              src={profile.avatarSrc}
             />
           </span>
 
           <div className="flex flex-col w-full h-full justify-center">
-            <span className="text-[#0c0d0d] font-medium text-base sm:text-lg">{sidebarProfile.firstName}</span>
-            <span className="text-[#ACABAA] text-sm sm:text-base">{formatProfileDetails(sidebarProfile)}</span>
+            <span className="text-[#0c0d0d] font-medium text-base sm:text-lg capitalize">
+              {isLoadingCurrentUser ? 'Loading...' : `${profile.firstName} ${profile.lastName}`}
+            </span>
+            <span className="text-[#ACABAA] text-sm sm:text-base capitalize">{formatProfileDetails(profile)}</span>
           </div>
 
           <div className="flex items-center justify-center shrink-0">
@@ -122,7 +138,7 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
     <ProfileModal
       isOpen={isProfileOpen}
       onClose={() => setIsProfileOpen(false)}
-      profile={sidebarProfile}
+      profile={profile}
     />
     </>
   )

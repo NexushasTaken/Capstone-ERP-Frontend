@@ -13,7 +13,3 @@ export interface Sale {
   isActive: boolean
 }
 
-export interface SaleStatusFilter {
-  label: SaleStatus
-  count: number
-}

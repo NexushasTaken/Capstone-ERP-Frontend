@@ -2,12 +2,14 @@ import type {
   Inventory,
   InventoryDashboardData,
   InventoryLabel,
+  InventorySortBy,
   InventoryStatus,
   MovementVelocityCategory,
   VelocityStatus,
   Warehouse,
   WarehouseCapacity,
 } from '@/app/types/inventory'
+import { WarehouseListItem } from '@/app/types/warehouseCapacity'
 
 export function formatInventoryId(inventoryId: string) {
   return `INV-${inventoryId}`
@@ -131,4 +133,19 @@ export function buildInventoryDashboardData(
 export function formatDateForApi(isoDateString: string): string {
   const date = new Date(isoDateString)
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+export const inventoryColumns = ['Inventory ID', 'Name', 'Quantity', 'Reorder point', 'Warehouse', 'Status']
+
+export const inventorySortOptions = [
+  { label: 'Latest added', value: 'latest' as InventorySortBy, order: 'desc' as const },
+  { label: 'Name (A to Z)', value: 'name' as InventorySortBy, order: 'asc' as const },
+  { label: 'Name (Z to A)', value: 'name' as InventorySortBy, order: 'desc' as const },
+  { label: 'Quantity (High to Low)', value: 'quantity' as InventorySortBy, order: 'desc' as const },
+  { label: 'Quantity (Low to High)', value: 'quantity' as InventorySortBy, order: 'asc' as const },
+  { label: 'Reorder point', value: 'reorderPoint' as InventorySortBy, order: 'desc' as const },
+]
+
+export function isSelectableWarehouse(warehouse: WarehouseListItem) {
+  return warehouse.name.toLowerCase() !== 'all warehouse record'
 }

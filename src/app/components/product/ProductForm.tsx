@@ -8,8 +8,9 @@ import { useEffect, useState } from 'react'
 import SeeMoreModal from '@/app/components/modals/SeeMoreModal'
 import CloseButton from '@/app/components/CloseButton'
 import { PaginationDemo } from '@/app/components/Pagination'
+import SortPopover from '@/app/components/SortPopover'
 import { formatPeso } from '@/app/utils/helpers/saleHelpers'
-import { formatProductId, formatDate, PRODUCT_LOAD_PAGE_SIZE, categoryPresentByFilter, ITEMS_PER_PAGE, tableColumns } from '@/app/utils/helpers/productHelper'
+import { formatProductId, formatDate, PRODUCT_LOAD_PAGE_SIZE, categoryPresentByFilter, ITEMS_PER_PAGE, tableColumns, productSortOptions, type ProductSortBy } from '@/app/utils/helpers/productHelper'
 import type { InsertProductPayload, ProductCategoryFilter, ProductListItem } from '@/app/types/product'
 import { Button } from '@/components/ui/button'
 import AppModal from '@/app/components/modals/AppModal'
@@ -33,6 +34,8 @@ export default function ProductForm() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedFilter, setSelectedFilter] = useState<ProductCategoryFilter>('Categorized')
   const [currentPage, setCurrentPage] = useState(1)
+  const [sortBy, setSortBy] = useState<ProductSortBy>('createdAt')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
   const [form, setForm] = useState({
     name: '',
@@ -205,14 +208,22 @@ export default function ProductForm() {
   }, [search])
 
   const displayedProducts = [...products].sort((a, b) => {
-    const dateA = new Date(a.created_At).getTime()
-    const dateB = new Date(b.created_At).getTime()
-
-    if (Number.isFinite(dateA) && Number.isFinite(dateB) && dateA !== dateB) {
-      return dateB - dateA
+    switch (sortBy) {
+      case 'id':
+        return sortOrder === 'asc' ? a.id - b.id : b.id - a.id
+      case 'name':
+        return sortOrder === 'asc'
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name)
+      case 'price':
+        return sortOrder === 'asc' ? a.price - b.price : b.price - a.price
+      case 'createdAt':
+        return sortOrder === 'asc'
+          ? Date.parse(a.created_At) - Date.parse(b.created_At)
+          : Date.parse(b.created_At) - Date.parse(a.created_At)
+      default:
+        return 0
     }
-
-    return b.id - a.id
   })
 
   const filteredPageCount = Math.max(1, Math.ceil(displayedProducts.length / ITEMS_PER_PAGE))
@@ -380,6 +391,16 @@ export default function ProductForm() {
             <Plus className="h-4 w-4" />
             Add product
           </Button>
+          <SortPopover
+            value={sortBy}
+            order={sortOrder}
+            options={productSortOptions}
+            onChange={(value, order) => {
+              setSortBy(value)
+              setSortOrder(order)
+              setCurrentPage(1)
+            }}
+          />
         </div>
       </div>
 

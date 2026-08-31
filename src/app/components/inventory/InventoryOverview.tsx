@@ -15,7 +15,7 @@ import Loading from '@/app/components/loaders/Loading'
 import { PaginationDemo } from '@/app/components/Pagination'
 import { queryKeys } from '@/app/utils/api/queryKeys'
 
-const attentionItemsPerPage = 5
+const attentionItemsPerPage = 7
 
 export default function InventoryOverview() {
   const [attentionPage, setAttentionPage] = useState(1)
@@ -52,8 +52,8 @@ export default function InventoryOverview() {
   )
 
   return (
-    <div className="flex h-full w-full xl:w-3/5 overflow-y-auto flex-col rounded-lg bg-[#EBF3ED] p-5 scrollbar-none">
-      <div className="flex items-center justify-between">
+    <div className="flex h-full w-full xl:w-3/5 overflow-y-auto flex-col rounded-lg bg-[#EBF3ED] p-4 scrollbar-none">
+      <div className="flex flex-wrap gap-4 lg:gap-0 items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-[#121514]">Inventory Overview</h2>
           <p className="mt-1 text-sm text-[#68716C]">Current inventory status</p>

@@ -8,30 +8,29 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import CloseButton from '@/app/components/CloseButton'
 import AppModal from '@/app/components/modals/AppModal'
 import { PaginationDemo } from '@/app/components/Pagination'
+import SortPopover from '@/app/components/SortPopover'
 import StatusAction from '@/app/components/StatusAction'
 import { Button } from '@/components/ui/button'
 import type { CategoryListItem, InsertCategoryPayload } from '@/app/types/category'
 import { deleteCategory, fetchCategories, insertCategory, updateCategory } from '@/app/utils/api/categoryApi'
 import {
+  categorySortOptions,
+  type CategorySortBy,
   formatCategoryDate,
   formatCategoryId,
+  ITEMS_PER_PAGE,
+  tableColumns,
 } from '@/app/utils/helpers/categoryHelper'
 import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
 import Loading from '@/app/components/loaders/Loading'
 import { queryKeys } from '@/app/utils/api/queryKeys'
 import { invalidateCategories } from '@/app/utils/api/queryInvalidation'
 
-const tableColumns = [
-  'Id',
-  'Type',
-  'Created At',
-  'Action',
-]
-const ITEMS_PER_PAGE = 10
-
 export default function CategoryForm() {
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [sortBy, setSortBy] = useState<CategorySortBy>('createdAt')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -117,13 +116,30 @@ export default function CategoryForm() {
 
   const filteredCategories = useMemo(() => {
     const searchValue = search.trim().toLowerCase()
-    if (!searchValue) return categories
+    const matchedCategories = searchValue
+      ? categories.filter((category) =>
+          category.type.toLowerCase().includes(searchValue) ||
+          String(category.id).includes(searchValue)
+        )
+      : categories
 
-    return categories.filter((category) =>
-      category.type.toLowerCase().includes(searchValue) ||
-      String(category.id).includes(searchValue)
-    )
-  }, [categories, search])
+    return [...matchedCategories].sort((a, b) => {
+      switch (sortBy) {
+        case 'id':
+          return sortOrder === 'asc' ? a.id - b.id : b.id - a.id
+        case 'name':
+          return sortOrder === 'asc'
+            ? a.type.localeCompare(b.type)
+            : b.type.localeCompare(a.type)
+        case 'createdAt':
+          return sortOrder === 'asc'
+            ? Date.parse(a.created_At) - Date.parse(b.created_At)
+            : Date.parse(b.created_At) - Date.parse(a.created_At)
+        default:
+          return 0
+      }
+    })
+  }, [categories, search, sortBy, sortOrder])
 
   const pageCount = Math.max(1, Math.ceil(filteredCategories.length / ITEMS_PER_PAGE))
   const paginatedCategories = filteredCategories.slice(
@@ -231,6 +247,16 @@ export default function CategoryForm() {
             <Plus className="h-4 w-4" />
             Add category
           </Button>
+          <SortPopover
+            value={sortBy}
+            order={sortOrder}
+            options={categorySortOptions}
+            onChange={(value, order) => {
+              setSortBy(value)
+              setSortOrder(order)
+              setCurrentPage(1)
+            }}
+          />
         </div>
       </div>
 

@@ -1,7 +1,6 @@
 import { ProductCategoryFilter } from '@/app/types/product'
-import { mockProducts } from '@/app/utils/mock/productMockData'
 
-export type ProductSortBy = 'name' | 'price' | 'createdAt'
+export type ProductSortBy = 'id' | 'name' | 'price' | 'createdAt'
 
 export interface ProductSortOption {
   label: string
@@ -9,19 +8,13 @@ export interface ProductSortOption {
   order: 'asc' | 'desc'
 }
 
-export const productFilters = [
-  { label: 'All', count: mockProducts.length },
-  { label: 'Active', count: mockProducts.filter((product) => product.isActive).length },
-  { label: 'Inactive', count: mockProducts.filter((product) => !product.isActive).length },
-] as const
-
 export const productSortOptions: ProductSortOption[] = [
-  { label: 'Newest first', value: 'createdAt', order: 'desc' },
-  { label: 'Oldest first', value: 'createdAt', order: 'asc' },
-  { label: 'Name (A to Z)', value: 'name', order: 'asc' },
-  { label: 'Name (Z to A)', value: 'name', order: 'desc' },
-  { label: 'Price (High to low)', value: 'price', order: 'desc' },
-  { label: 'Price (Low to high)', value: 'price', order: 'asc' },
+  { label: 'Latest added', value: 'createdAt', order: 'desc' },
+  { label: 'Id', value: 'id', order: 'asc' },
+  { label: 'Product Name (A to Z)', value: 'name', order: 'asc' },
+  { label: 'Product Name (Z to A)', value: 'name', order: 'desc' },
+  { label: 'Price Low', value: 'price', order: 'asc' },
+  { label: 'Price High', value: 'price', order: 'desc' },
 ]
 
 export function formatProductId(productId: string | number) {

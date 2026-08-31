@@ -13,6 +13,9 @@ import {
   getInventoryStatusStyleFromLabel,
   formatDateForApi,
   formatPeso,
+  isSelectableWarehouse,
+  inventorySortOptions,
+  inventoryColumns,
 } from '@/app/utils/helpers/inventoryHelpers'
 import { exportToCSV } from '@/app/utils/exportToCsv'
 import type {
@@ -20,7 +23,6 @@ import type {
   InventorySortBy,
   InventoryFilter,
   InventoryStatusFilter,
-  PredictedStockout,
   MovementVelocityItem,
   WarehouseCapacity,
 } from '@/app/types/inventory'
@@ -51,21 +53,6 @@ import { queryKeys } from '@/app/utils/api/queryKeys'
 import { invalidateInventories } from '@/app/utils/api/queryInvalidation'
 import type { InsertInventoryPayload } from '@/app/utils/types/inventory'
 
-const inventoryColumns = ['Inventory ID', 'Name', 'Quantity', 'Reorder point', 'Warehouse', 'Status']
-
-const inventorySortOptions = [
-  { label: 'Latest added', value: 'latest' as InventorySortBy, order: 'desc' as const },
-  { label: 'Name (A → Z)', value: 'name' as InventorySortBy, order: 'asc' as const },
-  { label: 'Name (Z → A)', value: 'name' as InventorySortBy, order: 'desc' as const },
-  { label: 'Quantity (High → Low)', value: 'quantity' as InventorySortBy, order: 'desc' as const },
-  { label: 'Quantity (Low → High)', value: 'quantity' as InventorySortBy, order: 'asc' as const },
-  { label: 'Reorder point', value: 'reorderPoint' as InventorySortBy, order: 'desc' as const },
-]
-
-function isSelectableWarehouse(warehouse: WarehouseListItem) {
-  return warehouse.name.toLowerCase() !== 'all warehouse record'
-}
-
 export default function InventoryForm() {
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
   const [sortBy, setSortBy] = useState<InventorySortBy>('latest')
@@ -74,9 +61,8 @@ export default function InventoryForm() {
   const [selectedFilter, setSelectedFilter] = useState<InventoryFilter>('All')
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [stockoutCurrentPage, setStockoutCurrentPage] = useState(1)
   const itemsPerPage = 10
-  const stockoutItemsPerPage = 10
+  
 
   const selectedTransactions: never[] = []
   const selectedDamagedRecords: never[] = []
@@ -332,16 +318,6 @@ export default function InventoryForm() {
 
   const forecastWarningCount = criticalInventories.length
 
-  const predictedStockouts: PredictedStockout[] = criticalInventories.map((item) => ({
-    inventoryId: String(item.id),
-    product: item.name,
-    warehouse: item.warehouseName,
-    availableUnits: item.quantity,
-    reorderPoint: item.reorderPoint,
-    estimatedStockoutDate: 'Within 7 days',
-    risk: 'critical',
-  }))
-
   const movementVelocity: MovementVelocityItem[] = []
 
   const warehouseCapacity: WarehouseCapacity = {
@@ -399,12 +375,6 @@ export default function InventoryForm() {
     currentPage * itemsPerPage
   )
 
-  const stockoutTotalPages = Math.ceil(predictedStockouts.length / stockoutItemsPerPage)
-  const paginatedStockouts = predictedStockouts.slice(
-    (stockoutCurrentPage - 1) * stockoutItemsPerPage,
-    stockoutCurrentPage * stockoutItemsPerPage
-  )
-
   function handleProductSearch(query: string) {
     setProductSearch(query)
   }
@@ -419,69 +389,7 @@ export default function InventoryForm() {
           <p className="mt-2 text-sm text-[#68716C]">Forecast inventory health and act on upcoming stockouts.</p>
         </header>
 
-        <section className="grid gap-4 xl:grid-cols-2 min-w-0 columns-1">
-          {/* PREDICTED STOCKOUTS */}
-          <article className="min-w-0 rounded-2xl border border-[#DCE4DE] bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-[#E7ECE8] p-5">
-              <div>
-                <h2 className="font-semibold text-[#0c0d0d]">Predicted stockouts</h2>
-                <p className="mt-1 text-xs lg:text-sm text-[#68716C]">Products marked Critical and likely to run out soon</p>
-              </div>
-              <span className="rounded-lg bg-[#FBE7E7] px-2.5 py-1 text-xs font-semibold text-[#B42318]">{forecastWarningCount} risks</span>
-            </div>
-            <div className="max-h-85 overflow-auto">
-              <table className="w-full min-w-162.5 text-left text-sm">
-                <thead className="sticky top-0 z-10 bg-[#F7F9F7] text-xs uppercase tracking-wide text-[#68716C]">
-                  <tr>
-                    <th className="px-5 py-3 font-medium">Product</th>
-                    <th className="px-4 py-3 font-medium">Available</th>
-                    <th className="px-4 py-3 font-medium">Reorder point</th>
-                    <th className="px-4 py-3 font-medium">Est. stockout</th>
-                    <th className="px-5 py-3 text-right font-medium">Risk</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E7ECE8]">
-                  {paginatedStockouts.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="px-5 py-6 text-center text-sm text-[#68716C]">
-                        No predicted stockouts.
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedStockouts.map((item) => {
-                      return (
-                        <tr className="text-[#0c0d0d]" key={item.inventoryId}>
-                          <td className="px-5 py-4">
-                            <p className="font-medium capitalize">{item.product}</p>
-                            <p className="mt-0.5 text-xs text-[#68716C] capitalize">{item.inventoryId} · {item.warehouse}</p>
-                          </td>
-                          <td className="px-4 py-4">{formatNumber(item.availableUnits)}</td>
-                          <td className="px-4 py-4">{formatNumber(item.reorderPoint)}</td>
-                          <td className="px-4 py-4 text-[#68716C]">{item.estimatedStockoutDate}</td>
-                        </tr>
-                      )
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex flex-col items-center justify-between gap-4 border-t border-[#E7ECE8] p-4 lg:flex-row lg:gap-0">
-              <span className="text-sm text-[#737A76]">
-                Showing {paginatedStockouts.length} of {predictedStockouts.length} predicted stockouts
-              </span>
-
-              <div className="flex">
-                <PaginationDemo
-                  currentPage={stockoutCurrentPage}
-                  totalPages={stockoutTotalPages}
-                  onPageChange={setStockoutCurrentPage}
-                />
-              </div>
-            </div>
-          </article>
-
-          <div className="flex flex-col justify-between gap-4">
+        <section className="grid xl:grid-cols-2 gap-4 min-w-0 columns-1">
             <article className="flex flex-col rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm h-full">
               <div className="flex items-start justify-between">
                 <p className="text-sm text-[#68716C]">Forecast risks</p>
@@ -492,7 +400,6 @@ export default function InventoryForm() {
             </article>
 
             <MovementVelocity items={movementVelocity} />
-          </div>
         </section>
 
         <section id="RawMaterials" className="relative flex w-full scroll-mt-6 flex-col rounded-2xl p-4 shadow-sm lg:p-5 border border-[#DCE4DE]">
@@ -549,7 +456,7 @@ export default function InventoryForm() {
               >
                 Export to CSV
               </button>
-
+              
               {inventoryStatusFilters.map((filter) => (
                 <button
                   key={filter.label}
@@ -579,14 +486,15 @@ export default function InventoryForm() {
                   setCurrentPage(1)
                 }}
               />
+
               <Button
-              className="rounded-xl cursor-pointer px-3 py-2 text-sm"
-              onClick={() => setIsAddModalOpen(true)}
-              type="button"
-            >
-              <Plus className="h-4 w-4" />
-              Add inventory
-            </Button>
+                className="rounded-xl cursor-pointer px-3 py-2 text-sm"
+                onClick={() => setIsAddModalOpen(true)}
+                type="button"
+              >
+                <Plus className="h-4 w-4" />
+                Add inventory
+              </Button>
             </div>
           </div>
 
