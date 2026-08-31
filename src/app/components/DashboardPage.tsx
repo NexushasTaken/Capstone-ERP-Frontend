@@ -162,7 +162,7 @@ export default function DashboardPage() {
         <div className="flex flex-col w-full h-full gap-4">
           {/* AI KUNO NAMED STEVEN */}
           <div
-            className='flex w-fit'
+            className='flex w-full'
             // onBlur={() => setIsRobotAnimationPlaying(false)}
             // onFocus={() => setIsRobotAnimationPlaying(true)}
             // onMouseEnter={() => setIsRobotAnimationPlaying(true)}
@@ -176,6 +176,12 @@ export default function DashboardPage() {
               loop
               style={{ width: 160, height: 160 }}
             />
+
+            <div className="flex w-full h-full rounded-lg bg-[#EBF3ED] py-4 px-6">
+              <div className='rounded-lg flex w-full h-full bg-white'>
+                  
+              </div>
+            </div>
           </div>
 
           {/* PREDICTED STOCKOUTS */}
