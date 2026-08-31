@@ -1,7 +1,6 @@
 import type {
   Inventory,
   InventoryDashboardData,
-  InventoryHealthStatus,
   InventoryLabel,
   InventoryStatus,
   MovementVelocityCategory,
@@ -10,18 +9,8 @@ import type {
   WarehouseCapacity,
 } from '@/app/types/inventory'
 
-const riskStyles: Record<InventoryHealthStatus, { label: string; className: string }> = {
-  healthy: { label: 'Healthy', className: 'bg-[#E6F3E8] text-[#31723B]' },
-  attention: { label: 'Attention', className: 'bg-[#FFF3D6] text-[#9A6700]' },
-  critical: { label: 'Critical', className: 'bg-[#FBE7E7] text-[#B42318]' },
-}
-
 export function formatInventoryId(inventoryId: string) {
   return `INV-${inventoryId}`
-}
-
-export function getRiskStyle(status: InventoryHealthStatus) {
-  return riskStyles[status]
 }
 
 export function getCapacityPercentage({ used, total }: WarehouseCapacity) {
@@ -110,11 +99,6 @@ export function buildInventoryDashboardData(
     : []
 
   return {
-    health: {
-      status: criticalInventories.length > 0 ? 'attention' : 'healthy',
-      score: Math.max(0, 100 - criticalInventories.length * 10),
-      summary: 'Inventory is stable, with several products needing replenishment soon.',
-    },
     forecastWarningCount: criticalInventories.length,
     warehouseCapacity: {
       warehouse: 'All warehouses',

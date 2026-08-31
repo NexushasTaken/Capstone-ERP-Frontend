@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, CheckSquare, Plus, Warehouse } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -12,7 +13,6 @@ import Loading from '@/app/components/loaders/Loading'
 import { formatNumber } from '@/app/utils/helpers/inventoryHelpers'
 import {
   canAddWarehouseCapacity,
-  createWarehouseCapacityRecord,
   emptyWarehouseCapacityForm,
   getTotalWarehouseCapacity,
   MAX_SELECTED_WAREHOUSES,
@@ -41,8 +41,10 @@ import {
   updateWarehouse,
 } from '@/app/utils/api/warehouseApi'
 import type { WarehouseListItem } from '@/app/types/warehouseCapacity'
+import type { InsertWarehousePayload } from '@/app/utils/types/warehouseCapacity'
 import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
-import { runOptimisticMutation } from '@/app/utils/helpers/optimisticMutation'
+import { queryKeys } from '@/app/utils/api/queryKeys'
+import { invalidateInventories, invalidateWarehouses } from '@/app/utils/api/queryInvalidation'
 
 function createInitialWarehouseState(
   initialCapacity: WarehouseCapacitySectionProps['initialCapacity']
@@ -87,13 +89,18 @@ export default function WarehouseCapacitySection({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoadingWarehouses, setIsLoadingWarehouses] = useState(true)
   const [selectedWarehouse, setSelectedWarehouse] = useState<WarehouseCapacityRecord | null>(null)
   const [warehouseSearch, setWarehouseSearch] = useState('')
+  const queryClient = useQueryClient()
+  const {
+    isLoading: isLoadingWarehouses,
+  } = useQuery({
+    queryKey: queryKeys.warehouses.all,
+    queryFn: () => fetchWarehouses(),
+    onSuccess: syncCapacityState,
+  })
 
-  async function reloadWarehouses() {
-    const warehouseItems = await fetchWarehouses({ force: true })
+  function syncCapacityState(warehouseItems: WarehouseListItem[]) {
     const warehouses = warehouseItems.map(toWarehouseCapacityRecord)
     const chartWarehouses = warehouses.filter((warehouse) => !isAllWarehouseRecord(warehouse))
 
@@ -111,41 +118,6 @@ export default function WarehouseCapacitySection({
       }
     })
   }
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadWarehouses() {
-      setIsLoadingWarehouses(true)
-
-      try {
-        const warehouseItems = await fetchWarehouses()
-        if (cancelled) return
-
-        const warehouses = warehouseItems.map(toWarehouseCapacityRecord)
-        const chartWarehouses = warehouses.filter((warehouse) => !isAllWarehouseRecord(warehouse))
-        const selectedWarehouseIds = chartWarehouses
-          .slice(0, MAX_SELECTED_WAREHOUSES)
-          .map((warehouse) => warehouse.id)
-
-        setCapacityState({
-          warehouses,
-          selectedWarehouseIds,
-        })
-      } catch (err) {
-        if (!cancelled) {
-          toast.error(err instanceof Error ? err.message : 'Failed to load warehouses.')
-        }
-      } finally {
-        if (!cancelled) setIsLoadingWarehouses(false)
-      }
-    }
-
-    loadWarehouses()
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   const { selectedWarehouseIds, warehouses } = capacityState
   const allWarehouseRecord = warehouses.find(isAllWarehouseRecord)
@@ -167,6 +139,107 @@ export default function WarehouseCapacitySection({
     ? toWarehouseCapacity(allWarehouseRecord)
     : getTotalWarehouseCapacity(chartWarehouses)
   const formCanSubmit = canAddWarehouseCapacity(form)
+  const addWarehouseMutation = useMutation({
+    mutationFn: (payload: InsertWarehousePayload & { optimisticId: string }) =>
+      insertWarehouse({
+        name: payload.name,
+        address: payload.address,
+        capicity: payload.capicity,
+      }),
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.warehouses.all })
+      const previousState = capacityState
+      const newWarehouse: WarehouseCapacityRecord = {
+        id: payload.optimisticId,
+        warehouseName: payload.name,
+        address: payload.address,
+        maximumCapacity: payload.capicity,
+        usedCapacity: 0,
+      }
+
+      setCapacityState((currentState) => ({
+        warehouses: [newWarehouse, ...currentState.warehouses],
+        selectedWarehouseIds:
+          currentState.selectedWarehouseIds.length < MAX_SELECTED_WAREHOUSES
+            ? [newWarehouse.id, ...currentState.selectedWarehouseIds]
+            : currentState.selectedWarehouseIds,
+      }))
+
+      return { previousState }
+    },
+    onError: (err, _payload, context) => {
+      if (context?.previousState) setCapacityState(context.previousState)
+      toast.error(err instanceof Error ? err.message : 'Failed to add warehouse.')
+    },
+    onSuccess: () => {
+      resetForm()
+      toast.success('Warehouse added successfully.')
+    },
+    onSettled: () => {
+      invalidateWarehouses(queryClient)
+      invalidateInventories(queryClient)
+    },
+  })
+  const updateWarehouseMutation = useMutation({
+    mutationFn: updateWarehouse,
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.warehouses.all })
+      const previousState = capacityState
+
+      setCapacityState((currentState) => ({
+        ...currentState,
+        warehouses: currentState.warehouses.map((warehouse) =>
+          warehouse.id === String(payload.id)
+            ? {
+                ...warehouse,
+                warehouseName: payload.name,
+                address: payload.address,
+                maximumCapacity: payload.capicity,
+              }
+            : warehouse
+        ),
+      }))
+
+      return { previousState }
+    },
+    onError: (err, _payload, context) => {
+      if (context?.previousState) setCapacityState(context.previousState)
+      toast.error(err instanceof Error ? err.message : 'Failed to update warehouse.')
+    },
+    onSuccess: () => toast.success('Warehouse updated successfully.'),
+    onSettled: () => {
+      invalidateWarehouses(queryClient)
+      invalidateInventories(queryClient)
+    },
+  })
+  const deleteWarehouseMutation = useMutation({
+    mutationFn: deleteWarehouse,
+    onMutate: async (warehouseId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.warehouses.all })
+      const previousState = capacityState
+      const selectedWarehouseId = String(warehouseId)
+
+      setCapacityState((currentState) => ({
+        warehouses: currentState.warehouses.filter((warehouse) => warehouse.id !== selectedWarehouseId),
+        selectedWarehouseIds: currentState.selectedWarehouseIds.filter((id) => id !== selectedWarehouseId),
+      }))
+
+      return { previousState }
+    },
+    onError: (err, _warehouseId, context) => {
+      if (context?.previousState) setCapacityState(context.previousState)
+      toast.error(err instanceof Error ? err.message : 'Failed to delete warehouse.')
+    },
+    onSuccess: () => toast.success('Warehouse deleted successfully.'),
+    onSettled: () => {
+      invalidateWarehouses(queryClient)
+      invalidateInventories(queryClient)
+    },
+  })
+  const isSubmitting =
+    addWarehouseMutation.isLoading ||
+    updateWarehouseMutation.isLoading ||
+    deleteWarehouseMutation.isLoading
 
   function updateFormField(
     field: keyof WarehouseCapacityFormState,
@@ -186,37 +259,15 @@ export default function WarehouseCapacitySection({
   async function handleAddWarehouse() {
     if (!formCanSubmit) return
 
-    const previousState = capacityState
-    const newWarehouse = {
-      ...createWarehouseCapacityRecord(form),
-      id: String(-Date.now()),
-    }
     const payload = {
-      name: newWarehouse.warehouseName,
-      address: newWarehouse.address,
-      capicity: newWarehouse.maximumCapacity,
+      name: form.warehouseName.trim(),
+      address: form.address.trim(),
+      capicity: Number(form.maximumCapacity),
     }
 
-    setIsSubmitting(true)
     setIsAddModalOpen(false)
 
-    await runOptimisticMutation({
-      optimisticUpdate: () =>
-        setCapacityState((currentState) => ({
-          warehouses: [newWarehouse, ...currentState.warehouses],
-          selectedWarehouseIds:
-            currentState.selectedWarehouseIds.length < MAX_SELECTED_WAREHOUSES
-              ? [newWarehouse.id, ...currentState.selectedWarehouseIds]
-              : currentState.selectedWarehouseIds,
-        })),
-      rollback: () => setCapacityState(previousState),
-      mutation: () => insertWarehouse(payload),
-      reconcile: reloadWarehouses,
-      successMessage: 'Warehouse added successfully.',
-      errorMessage: 'Failed to add warehouse.',
-      onSuccess: resetForm,
-      onSettled: () => setIsSubmitting(false),
-    })
+    addWarehouseMutation.mutate({ ...payload, optimisticId: String(-Date.now()) })
   }
 
   async function handleUpdateWarehouse() {
@@ -225,39 +276,17 @@ export default function WarehouseCapacitySection({
     const warehouseId = Number(selectedWarehouse.id)
     if (!Number.isFinite(warehouseId)) return
 
-    const previousState = capacityState
-    const updatedWarehouse: WarehouseCapacityRecord = {
-      ...selectedWarehouse,
-      warehouseName: form.warehouseName.trim(),
-      address: form.address.trim(),
-      maximumCapacity: Number(form.maximumCapacity),
-    }
     const payload = {
       id: warehouseId,
-      name: updatedWarehouse.warehouseName,
-      address: updatedWarehouse.address,
-      capicity: updatedWarehouse.maximumCapacity,
+      name: form.warehouseName.trim(),
+      address: form.address.trim(),
+      capicity: Number(form.maximumCapacity),
     }
 
-    setIsSubmitting(true)
     setIsEditModalOpen(false)
     resetForm()
 
-    await runOptimisticMutation({
-      optimisticUpdate: () =>
-        setCapacityState((currentState) => ({
-          ...currentState,
-          warehouses: currentState.warehouses.map((warehouse) =>
-            warehouse.id === updatedWarehouse.id ? updatedWarehouse : warehouse
-          ),
-        })),
-      rollback: () => setCapacityState(previousState),
-      mutation: () => updateWarehouse(payload),
-      reconcile: reloadWarehouses,
-      successMessage: 'Warehouse updated successfully.',
-      errorMessage: 'Failed to update warehouse.',
-      onSettled: () => setIsSubmitting(false),
-    })
+    updateWarehouseMutation.mutate(payload)
   }
 
   async function handleDeleteWarehouse() {
@@ -266,26 +295,10 @@ export default function WarehouseCapacitySection({
     const warehouseId = Number(selectedWarehouse.id)
     if (!Number.isFinite(warehouseId)) return
 
-    const previousState = capacityState
-    const selectedWarehouseId = selectedWarehouse.id
-
-    setIsSubmitting(true)
     setIsDeleteModalOpen(false)
     resetForm()
 
-    await runOptimisticMutation({
-      optimisticUpdate: () =>
-        setCapacityState((currentState) => ({
-          warehouses: currentState.warehouses.filter((warehouse) => warehouse.id !== selectedWarehouseId),
-          selectedWarehouseIds: currentState.selectedWarehouseIds.filter((id) => id !== selectedWarehouseId),
-        })),
-      rollback: () => setCapacityState(previousState),
-      mutation: () => deleteWarehouse(warehouseId),
-      reconcile: reloadWarehouses,
-      successMessage: 'Warehouse deleted successfully.',
-      errorMessage: 'Failed to delete warehouse.',
-      onSettled: () => setIsSubmitting(false),
-    })
+    deleteWarehouseMutation.mutate(warehouseId)
   }
 
   function openEditModal(warehouse: WarehouseCapacityRecord) {

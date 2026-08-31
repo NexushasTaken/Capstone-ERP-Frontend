@@ -4,6 +4,7 @@ export interface FetchProductsParams {
   page?: number
   pageSize?: number
   name?: string
+  categoryPresent?: 0 | 1
 }
 
 export interface ProductListContent {

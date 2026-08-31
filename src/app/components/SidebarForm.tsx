@@ -12,29 +12,26 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import cproLogo from "../../../public/cproLogo.png"
+import { getLinkClasses } from '@/app/utils/helpers/sidebarHelper'
 
 export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const pathname = usePathname()
 
-  const getLinkClasses = (isActive: boolean) =>
-    isActive
-      ? 'bg-[#0c0d0d] text-[#F2F0F0] hover:bg-[#1B1C1C] duration-300 transition-all'
-      : 'bg-[#FFFFFF] border-2 border-[#F0F1F1] text-[#0c0d0d] hover:bg-[#F0F1F1] hover:border-none'
-
   const dashboardActive = pathname === '/dashboard'
 
   return (
     <>
-    <aside className={`flex h-full scrollbar-none shrink-0 flex-col gap-3 bg-white p-3 overflow-y-auto sm:gap-4${
+    <aside className={`h-dvh scrollbar-none shrink-0 flex-col gap-3 bg-white px-3 xl:pr-0 py-3 overflow-y-auto sm:gap-4 ${
       isOpen
-        ? 'fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.5rem))] shadow-xl sm:w-[min(20rem,calc(100vw-2rem))] xl:static xl:w-1/5 xl:shadow-none'
-        : 'hidden xl:flex xl:w-1/5'
+        ? 'fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.5rem))] shadow-xl sm:w-[min(20rem,calc(100vw-2rem))] xl:static xl:z-auto xl:w-1/5 xl:shadow-none'
+        : 'hidden xl:flex w-auto xl:w-1/5'
     }`}>
+        {/* BUTTON NAV - DASHBOARD */}
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center text-2xl text-[#0c0d0d] font-semibold sm:text-3xl md:text-4xl">
             <div className='relative w-10 h-10 lg:w-20 lg:h-20 rounded-full'>
-              <Image src={cproLogo} alt="Cpro Logo" className='object-contain' fill priority/>
+              <Image src={cproLogo} alt="Cpro Logo" className='object-contain' fill priority sizes="(max-width: 1024px) 40px, 80px"/>
             </div>
             CPro Home
           </span>
@@ -43,6 +40,7 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
           </button>
         </div>
 
+        {/* BUTTON NAV */}
         <div className="flex flex-1 flex-col gap-2 w-full">
 
           <Link href="/dashboard" className={`flex items-center justify-center gap-3 rounded-2xl py-2 cursor-pointer group sm:gap-4 h-32
@@ -67,8 +65,9 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
             })}
           </div>
         </div>
-
-        <section className="flex w-full h-full max-h-56 flex-col overflow-hidden rounded-2xl border border-[#E1E4E2] bg-[#FAFBFA] p-3 shrink-0 sm:max-h-64 md:max-h-full md:shrink">
+      
+        {/* AUDIT LOGS */}
+        <section className="flex w-full h-full flex-col overflow-hidden rounded-2xl border border-[#E1E4E2] bg-[#FAFBFA] p-3">
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-sm font-medium text-[#0c0d0d]">Audit logs</span>

@@ -9,9 +9,11 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { ArrowUpDown, Calendar, MoveUpRight, Plus, Settings2 } from 'lucide-react'
+import { Lottie } from 'lottie-react'
+import { ArrowUpDown, Calendar, MoveUpRight, Settings2 } from 'lucide-react'
 import { Check } from 'lucide-react'
 import { useState } from 'react'
+import animatedRobot from "@/app/assets/json/animatedRobot.json"
 
 const salesChartOptions: { label: string; value: SalesChartType }[] = [
   { label: 'Line chart', value: 'line' },
@@ -23,19 +25,19 @@ export default function DashboardPage() {
   const [salesChartType, setSalesChartType] = useState<SalesChartType>('line')
 
   return (
-    <div className="flex h-screen scrollbar-none w-full flex-col gap-4 overflow-auto p-3 md:p-4 bg-white">
+    <div className="flex h-dvh scrollbar-none w-full flex-col gap-4 overflow-auto p-3 bg-white">
 
       {/* Charts Overview */}
       <div className="flex shrink-0 flex-col gap-4 rounded-lg bg-[#EBF3ED] p-4">
-        <div className='flex items-center justify-end w-full'>
+        {/* <div className='flex items-center justify-end w-full'>
           <button className='inline-flex gap-2 items-center h-fit p-4 rounded-2xl text-base text-white bg-[#0c0d0d]'>
             <Plus className='text-white h-5 w-5' />
             Add New Order
           </button>
-        </div>
-        <div className='flex flex-col lg:flex-row w-full'>
+        </div> */}
+        <div className='flex flex-col xl:flex-row w-full'>
           {/* Fulfillment Performance */}
-          <div className="flex min-h-76 w-full flex-col gap-4 p-4 md:w-1/2">
+          <div className="flex min-h-76 w-full flex-col gap-4 p-4 xl:w-1/2">
             <div className="flex w-full gap-4 justify-between items-center">
               <span className="text-[#0c0d0d] text-lg font-medium md:text-2xl">
                 Fulfillment Performance
@@ -51,7 +53,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Sales Overview */}
-          <div className="flex min-h-76 w-full flex-col gap-4 p-4 md:w-1/2">
+          <div className="flex min-h-76 w-full flex-col gap-4 p-4 xl:w-1/2">
             <div className="flex w-full gap-4 justify-between items-center">
               <span className="text-[#0c0d0d] text-lg font-medium md:text-2xl">
                 Sales Overview
@@ -112,11 +114,20 @@ export default function DashboardPage() {
       </div>
 
       {/* Orders */}
-      <div className="flex flex-col lg:flex-row gap-4 w-full h-[54%]">
-        <div className="flex bg-[#EBF3ED] w-full rounded-lg">
+      <div className="flex flex-col xl:flex-row gap-4 w-full h-full">
+        <div className="flex bg-[#EBF3ED] w-full rounded-lg min-h-40">
           {/* PREDICTION OVERVIEW */}
         </div>
         <InventoryOverview />
+      </div>
+
+      <div className='fixed bottom-0 right-0 z-50'>
+        <Lottie
+          src={animatedRobot}
+          autoplay
+          loop
+          style={{ width: 160, height: 160 }}
+        />
       </div>
     </div>
   )

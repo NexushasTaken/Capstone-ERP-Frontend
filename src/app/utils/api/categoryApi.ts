@@ -6,9 +6,6 @@ import type {
 } from '@/app/types/category'
 import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/apiEnvelope'
 
-let categoriesCache: CategoryListItem[] | null = null
-let inFlightRequest: Promise<CategoryListItem[]> | null = null
-
 function mapCategory(item: RawCategoryListItem): CategoryListItem {
   return {
     id: item.id ?? item.Id ?? 0,
@@ -18,42 +15,23 @@ function mapCategory(item: RawCategoryListItem): CategoryListItem {
 }
 
 // GET
-export async function fetchCategories(options?: { force?: boolean }): Promise<CategoryListItem[]> {
-  if (categoriesCache && !options?.force) {
-    return categoriesCache
+export async function fetchCategories(): Promise<CategoryListItem[]> {
+  const response = await fetch(`/api/Category/all`, {
+    method: 'GET',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch categories: ${response.status}`)
   }
 
-  if (inFlightRequest) {
-    return inFlightRequest
+  const data: ApiEnvelope<RawCategoryListItem[]> = await response.json()
+
+  if (!data.success) {
+    throw new Error(data.message || 'Failed to fetch categories')
   }
 
-  inFlightRequest = (async () => {
-    const response = await fetch(`/api/Category/all`, {
-      method: 'GET',
-      credentials: 'include',
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch categories: ${response.status}`)
-    }
-
-    const data: ApiEnvelope<RawCategoryListItem[]> = await response.json()
-
-    if (!data.success) {
-      throw new Error(data.message || 'Failed to fetch categories')
-    }
-
-    const categories = data.content.map(mapCategory)
-
-    categoriesCache = categories
-    return categories
-  })()
-
-  try {
-    return await inFlightRequest
-  } finally {
-    inFlightRequest = null
-  }
+  return data.content.map(mapCategory)
 }
 
 // INSERT
@@ -71,7 +49,6 @@ export async function insertCategory(payload: InsertCategoryPayload): Promise<Ap
     throw new Error(data.message || 'Failed to add category')
   }
 
-  invalidateCategoriesCache()
   return data
 }
 
@@ -90,7 +67,6 @@ export async function updateCategory(payload: UpdateCategoryPayload): Promise<Ap
     throw new Error(data.message || 'Failed to update category')
   }
 
-  invalidateCategoriesCache()
   return data
 }
 
@@ -109,10 +85,5 @@ export async function deleteCategory(id: number): Promise<ApiEnvelopeNoContent> 
     throw new Error(data.message || 'Failed to delete category')
   }
 
-  invalidateCategoriesCache()
   return data
-}
-
-export function invalidateCategoriesCache() {
-  categoriesCache = null
 }

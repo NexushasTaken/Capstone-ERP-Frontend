@@ -1,4 +1,4 @@
-import { ChartNoAxesCombined, Package, PackageOpen, Warehouse, Layers } from 'lucide-react'
+import { ChartNoAxesCombined, Package, PackageOpen, Warehouse } from 'lucide-react'
 
 export const buttonNav = [
     {
@@ -20,10 +20,5 @@ export const buttonNav = [
         name: 'Product',
         icon: PackageOpen,
         link: '/dashboard/product'
-    },
-    {
-        name: 'Category',
-        icon: Layers,
-        link: '/dashboard/category'
     },
 ]
