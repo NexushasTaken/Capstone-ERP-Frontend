@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import WarehouseCapacitySection from '@/app/components/inventory/WarehouseCapacitySection'
 import MovementVelocity from '@/app/components/inventory/MovementVelocity'
 import { deleteInventory, fetchInventories, insertInventory, updateInventory } from '@/app/utils/api/inventoryApi'
@@ -10,7 +11,6 @@ import {
   formatInventoryId,
   capitalize,
   getInventoryStatusStyleFromLabel,
-  getRiskStyle,
   formatDateForApi,
   formatPeso,
 } from '@/app/utils/helpers/inventoryHelpers'
@@ -47,7 +47,9 @@ import { fetchProducts } from '@/app/utils/api/productApi'
 import { ProductListItem } from '@/app/types/product'
 import { WarehouseListItem } from '@/app/types/warehouseCapacity'
 import { fetchWarehouses } from '@/app/utils/api/warehouseApi'
-import { runOptimisticMutation } from '@/app/utils/helpers/optimisticMutation'
+import { queryKeys } from '@/app/utils/api/queryKeys'
+import { invalidateInventories } from '@/app/utils/api/queryInvalidation'
+import type { InsertInventoryPayload } from '@/app/utils/types/inventory'
 
 const inventoryColumns = ['Inventory ID', 'Name', 'Quantity', 'Reorder point', 'Warehouse', 'Status']
 
@@ -65,10 +67,6 @@ function isSelectableWarehouse(warehouse: WarehouseListItem) {
 }
 
 export default function InventoryForm() {
-  const [inventories, setInventories] = useState<InventoryListItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [loadError, setLoadError] = useState<string | null>(null)
-
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
   const [sortBy, setSortBy] = useState<InventorySortBy>('latest')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
@@ -86,12 +84,7 @@ export default function InventoryForm() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [products, setProducts] = useState<ProductListItem[]>([])
-  const [isLoadingProducts, setIsLoadingProducts] = useState(false)
-  const [isSearchingProducts, setIsSearchingProducts] = useState(false)
-  const [warehouses, setWarehouses] = useState<WarehouseListItem[]>([])
-  const [isLoadingWarehouses, setIsLoadingWarehouses] = useState(false) 
+  const [productSearch, setProductSearch] = useState('')
 
   const [form, setForm] = useState({
     name: '',
@@ -101,6 +94,150 @@ export default function InventoryForm() {
     dateArrived: '',
     reorderPoint: '',
   })
+  const queryClient = useQueryClient()
+  const inventoriesQueryParams = { page: 1, pageSize: 100 }
+  const inventoriesQueryKey = queryKeys.inventories.all(inventoriesQueryParams)
+  const {
+    data: inventoriesResponse,
+    isLoading,
+    error: loadError,
+  } = useQuery({
+    queryKey: inventoriesQueryKey,
+    queryFn: () => fetchInventories(inventoriesQueryParams),
+  })
+  const shouldLoadOptions = isAddModalOpen || isEditModalOpen
+  const {
+    data: productResponse,
+    isLoading: isLoadingProducts,
+    isFetching: isSearchingProducts,
+  } = useQuery({
+    queryKey: queryKeys.products.all(productSearch ? { name: productSearch } : {}),
+    queryFn: () => fetchProducts(productSearch ? { name: productSearch } : {}),
+    enabled: shouldLoadOptions,
+    keepPreviousData: true,
+  })
+  const {
+    data: warehouseItems = [],
+    isLoading: isLoadingWarehouses,
+  } = useQuery({
+    queryKey: queryKeys.warehouses.all,
+    queryFn: () => fetchWarehouses(),
+    enabled: shouldLoadOptions,
+  })
+  const inventories = inventoriesResponse?.items ?? []
+  const products: ProductListItem[] = productResponse?.items ?? []
+  const warehouses: WarehouseListItem[] = warehouseItems.filter(isSelectableWarehouse)
+  const addInventoryMutation = useMutation({
+    mutationFn: (payload: InsertInventoryPayload & { optimisticId: number }) =>
+      insertInventory({
+        name: payload.name,
+        quantity: payload.quantity,
+        productId: payload.productId,
+        warehouseId: payload.warehouseId,
+        dateArrived: payload.dateArrived,
+        reorderPoint: payload.reorderPoint,
+      }),
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: ['inventories'] })
+      const previous = queryClient.getQueryData<typeof inventoriesResponse>(inventoriesQueryKey)
+      const optimisticItem: InventoryListItem = {
+        id: payload.optimisticId,
+        productId: payload.productId,
+        name: payload.name,
+        quantity: payload.quantity,
+        reorderPoint: payload.reorderPoint,
+        warehouseId: payload.warehouseId,
+        warehouseName: warehouses.find((warehouse) => warehouse.id === payload.warehouseId)?.name ?? 'Pending...',
+        status: 'pending',
+        dateArrived: payload.dateArrived,
+      }
+
+      queryClient.setQueryData<typeof inventoriesResponse>(inventoriesQueryKey, (current) => {
+        if (!current) return current
+
+        return {
+          ...current,
+          items: [optimisticItem, ...current.items],
+          rows: current.rows + 1,
+        }
+      })
+
+      return { previous }
+    },
+    onError: (err, _payload, context) => {
+      if (context?.previous) queryClient.setQueryData(inventoriesQueryKey, context.previous)
+      toast.error(err instanceof Error ? err.message : 'Failed to add inventory item.')
+    },
+    onSuccess: () => {
+      resetForm()
+      toast.success('Inventory item added successfully.')
+    },
+    onSettled: () => invalidateInventories(queryClient),
+  })
+  const updateInventoryMutation = useMutation({
+    mutationFn: updateInventory,
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: ['inventories'] })
+      const previous = queryClient.getQueryData<typeof inventoriesResponse>(inventoriesQueryKey)
+
+      queryClient.setQueryData<typeof inventoriesResponse>(inventoriesQueryKey, (current) => {
+        if (!current) return current
+
+        return {
+          ...current,
+          items: current.items.map((item) =>
+            item.id === payload.id
+              ? {
+                  ...item,
+                  productId: payload.productId,
+                  name: payload.name,
+                  warehouseId: payload.warehouseId,
+                  warehouseName: warehouses.find((warehouse) => warehouse.id === payload.warehouseId)?.name ?? item.warehouseName,
+                  reorderPoint: payload.reorderPoint,
+                }
+              : item
+          ),
+        }
+      })
+
+      return { previous }
+    },
+    onError: (err, _payload, context) => {
+      if (context?.previous) queryClient.setQueryData(inventoriesQueryKey, context.previous)
+      toast.error(err instanceof Error ? err.message : 'Failed to update inventory item.')
+    },
+    onSuccess: () => toast.success('Inventory item updated successfully.'),
+    onSettled: () => invalidateInventories(queryClient),
+  })
+  const deleteInventoryMutation = useMutation({
+    mutationFn: deleteInventory,
+    onMutate: async (inventoryId) => {
+      await queryClient.cancelQueries({ queryKey: ['inventories'] })
+      const previous = queryClient.getQueryData<typeof inventoriesResponse>(inventoriesQueryKey)
+
+      queryClient.setQueryData<typeof inventoriesResponse>(inventoriesQueryKey, (current) => {
+        if (!current) return current
+
+        return {
+          ...current,
+          items: current.items.filter((item) => item.id !== inventoryId),
+          rows: Math.max(current.rows - 1, 0),
+        }
+      })
+
+      return { previous }
+    },
+    onError: (err, _inventoryId, context) => {
+      if (context?.previous) queryClient.setQueryData(inventoriesQueryKey, context.previous)
+      toast.error(err instanceof Error ? err.message : 'Failed to delete inventory item.')
+    },
+    onSuccess: () => toast.success('Inventory item deleted successfully.'),
+    onSettled: () => invalidateInventories(queryClient),
+  })
+  const isSubmitting =
+    addInventoryMutation.isLoading ||
+    updateInventoryMutation.isLoading ||
+    deleteInventoryMutation.isLoading
 
   const formCanSubmit =
     form.name.trim() !== '' &&
@@ -133,113 +270,45 @@ export default function InventoryForm() {
   async function handleAddInventory() {
     if (!formCanSubmit) return
 
-    const previousInventories = inventories
-    const tempId = -Date.now()
-
-    const optimisticItem: InventoryListItem = {
-      id: tempId,
-      productId: Number(form.productId),
+    setIsAddModalOpen(false)
+    addInventoryMutation.mutate({
+      optimisticId: -Date.now(),
       name: form.name,
       quantity: Number(form.quantity),
-      reorderPoint: Number(form.reorderPoint),
+      productId: Number(form.productId),
       warehouseId: Number(form.warehouseId),
-      warehouseName: 'Pending…',
-      status: 'pending',
-      dateArrived: form.dateArrived,
-    }
-
-    setIsAddModalOpen(false)
-    setIsSubmitting(true)
-
-    await runOptimisticMutation({
-      optimisticUpdate: () => setInventories((prev) => [optimisticItem, ...prev]),
-      rollback: () => setInventories(previousInventories),
-      mutation: () =>
-        insertInventory({
-        name: form.name,
-        quantity: Number(form.quantity),
-        productId: Number(form.productId),
-        warehouseId: Number(form.warehouseId),
-        dateArrived: formatDateForApi(form.dateArrived),
-        reorderPoint: Number(form.reorderPoint),
-      }),
-      reconcile: async () => {
-      const { items } = await fetchInventories({ page: 1, pageSize: 100 })
-      setInventories(items)
-      },
-      successMessage: 'Inventory item added successfully.',
-      errorMessage: 'Failed to add inventory item.',
-      onSuccess: resetForm,
-      onSettled: () => setIsSubmitting(false),
+      dateArrived: formatDateForApi(form.dateArrived),
+      reorderPoint: Number(form.reorderPoint),
     })
-  }
-
-  async function reloadInventories() {
-    const { items } = await fetchInventories({ page: 1, pageSize: 100 })
-    setInventories(items)
   }
 
   async function handleUpdateInventory() {
     if (!selectedItem || !editFormCanSubmit) return
 
-    const previousInventories = inventories
     const inventoryId = selectedItem.id
     const productId = Number(form.productId)
     const warehouseId = Number(form.warehouseId)
-    const nextItem: InventoryListItem = {
-      ...selectedItem,
-      productId,
-      name: form.name.trim(),
-      warehouseId,
-      warehouseName: warehouses.find((warehouse) => warehouse.id === warehouseId)?.name ?? selectedItem.warehouseName,
-      reorderPoint: Number(form.reorderPoint),
-    }
 
-    setIsSubmitting(true)
     setIsEditModalOpen(false)
     resetForm()
 
-    await runOptimisticMutation({
-      optimisticUpdate: () =>
-        setInventories((prev) =>
-          prev.map((item) => (item.id === inventoryId ? nextItem : item))
-        ),
-      rollback: () => setInventories(previousInventories),
-      mutation: () =>
-        updateInventory({
-          id: inventoryId,
-          name: nextItem.name,
-          productId,
-          warehouseId,
-          reorderPoint: nextItem.reorderPoint,
-        }),
-      reconcile: reloadInventories,
-      successMessage: 'Inventory item updated successfully.',
-      errorMessage: 'Failed to update inventory item.',
-      onSettled: () => setIsSubmitting(false),
+    updateInventoryMutation.mutate({
+      id: inventoryId,
+      name: form.name.trim(),
+      productId,
+      warehouseId,
+      reorderPoint: Number(form.reorderPoint),
     })
   }
 
   async function handleDeleteInventory() {
     if (!selectedItem) return
 
-    const previousInventories = inventories
     const inventoryId = selectedItem.id
 
-    setIsSubmitting(true)
     setIsDeleteModalOpen(false)
     resetForm()
-
-    await runOptimisticMutation({
-      optimisticUpdate: () =>
-        setInventories((prev) => prev.filter((item) => item.id !== inventoryId)),
-      rollback: () => setInventories(previousInventories),
-      mutation: () => deleteInventory(inventoryId),
-      reconcile: reloadInventories,
-      successMessage: 'Inventory item deleted successfully.',
-      errorMessage: 'Failed to delete inventory item.',
-      onSettled: () => setIsSubmitting(false),
-    })
+    deleteInventoryMutation.mutate(inventoryId)
   }
 
   function openEditModal(item: InventoryListItem) {
@@ -259,63 +328,6 @@ export default function InventoryForm() {
     setSelectedItem(item)
     setIsDeleteModalOpen(true)
   }
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function load() {
-      try {
-        setIsLoading(true)
-        setLoadError(null)
-        const { items } = await fetchInventories({ page: 1, pageSize: 100 })
-        if (!cancelled) setInventories(items)
-      } catch (err) {
-        if (!cancelled) setLoadError(err instanceof Error ? err.message : 'Failed to load inventory')
-      } finally {
-        if (!cancelled) setIsLoading(false)
-      }
-    }
-
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!isAddModalOpen && !isEditModalOpen) return
-    let cancelled = false
-
-    async function loadOptions() {
-      setIsLoadingProducts(true)
-      setIsLoadingWarehouses(true)
-      try {
-        const [productResponse, warehouseItems] = await Promise.all([
-          fetchProducts(),
-          fetchWarehouses(),
-        ])
-        if (!cancelled) {
-          setProducts(productResponse.items)
-          setWarehouses(warehouseItems.filter(isSelectableWarehouse))
-        }
-      } catch (err) {
-        if (!cancelled) {
-          toast.error(err instanceof Error ? err.message : 'Failed to load products/warehouses.')
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoadingProducts(false)
-          setIsLoadingWarehouses(false)
-        }
-      }
-    }
-
-    loadOptions()
-    return () => {
-      cancelled = true
-    }
-  }, [isAddModalOpen, isEditModalOpen])
-
   const criticalInventories = inventories.filter((item) => item.status === 'critical')
 
   const forecastWarningCount = criticalInventories.length
@@ -393,29 +405,21 @@ export default function InventoryForm() {
     stockoutCurrentPage * stockoutItemsPerPage
   )
 
-  async function handleProductSearch(query: string) {
-    setIsSearchingProducts(true)
-    try {
-      const { items } = await fetchProducts(query ? { name: query } : {})
-      setProducts(items)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to search products.')
-    } finally {
-      setIsSearchingProducts(false)
-    }
+  function handleProductSearch(query: string) {
+    setProductSearch(query)
   }
 
   const selectedStatusStyle = selectedItem ? getInventoryStatusStyleFromLabel(selectedItem.status) : null
 
   return (
-    <main className="flex h-screen w-full p-6 bg-white">
+    <main className="flex h-dvh w-full p-3 xl:p-6 bg-white">
       <div className="flex w-full flex-col gap-5 flex-1 min-h-0 overflow-y-auto scrollbar-none">
         <header>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#0c0d0d]">Inventory</h1>
           <p className="mt-2 text-sm text-[#68716C]">Forecast inventory health and act on upcoming stockouts.</p>
         </header>
 
-        <section className="grid gap-4 lg:grid-cols-2 min-w-0 columns-1">
+        <section className="grid gap-4 xl:grid-cols-2 min-w-0 columns-1">
           {/* PREDICTED STOCKOUTS */}
           <article className="min-w-0 rounded-2xl border border-[#DCE4DE] bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-[#E7ECE8] p-5">
@@ -445,7 +449,6 @@ export default function InventoryForm() {
                     </tr>
                   ) : (
                     paginatedStockouts.map((item) => {
-                      const riskStyle = getRiskStyle(item.risk)
                       return (
                         <tr className="text-[#0c0d0d]" key={item.inventoryId}>
                           <td className="px-5 py-4">
@@ -455,9 +458,6 @@ export default function InventoryForm() {
                           <td className="px-4 py-4">{formatNumber(item.availableUnits)}</td>
                           <td className="px-4 py-4">{formatNumber(item.reorderPoint)}</td>
                           <td className="px-4 py-4 text-[#68716C]">{item.estimatedStockoutDate}</td>
-                          <td className="px-5 py-4 text-right">
-                            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${riskStyle.className}`}>{riskStyle.label}</span>
-                          </td>
                         </tr>
                       )
                     })
@@ -612,7 +612,7 @@ export default function InventoryForm() {
                 ) : loadError ? (
                   <tr>
                     <td colSpan={inventoryColumns.length + 1} className="px-3 py-4 text-center text-sm text-[#B42318]">
-                      {loadError}
+                      {loadError instanceof Error ? loadError.message : 'Failed to load inventory'}
                     </td>
                   </tr>
                 ) : paginatedInventories.length === 0 ? (
@@ -680,7 +680,7 @@ export default function InventoryForm() {
         <WarehouseCapacitySection initialCapacity={warehouseCapacity} />
       </div>
 
-      <SeeMoreModal open={isSeeMoreOpen} onClose={() => setIsSeeMoreOpen(false)} className="flex flex-col h-full lg:max-h-[70vh]">
+      <SeeMoreModal open={isSeeMoreOpen} onClose={() => setIsSeeMoreOpen(false)} className="flex flex-col h-auto lg:max-h-[70vh]">
         <div className="flex gap-2 w-full border-b border-[#E2E2E2] p-4 justify-between items-center">
           <div className="flex flex-col justify-between">
             <div className="flex items-center gap-2">
@@ -699,7 +699,7 @@ export default function InventoryForm() {
         </div>
 
         <div className="flex flex-col w-full h-full overflow-y-auto">
-          <div className="flex flex-col w-full h-fit mt-4 p-4 gap-4">
+          <div className="flex flex-col w-full h-fit p-4 gap-4">
             <div className="grid grid-cols-2 w-full gap-4">
               <div className="flex items-center px-3 w-full gap-2 h-16 rounded-lg bg-[#F0F1F1]">
                 <span className="flex shrink-0 items-center justify-center w-10 h-10 rounded-xl bg-[#1B1C1C]">
@@ -725,7 +725,7 @@ export default function InventoryForm() {
             </div>
           </div>
 
-          <div className="flex flex-col w-full h-full p-4 mt-2">
+          <div className="flex flex-col w-full h-full p-4">
             <div className="flex flex-col gap-2">
               <span className="text-xs uppercase">Inventory status</span>
               <div className="border-b border-[#E2E2E2] flex w-full h-px" />

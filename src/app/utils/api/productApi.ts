@@ -16,6 +16,7 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
   if (params.page) query.set('page', String(params.page))
   if (params.pageSize) query.set('pageSize', String(params.pageSize))
   if (params.name) query.set('name', params.name)
+  if (params.categoryPresent !== undefined) query.set('categoryPresent', String(params.categoryPresent))
 
   const response = await fetch(`/api/Product/all?${query.toString()}`, {
     method: 'GET',
@@ -98,22 +99,3 @@ export async function deleteProduct(id: number): Promise<ApiEnvelopeNoContent> {
   return data
 }
 
-// NO CATEGORY COUNT
-export async function fetchNoCategoryProductCount(): Promise<number> {
-  const response = await fetch('/api/Product/product/nocategoryCount', {
-    method: 'GET',
-    credentials: 'include',
-  })
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch uncategorized product count: ${response.status}`)
-  }
-
-  const data: ApiEnvelope<number> = await response.json()
-
-  if (!data.success) {
-    throw new Error(data.message || 'Failed to fetch uncategorized product count')
-  }
-
-  return data.content
-}

@@ -33,3 +33,5 @@ export interface UpdateProductPayload {
   price: number
   id: number
 }
+
+export type ProductCategoryFilter = 'Categorized' | 'Uncategorized'

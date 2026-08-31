@@ -1,15 +1,16 @@
 'use client'
 
 import { Search, X, Plus } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import CloseButton from '@/app/components/CloseButton'
 import AppModal from '@/app/components/modals/AppModal'
 import { PaginationDemo } from '@/app/components/Pagination'
 import StatusAction from '@/app/components/StatusAction'
 import { Button } from '@/components/ui/button'
-import type { CategoryListItem } from '@/app/types/category'
+import type { CategoryListItem, InsertCategoryPayload } from '@/app/types/category'
 import { deleteCategory, fetchCategories, insertCategory, updateCategory } from '@/app/utils/api/categoryApi'
 import {
   formatCategoryDate,
@@ -17,7 +18,8 @@ import {
 } from '@/app/utils/helpers/categoryHelper'
 import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
 import Loading from '@/app/components/loaders/Loading'
-import { runOptimisticMutation } from '@/app/utils/helpers/optimisticMutation'
+import { queryKeys } from '@/app/utils/api/queryKeys'
+import { invalidateCategories } from '@/app/utils/api/queryInvalidation'
 
 const tableColumns = [
   'Id',
@@ -28,55 +30,90 @@ const tableColumns = [
 const ITEMS_PER_PAGE = 10
 
 export default function CategoryForm() {
-  const [categories, setCategories] = useState<CategoryListItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<CategoryListItem | null>(null)
   const [form, setForm] = useState({ type: '' })
-
-  async function loadCategories(force = false, showLoading = true) {
-    if (showLoading) {
-      setIsLoading(true)
-      setError(null)
-    }
-
-    try {
-      const data = await fetchCategories({ force })
-      setCategories(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load categories')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadInitialCategories() {
-      try {
-        const data = await fetchCategories()
-        if (!cancelled) setCategories(data)
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load categories')
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false)
+  const queryClient = useQueryClient()
+  const {
+    data: categories = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: queryKeys.categories.all,
+    queryFn: () => fetchCategories(),
+  })
+  const addCategoryMutation = useMutation({
+    mutationFn: (payload: InsertCategoryPayload & { optimisticId: number }) =>
+      insertCategory({ categoryName: payload.categoryName }),
+    onMutate: async ({ categoryName, optimisticId }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.categories.all })
+      const previous = queryClient.getQueryData<CategoryListItem[]>(queryKeys.categories.all)
+      const tempCategory: CategoryListItem = {
+        id: optimisticId,
+        type: categoryName,
+        created_At: new Date().toISOString(),
       }
-    }
 
-    loadInitialCategories()
-    return () => {
-      cancelled = true
-    }
-  }, [])
+      queryClient.setQueryData<CategoryListItem[]>(queryKeys.categories.all, (current = []) => [
+        tempCategory,
+        ...current,
+      ])
+
+      return { previous }
+    },
+    onError: (err, _payload, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKeys.categories.all, context.previous)
+      toast.error(err instanceof Error ? err.message : 'Failed to add category')
+    },
+    onSuccess: () => toast.success('Category added successfully'),
+    onSettled: () => invalidateCategories(queryClient),
+  })
+  const updateCategoryMutation = useMutation({
+    mutationFn: updateCategory,
+    onMutate: async ({ id, type }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.categories.all })
+      const previous = queryClient.getQueryData<CategoryListItem[]>(queryKeys.categories.all)
+
+      queryClient.setQueryData<CategoryListItem[]>(queryKeys.categories.all, (current = []) =>
+        current.map((category) => (category.id === id ? { ...category, type } : category))
+      )
+
+      return { previous }
+    },
+    onError: (err, _payload, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKeys.categories.all, context.previous)
+      toast.error(err instanceof Error ? err.message : 'Failed to update category')
+    },
+    onSuccess: () => toast.success('Category updated successfully'),
+    onSettled: () => invalidateCategories(queryClient),
+  })
+  const deleteCategoryMutation = useMutation({
+    mutationFn: deleteCategory,
+    onMutate: async (categoryId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.categories.all })
+      const previous = queryClient.getQueryData<CategoryListItem[]>(queryKeys.categories.all)
+
+      queryClient.setQueryData<CategoryListItem[]>(queryKeys.categories.all, (current = []) =>
+        current.filter((category) => category.id !== categoryId)
+      )
+
+      return { previous }
+    },
+    onError: (err, _categoryId, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKeys.categories.all, context.previous)
+      toast.error(err instanceof Error ? err.message : 'Failed to delete category')
+    },
+    onSuccess: () => toast.success('Category deleted successfully'),
+    onSettled: () => invalidateCategories(queryClient),
+  })
+  const isSubmitting =
+    addCategoryMutation.isLoading ||
+    updateCategoryMutation.isLoading ||
+    deleteCategoryMutation.isLoading
 
   const filteredCategories = useMemo(() => {
     const searchValue = search.trim().toLowerCase()
@@ -103,72 +140,35 @@ export default function CategoryForm() {
   async function handleAddCategory() {
     if (!formCanSubmit) return
 
-    const previousCategories = categories
     const categoryName = form.type.trim()
-    const tempCategory: CategoryListItem = {
-      id: -Date.now(),
-      type: categoryName,
-      created_At: new Date().toISOString(),
-    }
 
-    setIsSubmitting(true)
     setIsAddModalOpen(false)
     resetForm()
     setCurrentPage(1)
 
-    await runOptimisticMutation({
-      optimisticUpdate: () => setCategories((prev) => [tempCategory, ...prev]),
-      rollback: () => setCategories(previousCategories),
-      mutation: () => insertCategory({ categoryName }),
-      reconcile: () => loadCategories(true, false),
-      successMessage: 'Category added successfully',
-      errorMessage: 'Failed to add category',
-      onSettled: () => setIsSubmitting(false),
-    })
+    addCategoryMutation.mutate({ categoryName, optimisticId: -Date.now() })
   }
 
   async function handleUpdateCategory() {
     if (!formCanSubmit || !selectedCategory) return
 
-    const previousCategories = categories
     const categoryId = selectedCategory.id
     const categoryType = form.type.trim()
 
-    setIsSubmitting(true)
     setIsEditModalOpen(false)
     resetForm()
 
-    await runOptimisticMutation({
-      optimisticUpdate: () =>
-        setCategories((prev) =>
-          prev.map((category) =>
-            category.id === categoryId ? { ...category, type: categoryType } : category
-          )
-        ),
-      rollback: () => setCategories(previousCategories),
-      mutation: () => updateCategory({ id: categoryId, type: categoryType }),
-      reconcile: () => loadCategories(true, false),
-      successMessage: 'Category updated successfully',
-      errorMessage: 'Failed to update category',
-      onSettled: () => setIsSubmitting(false),
-    })
+    updateCategoryMutation.mutate({ id: categoryId, type: categoryType })
   }
 
   async function handleDeleteCategory() {
     if (!selectedCategory) return
 
-    setIsSubmitting(true)
-    try {
-      await deleteCategory(selectedCategory.id)
-      toast.success('Category deleted successfully')
-      setIsDeleteModalOpen(false)
-      resetForm()
-      await loadCategories(true)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete category')
-    } finally {
-      setIsSubmitting(false)
-    }
+    const categoryId = selectedCategory.id
+
+    setIsDeleteModalOpen(false)
+    resetForm()
+    deleteCategoryMutation.mutate(categoryId)
   }
 
   function openEditModal(category: CategoryListItem) {
@@ -259,7 +259,7 @@ export default function CategoryForm() {
             ) : error ? (
               <tr>
                 <td colSpan={tableColumns.length} className="px-3 py-4 text-center text-sm text-red-500">
-                  {error}
+                  {error instanceof Error ? error.message : 'Failed to load categories'}
                 </td>
               </tr>
             ) : paginatedCategories.length === 0 ? (

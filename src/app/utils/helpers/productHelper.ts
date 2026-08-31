@@ -1,3 +1,4 @@
+import { ProductCategoryFilter } from '@/app/types/product'
 import { mockProducts } from '@/app/utils/mock/productMockData'
 
 export type ProductSortBy = 'name' | 'price' | 'createdAt'
@@ -42,4 +43,13 @@ export function productStatusDotClass(isActive: boolean) {
 
 export function productStatusTextClass(isActive: boolean) {
   return isActive ? 'text-[#1F7A1F]' : 'text-[#B42318]'
+}
+
+export const tableColumns = ['Product ID', 'Category', 'Product Name', 'Price', 'Created At']
+export const ITEMS_PER_PAGE = 10
+export const PRODUCT_LOAD_PAGE_SIZE = 1000
+
+export const categoryPresentByFilter: Record<ProductCategoryFilter, 0 | 1> = {
+  Categorized: 0,
+  Uncategorized: 1,
 }

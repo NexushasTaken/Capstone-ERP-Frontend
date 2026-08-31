@@ -1,21 +1,16 @@
 'use client'
 
 import { Search, X, Tag, Layers, Plus, ChevronDown } from 'lucide-react'
-import {
-  deleteProduct,
-  fetchNoCategoryProductCount,
-  fetchProducts,
-  insertProduct,
-  updateProduct,
-} from '@/app/utils/api/productApi'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { deleteProduct, fetchProducts, insertProduct, updateProduct } from '@/app/utils/api/productApi'
 import { exportToCSV } from '@/app/utils/exportToCsv'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import SeeMoreModal from '@/app/components/modals/SeeMoreModal'
 import CloseButton from '@/app/components/CloseButton'
 import { PaginationDemo } from '@/app/components/Pagination'
 import { formatPeso } from '@/app/utils/helpers/saleHelpers'
-import { formatProductId, formatDate } from '@/app/utils/helpers/productHelper'
-import type { ProductListItem } from '@/app/types/product'
+import { formatProductId, formatDate, PRODUCT_LOAD_PAGE_SIZE, categoryPresentByFilter, ITEMS_PER_PAGE, tableColumns } from '@/app/utils/helpers/productHelper'
+import type { InsertProductPayload, ProductCategoryFilter, ProductListItem } from '@/app/types/product'
 import { Button } from '@/components/ui/button'
 import AppModal from '@/app/components/modals/AppModal'
 import { toast } from 'sonner'
@@ -24,12 +19,8 @@ import { fetchCategories } from '@/app/utils/api/categoryApi'
 import  Loading from "@/app/components/loaders/Loading"
 import StatusAction from '@/app/components/StatusAction'
 import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
-import { runOptimisticMutation } from '@/app/utils/helpers/optimisticMutation'
-
-const tableColumns = ['Product ID', 'Category', 'Product Name', 'Price', 'Created At']
-const ITEMS_PER_PAGE = 10
-const PRODUCT_LOAD_PAGE_SIZE = 1000
-type ProductCategoryFilter = 'All' | 'Categorized' | 'Uncategorized'
+import { queryKeys } from '@/app/utils/api/queryKeys'
+import { invalidateProducts } from '@/app/utils/api/queryInvalidation'
 
 export default function ProductForm() {
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
@@ -37,28 +28,173 @@ export default function ProductForm() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<ProductListItem | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [categories, setCategories] = useState<CategoryListItem[]>([])
-  const [categoriesLoading, setCategoriesLoading] = useState(false)
-  const categoriesLoadedRef = useRef(false)
 
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [selectedFilter, setSelectedFilter] = useState<ProductCategoryFilter>('All')
+  const [selectedFilter, setSelectedFilter] = useState<ProductCategoryFilter>('Categorized')
   const [currentPage, setCurrentPage] = useState(1)
-
-  const [products, setProducts] = useState<ProductListItem[]>([])
-  const [, setPageCount] = useState(1)
-  const [rows, setRows] = useState(0)
-  const [noCategoryCount, setNoCategoryCount] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState({
     name: '',
     categoryId: '',
     price: '',
   })
+  const queryClient = useQueryClient()
+  const activeSearch = selectedFilter === 'Uncategorized' ? undefined : debouncedSearch || undefined
+  const productsQueryParams = {
+    page: 1,
+    pageSize: PRODUCT_LOAD_PAGE_SIZE,
+    name: activeSearch,
+    categoryPresent: categoryPresentByFilter[selectedFilter],
+  }
+  const productsQueryKey = queryKeys.products.all(productsQueryParams)
+  const {
+    data: productsResponse,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: productsQueryKey,
+    queryFn: () => fetchProducts(productsQueryParams),
+    keepPreviousData: true,
+  })
+  const categorizedCountParams = {
+    page: 1,
+    pageSize: 1,
+    name: debouncedSearch || undefined,
+    categoryPresent: categoryPresentByFilter.Categorized,
+  }
+  const uncategorizedCountParams = {
+    page: 1,
+    pageSize: 1,
+    categoryPresent: categoryPresentByFilter.Uncategorized,
+  }
+  const { data: categorizedCountResponse } = useQuery({
+    queryKey: queryKeys.products.all(categorizedCountParams),
+    queryFn: () => fetchProducts(categorizedCountParams),
+    keepPreviousData: true,
+  })
+  const { data: uncategorizedCountResponse } = useQuery({
+    queryKey: queryKeys.products.all(uncategorizedCountParams),
+    queryFn: () => fetchProducts(uncategorizedCountParams),
+    keepPreviousData: true,
+  })
+  const shouldLoadCategories = isAddModalOpen || isEditModalOpen
+  const {
+    data: categories = [],
+    isLoading: categoriesLoading,
+  } = useQuery<CategoryListItem[]>({
+    queryKey: queryKeys.categories.all,
+    queryFn: () => fetchCategories(),
+    enabled: shouldLoadCategories,
+  })
+  const products = productsResponse?.items ?? []
+  const rows = productsResponse?.rows ?? 0
+  const productCountByFilter: Record<ProductCategoryFilter, number> = {
+    Categorized: categorizedCountResponse?.rows ?? 0,
+    Uncategorized: uncategorizedCountResponse?.rows ?? 0,
+  }
+  const addProductMutation = useMutation({
+    mutationFn: (payload: InsertProductPayload & { optimisticId: number }) =>
+      insertProduct({
+        categoryId: payload.categoryId,
+        name: payload.name,
+        price: payload.price,
+      }),
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: ['products'] })
+      const previous = queryClient.getQueryData<typeof productsResponse>(productsQueryKey)
+      const categoryId = payload.categoryId
+      const optimisticProduct: ProductListItem = {
+        id: payload.optimisticId,
+        categoryId,
+        name: payload.name,
+        price: payload.price,
+        categoryName: categories.find((category) => category.id === categoryId)?.type ?? null,
+        created_At: new Date().toISOString(),
+      }
+
+      queryClient.setQueryData<typeof productsResponse>(productsQueryKey, (current) => {
+        if (!current) return current
+
+        return {
+          ...current,
+          items: [optimisticProduct, ...current.items],
+          rows: current.rows + 1,
+        }
+      })
+
+      return { previous }
+    },
+    onError: (err, _payload, context) => {
+      if (context?.previous) queryClient.setQueryData(productsQueryKey, context.previous)
+      toast.error(err instanceof Error ? err.message : 'Failed to add product')
+    },
+    onSuccess: () => toast.success('Product added successfully'),
+    onSettled: () => invalidateProducts(queryClient),
+  })
+  const updateProductMutation = useMutation({
+    mutationFn: updateProduct,
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: ['products'] })
+      const previous = queryClient.getQueryData<typeof productsResponse>(productsQueryKey)
+
+      queryClient.setQueryData<typeof productsResponse>(productsQueryKey, (current) => {
+        if (!current) return current
+
+        return {
+          ...current,
+          items: current.items.map((product) =>
+            product.id === payload.id
+              ? {
+                  ...product,
+                  categoryId: payload.categoryId || null,
+                  name: payload.name,
+                  price: payload.price,
+                  categoryName: categories.find((category) => category.id === payload.categoryId)?.type ?? null,
+                }
+              : product
+          ),
+        }
+      })
+
+      return { previous }
+    },
+    onError: (err, _payload, context) => {
+      if (context?.previous) queryClient.setQueryData(productsQueryKey, context.previous)
+      toast.error(err instanceof Error ? err.message : 'Failed to update product')
+    },
+    onSuccess: () => toast.success('Product updated successfully'),
+    onSettled: () => invalidateProducts(queryClient),
+  })
+  const deleteProductMutation = useMutation({
+    mutationFn: deleteProduct,
+    onMutate: async (productId) => {
+      await queryClient.cancelQueries({ queryKey: ['products'] })
+      const previous = queryClient.getQueryData<typeof productsResponse>(productsQueryKey)
+
+      queryClient.setQueryData<typeof productsResponse>(productsQueryKey, (current) => {
+        if (!current) return current
+
+        return {
+          ...current,
+          items: current.items.filter((product) => product.id !== productId),
+          rows: Math.max(current.rows - 1, 0),
+        }
+      })
+
+      return { previous }
+    },
+    onError: (err, _productId, context) => {
+      if (context?.previous) queryClient.setQueryData(productsQueryKey, context.previous)
+      toast.error(err instanceof Error ? err.message : 'Failed to delete product')
+    },
+    onSuccess: () => toast.success('Product deleted successfully'),
+    onSettled: () => invalidateProducts(queryClient),
+  })
+  const isSubmitting =
+    addProductMutation.isLoading ||
+    updateProductMutation.isLoading ||
+    deleteProductMutation.isLoading
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -67,70 +203,6 @@ export default function ProductForm() {
     }, 400)
     return () => clearTimeout(timeout)
   }, [search])
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function load() {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const activeSearch = selectedFilter === 'Uncategorized' ? undefined : debouncedSearch || undefined
-        const [{ items, pageCount, rows }, uncategorizedCount] = await Promise.all([
-          fetchProducts({
-            page: 1,
-            pageSize: PRODUCT_LOAD_PAGE_SIZE,
-            name: activeSearch,
-          }),
-          fetchNoCategoryProductCount(),
-        ])
-        if (!cancelled) {
-          setProducts(items)
-          setPageCount(pageCount)
-          setRows(rows)
-          setNoCategoryCount(uncategorizedCount)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load products')
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false)
-      }
-    }
-
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [debouncedSearch, selectedFilter])
-
-  useEffect(() => {
-    if ((!isAddModalOpen && !isEditModalOpen) || categoriesLoadedRef.current) return
-
-    let cancelled = false
-    async function loadCategories() {
-      setCategoriesLoading(true)
-      try {
-        const data = await fetchCategories()
-        if (!cancelled) {
-          setCategories(data)
-          categoriesLoadedRef.current = true
-        }
-      } catch (err) {
-        if (!cancelled) toast.error(err instanceof Error ? err.message : 'Failed to load categories')
-      } finally {
-        if (!cancelled) setCategoriesLoading(false)
-      }
-    }
-
-    loadCategories()
-    return () => {
-      cancelled = true
-    }
-  }, [isAddModalOpen, isEditModalOpen])
-
-  const isProductCategorized = (product: ProductListItem) => product.categoryId !== null
 
   const displayedProducts = [...products].sort((a, b) => {
     const dateA = new Date(a.created_At).getTime()
@@ -143,22 +215,15 @@ export default function ProductForm() {
     return b.id - a.id
   })
 
-  const filteredProducts = displayedProducts.filter((product) => {
-    if (selectedFilter === 'Categorized') return isProductCategorized(product)
-    if (selectedFilter === 'Uncategorized') return !isProductCategorized(product)
-    return true
-  })
-
-  const filteredPageCount = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE))
-  const paginatedProducts = filteredProducts.slice(
+  const filteredPageCount = Math.max(1, Math.ceil(displayedProducts.length / ITEMS_PER_PAGE))
+  const paginatedProducts = displayedProducts.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   )
 
-  const productFilters: { label: ProductCategoryFilter; count: number }[] = [
-    { label: 'All', count: rows },
-    { label: 'Categorized', count: Math.max(rows - noCategoryCount, 0) },
-    { label: 'Uncategorized', count: noCategoryCount },
+  const productFilters: { label: ProductCategoryFilter }[] = [
+    { label: 'Categorized' },
+    { label: 'Uncategorized' },
   ]
 
   const formCanSubmit =
@@ -175,132 +240,48 @@ export default function ProductForm() {
     setSelectedProduct(null)
   }
 
-  async function reloadProducts(page = currentPage) {
-    const activeSearch = selectedFilter === 'Uncategorized' ? undefined : debouncedSearch || undefined
-    const [{ items, pageCount, rows }, uncategorizedCount] = await Promise.all([
-      fetchProducts({
-        page,
-        pageSize: PRODUCT_LOAD_PAGE_SIZE,
-        name: activeSearch,
-      }),
-      fetchNoCategoryProductCount(),
-    ])
-
-    setProducts(items)
-    setPageCount(pageCount)
-    setRows(rows)
-    setNoCategoryCount(uncategorizedCount)
-  }
-
   async function handleAddProduct() {
     if (!formCanSubmit) return
 
-    const previousProducts = products
-    const previousRows = rows
-    const previousNoCategoryCount = noCategoryCount
     const categoryId = form.categoryId ? Number(form.categoryId) : null
-    const optimisticProduct: ProductListItem = {
-      id: -Date.now(),
-      categoryId,
-      name: form.name.trim(),
-      price: Number(form.price),
-      categoryName: categories.find((category) => category.id === categoryId)?.type ?? null,
-      created_At: new Date().toISOString(),
-    }
 
-    setIsSubmitting(true)
     setIsAddModalOpen(false)
     resetForm()
     setCurrentPage(1)
 
-    await runOptimisticMutation({
-      optimisticUpdate: () => {
-        setProducts((prev) => [optimisticProduct, ...prev])
-        setRows((prev) => prev + 1)
-        if (categoryId === null) setNoCategoryCount((prev) => prev + 1)
-      },
-      rollback: () => {
-        setProducts(previousProducts)
-        setRows(previousRows)
-        setNoCategoryCount(previousNoCategoryCount)
-      },
-      mutation: () =>
-        insertProduct({
-          categoryId,
-          name: optimisticProduct.name,
-          price: optimisticProduct.price,
-        }),
-      reconcile: () => reloadProducts(1),
-      successMessage: 'Product added successfully',
-      errorMessage: 'Failed to add product',
-      onSettled: () => setIsSubmitting(false),
+    addProductMutation.mutate({
+      optimisticId: -Date.now(),
+      categoryId,
+      name: form.name.trim(),
+      price: Number(form.price),
     })
   }
 
   async function handleUpdateProduct() {
     if (!selectedProduct || !formCanSubmit) return
 
-    const previousProducts = products
-    const previousNoCategoryCount = noCategoryCount
     const productId = selectedProduct.id
     const categoryId = form.categoryId ? Number(form.categoryId) : null
-    const nextProduct: ProductListItem = {
-      ...selectedProduct,
-      categoryId,
-      name: form.name.trim(),
-      price: Number(form.price),
-      categoryName: categories.find((category) => category.id === categoryId)?.type ?? null,
-    }
 
-    setIsSubmitting(true)
     setIsEditModalOpen(false)
     resetForm()
 
-    await runOptimisticMutation({
-      optimisticUpdate: () => {
-        setProducts((prev) =>
-          prev.map((product) => (product.id === productId ? nextProduct : product))
-        )
-        if (selectedProduct.categoryId !== null && categoryId === null) {
-          setNoCategoryCount((prev) => prev + 1)
-        }
-        if (selectedProduct.categoryId === null && categoryId !== null) {
-          setNoCategoryCount((prev) => Math.max(prev - 1, 0))
-        }
-      },
-      rollback: () => {
-        setProducts(previousProducts)
-        setNoCategoryCount(previousNoCategoryCount)
-      },
-      mutation: () =>
-        updateProduct({
-          id: productId,
-          categoryId: categoryId ?? 0,
-          name: nextProduct.name,
-          price: nextProduct.price,
-        }),
-      reconcile: () => reloadProducts(),
-      successMessage: 'Product updated successfully',
-      errorMessage: 'Failed to update product',
-      onSettled: () => setIsSubmitting(false),
+    updateProductMutation.mutate({
+      id: productId,
+      categoryId: categoryId ?? 0,
+      name: form.name.trim(),
+      price: Number(form.price),
     })
   }
 
   async function handleDeleteProduct() {
     if (!selectedProduct) return
 
-    setIsSubmitting(true)
-    try {
-      await deleteProduct(selectedProduct.id)
-      toast.success('Product deleted successfully')
-      setIsDeleteModalOpen(false)
-      resetForm()
-      await reloadProducts()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete product')
-    } finally {
-      setIsSubmitting(false)
-    }
+    const productId = selectedProduct.id
+
+    setIsDeleteModalOpen(false)
+    resetForm()
+    deleteProductMutation.mutate(productId)
   }
 
   function openEditModal(product: ProductListItem) {
@@ -319,7 +300,7 @@ export default function ProductForm() {
   }
 
   return (
-    <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-white p-4 lg:p-5">
+    <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-white p-4 lg:p-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-medium tracking-tight text-[#121514]">Products</h1>
@@ -369,7 +350,7 @@ export default function ProductForm() {
                   }
                 }}
               >
-                {filter.label} <span className="ml-1">{filter.count}</span>
+                {filter.label} <span className="ml-1">{productCountByFilter[filter.label]}</span>
               </button>
             ))}
           <button
@@ -377,7 +358,7 @@ export default function ProductForm() {
             type="button"
             onClick={() =>
               exportToCSV(
-                filteredProducts,
+                displayedProducts,
                 [
                   { header: 'Product ID', value: (product) => formatProductId(product.id) },
                   { header: 'Category', value: (product) => product.categoryName ?? 'Uncategorized' },
@@ -402,7 +383,7 @@ export default function ProductForm() {
         </div>
       </div>
 
-      <div className="mt-5 min-h-0 overflow-auto scrollbar-none">
+      <div className="mt-5 min-h-0 overflow-auto scrollbar-none flex-1">
         <table className="w-full min-w-235 border-separate border-spacing-y-2 text-left">
           <thead className="text-sm font-normal text-[#737A76]">
             <tr>
@@ -424,10 +405,10 @@ export default function ProductForm() {
             ) : error ? (
               <tr>
                 <td colSpan={tableColumns.length + 1} className="px-3 py-4 text-center text-sm text-red-500">
-                  {error}
+                  {error instanceof Error ? error.message : 'Failed to load products'}
                 </td>
               </tr>
-            ) : filteredProducts.length === 0 ? (
+            ) : displayedProducts.length === 0 ? (
               <tr>
                 <td colSpan={tableColumns.length + 1} className="px-3 py-4 text-center text-sm text-[#737A76]">
                   No products found.
@@ -472,7 +453,7 @@ export default function ProductForm() {
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-[#737A76]">
-          Showing {paginatedProducts.length} of {selectedFilter === 'All' ? rows : productFilters.find((filter) => filter.label === selectedFilter)?.count ?? filteredProducts.length} products
+          Showing {paginatedProducts.length} of {rows} products
         </span>
         <div className="flex">
           <PaginationDemo currentPage={currentPage} totalPages={filteredPageCount} onPageChange={setCurrentPage} />
@@ -537,7 +518,7 @@ export default function ProductForm() {
       </SeeMoreModal>
 
       <AppModal
-          className="flex max-h-[90vh] flex-col"
+          className="flex flex-col"
           onClose={() => setIsAddModalOpen(false)}
           open={isAddModalOpen}
         >
@@ -561,21 +542,24 @@ export default function ProductForm() {
 
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Category</span>
-              <select
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                onChange={(event) => updateFormField('categoryId', event.target.value)}
-                value={form.categoryId}
-                disabled={categoriesLoading}
-              >
-<option value="">
-{categoriesLoading ? 'Loading categories...' : 'No category'}
-                </option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.type}
+              <div className="relative">
+                <select
+                  className="h-10 w-full appearance-none rounded-xl border border-[#DFE2E0] bg-white px-3 pr-10 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                  onChange={(event) => updateFormField('categoryId', event.target.value)}
+                  value={form.categoryId}
+                  disabled={categoriesLoading}
+                >
+                  <option value="">
+                    {categoriesLoading ? 'Loading categories...' : 'No category'}
                   </option>
-                ))}
-              </select>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.type}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#737A76]" />
+              </div>
             </label>
 
             <label className="flex flex-col gap-1 text-sm text-[#121514]">

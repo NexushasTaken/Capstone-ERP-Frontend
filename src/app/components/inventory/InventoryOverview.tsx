@@ -2,53 +2,31 @@
 
 import Link from 'next/link'
 import { AlertTriangle, Plus, Warehouse as WarehouseIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 import { fetchInventories } from '@/app/utils/api/inventoryApi'
 import {
-  getRiskStyle,
   getInventoryStatusStyleFromLabel,
   getCapacityPercentage,
   capitalize,
 } from '@/app/utils/helpers/inventoryHelpers'
-import type { InventoryListItem } from '@/app/types/inventory'
 import Loading from '@/app/components/loaders/Loading'
 import { PaginationDemo } from '@/app/components/Pagination'
+import { queryKeys } from '@/app/utils/api/queryKeys'
 
 const attentionItemsPerPage = 5
 
 export default function InventoryOverview() {
-  const [inventories, setInventories] = useState<InventoryListItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [attentionPage, setAttentionPage] = useState(1)
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function load() {
-      try {
-        setIsLoading(true)
-        const { items } = await fetchInventories({ page: 1, pageSize: 100 })
-        if (!cancelled) setInventories(items)
-      } catch {
-        // silently ignore for the overview card — the full Inventory page will show the real error
-      } finally {
-        if (!cancelled) setIsLoading(false)
-      }
-    }
-
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
+  const inventoryQueryParams = { page: 1, pageSize: 100 }
+  const { data: inventoriesResponse, isLoading } = useQuery({
+    queryKey: queryKeys.inventories.all(inventoryQueryParams),
+    queryFn: () => fetchInventories(inventoryQueryParams),
+  })
+  const inventories = inventoriesResponse?.items ?? []
   const criticalInventories = inventories.filter((item) => item.status === 'critical')
   const forecastWarningCount = criticalInventories.length
-
-  const healthStatus = forecastWarningCount > 0 ? 'attention' : 'healthy'
-  const healthScore = Math.max(0, 100 - forecastWarningCount * 10)
-  const healthStyle = getRiskStyle(healthStatus)
 
   const warehouseCapacity = {
     warehouse: 'All warehouses',
@@ -74,11 +52,11 @@ export default function InventoryOverview() {
   )
 
   return (
-    <div className="flex h-full w-full lg:w-3/5 overflow-y-auto flex-col rounded-lg bg-[#EBF3ED] p-5 scrollbar-none">
+    <div className="flex h-full w-full xl:w-3/5 overflow-y-auto flex-col rounded-lg bg-[#EBF3ED] p-5 scrollbar-none">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-[#121514]">Inventory Overview</h2>
-          <p className="mt-1 text-sm text-[#68716C]">Current inventory health</p>
+          <p className="mt-1 text-sm text-[#68716C]">Current inventory status</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -95,22 +73,6 @@ export default function InventoryOverview() {
           >
             View
           </Link>
-        </div>
-      </div>
-
-      <div className="mt-6 rounded-xl bg-white p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-[#68716C]">Inventory Health</p>
-            <div className="mt-2 flex items-end gap-2">
-              <span className="text-4xl font-semibold text-[#121514]">{isLoading ? '—' : healthScore}</span>
-              <span className="mb-1 text-[#909994]">/100</span>
-            </div>
-          </div>
-
-          <span className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${healthStyle.className}`}>
-            {healthStyle.label}
-          </span>
         </div>
       </div>
 
