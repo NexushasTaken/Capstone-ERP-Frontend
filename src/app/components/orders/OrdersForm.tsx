@@ -5,13 +5,21 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import AppModal from '@/app/components/modals/AppModal'
 import CloseButton from '@/app/components/CloseButton'
-import { PaginationDemo } from '@/app/components/Pagination'
+import EntityDropdown from '@/app/components/EntityDropdown'
 import Loading from '@/app/components/loaders/Loading'
 import SortPopover from '@/app/components/SortPopover'
-import { fetchOrders, insertOrder } from '@/app/utils/api/orderApi'
-import { fetchProducts } from '@/app/utils/api/productApi'
-import { queryKeys } from '@/app/utils/api/queryKeys'
-import { invalidateOrders } from '@/app/utils/api/queryInvalidation'
+import StatusAction from '@/app/components/StatusAction'
+import {
+  fetchAllOrders,
+  fetchOrderRiders,
+  fetchOrderStatuses,
+  fetchOrderTypes,
+  insertOrder,
+  updateOrderStatus,
+} from '@/app/services/orderApi'
+import { fetchProducts } from '@/app/services/productApi'
+import { queryKeys } from '@/app/utils/query/queryKeys'
+import { invalidateOrders } from '@/app/utils/query/queryInvalidation'
 import { exportToCSV } from '@/app/utils/exportToCsv'
 import {
   formatDate,
@@ -19,7 +27,9 @@ import {
   getOrderGroupKey,
   getOrderGroupPrimaryItem,
   getOrderGroupProductSummary,
-  itemsPerPage,
+  getOrderLineAmountTotal,
+  getOrderLineQuantityTotal,
+  getOrderLineRows,
   normalizeOrderText,
   orderStatusClass,
   orderStatusDotClass,
@@ -28,9 +38,27 @@ import {
   orderSortOptions,
 } from '@/app/utils/helpers/orderHelpers'
 import { formatPeso } from '@/app/utils/helpers/saleHelpers'
-import type { InsertOrderPayloadItem, OrderGroup, OrderLineForm, OrdersSortBy } from '@/app/types/order'
+import type { OrderGroup, OrderLineForm, OrdersSortBy } from '@/app/types/order'
+import type { InsertOrderPayloadItem } from '@/app/utils/api/types/order'
 import type { ProductListItem } from '@/app/types/product'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -56,7 +84,9 @@ export default function OrdersForm() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState('')
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState('')
+  const [isConfirmAddModalOpen, setIsConfirmAddModalOpen] = useState(false)
   const [orderForm, setOrderForm] = useState({
     orderTypeId: '',
     deliveryRiderId: '',
@@ -71,24 +101,21 @@ export default function OrdersForm() {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setDebouncedSearch(search)
-      setCurrentPage(1)
     }, 400)
 
     return () => clearTimeout(timeout)
   }, [search])
 
   const ordersQueryParams = {
-    page: currentPage,
-    pageSize: itemsPerPage,
     name: debouncedSearch || undefined,
     filter: 0,
-    statusId: 0,
-    orderTypeId: 0,
+    statusId: selectedStatusFilter ? Number(selectedStatusFilter) : 0,
+    orderTypeId: selectedOrderTypeFilter ? Number(selectedOrderTypeFilter) : 0,
   }
 
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.orders.all(ordersQueryParams),
-    queryFn: () => fetchOrders(ordersQueryParams),
+    queryFn: () => fetchAllOrders(ordersQueryParams),
     keepPreviousData: true,
   })
 
@@ -97,6 +124,21 @@ export default function OrdersForm() {
     queryFn: () => fetchProducts({ page: 1, pageSize: productSelectPageSize }),
     enabled: isAddModalOpen,
     keepPreviousData: true,
+  })
+
+  const { data: orderTypes = [], isLoading: orderTypesLoading } = useQuery({
+    queryKey: queryKeys.orders.types,
+    queryFn: fetchOrderTypes,
+  })
+
+  const { data: orderStatuses = [], isLoading: orderStatusesLoading } = useQuery({
+    queryKey: queryKeys.orders.statuses,
+    queryFn: fetchOrderStatuses,
+  })
+
+  const { data: orderRiders = [], isLoading: orderRidersLoading } = useQuery({
+    queryKey: queryKeys.orders.riders,
+    queryFn: fetchOrderRiders,
   })
 
   const addOrderMutation = useMutation({
@@ -110,10 +152,60 @@ export default function OrdersForm() {
     },
   })
 
+  const updateOrderStatusMutation = useMutation({
+    mutationFn: updateOrderStatus,
+    onSuccess: () => {
+      toast.success('Order status updated successfully')
+      invalidateOrders(queryClient)
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to update order status')
+    },
+  })
+
   const orderGroups = data?.items ?? []
   const rows = data?.rows ?? 0
-  const totalPages = Math.max(1, data?.pageCount ?? 1)
   const products: ProductListItem[] = productsResponse?.items ?? []
+  const orderTypeOptions = orderTypes.map((orderType) => ({
+    id: orderType.id,
+    label: normalizeOrderText(orderType.type),
+  }))
+  const orderStatusOptions = orderStatuses.map((orderStatus) => ({
+    id: orderStatus.id,
+    label: normalizeOrderText(orderStatus.status),
+  }))
+  const orderTypeSelectItems = orderTypeOptions.map((orderType) => ({
+    value: String(orderType.id),
+    label: orderType.label,
+  }))
+  const orderStatusSelectItems = orderStatusOptions.map((status) => ({
+    value: String(status.id),
+    label: status.label,
+  }))
+  const orderTypeFilterSelectItems = [
+    { value: 'all', label: 'All types' },
+    ...orderTypeSelectItems,
+  ]
+  const orderStatusFilterSelectItems = [
+    { value: 'all', label: 'All statuses' },
+    ...orderStatusSelectItems,
+  ]
+  const orderRiderOptions = orderRiders.map((rider) => ({
+    id: rider.id,
+    label: `${rider.firstName} ${rider.lastName}`,
+  }))
+  const selectedOrderRiderLabel = (() => {
+    const rider = orderRiders.find((item) => item.id === Number(orderForm.deliveryRiderId))
+    return rider ? `${rider.firstName} ${rider.lastName}` : ''
+  })()
+  const productOptions = products.map((product) => ({
+    id: product.id,
+    label: product.name,
+    sublabel: `ID: ${product.id}`,
+  }))
+  const orderLineRows = getOrderLineRows(orderLines, products)
+  const totalOrderQuantity = getOrderLineQuantityTotal(orderLineRows)
+  const totalOrderAmount = getOrderLineAmountTotal(orderLineRows)
   const orderFormCanSubmit =
     Number(orderForm.orderTypeId) > 0 &&
     orderForm.deliveryRiderId.trim() !== '' &&
@@ -123,7 +215,7 @@ export default function OrdersForm() {
     orderForm.deliveryAddress.trim() !== '' &&
     orderLines.every((line) => Number(line.productId) > 0 && Number(line.quantity) > 0)
 
-  const displayedOrders = [...orderGroups].sort((a, b) => {
+  const sortedOrders = [...orderGroups].sort((a, b) => {
     const first = getOrderGroupPrimaryItem(a)
     const second = getOrderGroupPrimaryItem(b)
 
@@ -148,6 +240,7 @@ export default function OrdersForm() {
         return 0
     }
   })
+  const displayedOrders = sortedOrders
 
   function exportOrders(groups: OrderGroup[]) {
     exportToCSV(
@@ -180,6 +273,22 @@ export default function OrdersForm() {
     )
   }
 
+  function updateOrderTypeFilter(orderTypeId: number) {
+    setSelectedOrderTypeFilter(orderTypeId === 0 ? '' : String(orderTypeId))
+  }
+
+  function updateStatusFilter(statusId: number) {
+    setSelectedStatusFilter(statusId === 0 ? '' : String(statusId))
+  }
+
+  function handleUpdateOrderStatus(orderId: number, orderStatusId: string) {
+    if (!orderStatusId) return
+    updateOrderStatusMutation.mutate({
+      orderId,
+      orderStatusId: Number(orderStatusId),
+    })
+  }
+
   function resetOrderForm() {
     setOrderForm({
       orderTypeId: '',
@@ -205,6 +314,7 @@ export default function OrdersForm() {
     }))
 
     setIsAddModalOpen(false)
+    setIsConfirmAddModalOpen(false)
     resetOrderForm()
     addOrderMutation.mutate(payload)
   }
@@ -221,12 +331,14 @@ export default function OrdersForm() {
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
-            <input
+            <Input
               type="text"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search orders"
-              className="w-full rounded-xl border border-[#DFE2E0] bg-white px-3 py-2 text-sm text-[#121514] placeholder:text-[#737A76] focus:border-[#121514] focus:outline-none focus:ring-1 focus:ring-[#121514]"
+              className="w-full rounded-xl border border-[#DFE2E0] bg-white px-3 
+              py-2 text-sm text-[#121514] placeholder:text-[#737A76] focus:border-[#121514] 
+              focus:outline-none focus:ring-1 focus:ring-[#121514]"
             />
             {search ? (
               <button
@@ -241,8 +353,53 @@ export default function OrdersForm() {
             )}
           </div>
 
+          <div className="w-48">
+            <Select
+              disabled={orderTypesLoading}
+              items={orderTypeFilterSelectItems}
+              onValueChange={(value) => updateOrderTypeFilter(value === 'all' ? 0 : Number(value ?? 0))}
+              value={selectedOrderTypeFilter || 'all'}
+            >
+              <SelectTrigger className="h-10 w-full rounded-xl 
+              border-[#DFE2E0] bg-white px-3 text-sm focus-visible:border-[#121514] focus-visible:ring-[#121514]/20">
+                <SelectValue placeholder="All types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                {orderTypeOptions.map((orderType) => (
+                  <SelectItem key={orderType.id} value={String(orderType.id)} className="capitalize">
+                    {orderType.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-48">
+            <Select
+              disabled={orderStatusesLoading}
+              items={orderStatusFilterSelectItems}
+              onValueChange={(value) => updateStatusFilter(value === 'all' ? 0 : Number(value ?? 0))}
+              value={selectedStatusFilter || 'all'}
+            >
+              <SelectTrigger className="h-10 w-full rounded-xl 
+              border-[#DFE2E0] bg-white px-3 text-sm focus-visible:border-[#121514] focus-visible:ring-[#121514]/20">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                {orderStatusOptions.map((status) => (
+                  <SelectItem key={status.id} value={String(status.id)} className="capitalize">
+                    {status.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <button
-            className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors hover:bg-[#DCE4DF]"
+            className="cursor-pointer rounded-xl border border-[#DFE2E0] 
+            px-3 py-2 text-sm whitespace-nowrap transition-colors hover:bg-[#DCE4DF]"
             type="button"
             onClick={() => exportOrders(displayedOrders)}
           >
@@ -270,11 +427,12 @@ export default function OrdersForm() {
 
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-none">
         <div className="min-w-7xl">
-          <div className="grid grid-cols-[120px_240px_140px_140px_200px_140px_140px_110px] lg:grid-cols-[120px_1.4fr_140px_140px_1fr_140px_140px_110px] px-3 pb-1 text-sm text-[#737A76]">
+          <div className="grid grid-cols-[120px_240px_140px_140px_200px_140px_140px_130px] 
+          lg:grid-cols-[120px_1.4fr_140px_140px_1fr_140px_140px_160px] px-3 pb-1 text-sm text-[#737A76]">
             {tableColumns.map((column) => (
               <span key={column}>{column}</span>
             ))}
-            <span className="text-right">Details</span>
+            <span className="text-right">Action</span>
           </div>
 
           {isLoading ? (
@@ -298,6 +456,13 @@ export default function OrdersForm() {
                 const orderKey = getOrderGroupKey(group)
                 const isExpanded = expandedOrderKey === orderKey
                 const statusLabel = normalizeOrderText(primary.orderStatus)
+                const isWalkinOrder = normalizeOrderText(primary.orderType).toLowerCase() === 'walkin'
+                const orderStatusActions = orderStatusOptions
+                  .filter((status) => !(isWalkinOrder && status.label.toLowerCase() === 'shipped'))
+                  .map((status) => ({
+                    label: status.label,
+                    value: String(status.id),
+                  }))
 
                 return (
                   <Collapsible
@@ -306,7 +471,8 @@ export default function OrdersForm() {
                     open={isExpanded}
                     onOpenChange={(open) => setExpandedOrderKey(open ? orderKey : null)}
                   >
-                    <div className="grid grid-cols-[120px_240px_140px_140px_200px_140px_140px_110px] lg:grid-cols-[120px_1.4fr_140px_140px_1fr_140px_140px_110px] items-center px-3 py-5">
+                    <div className="grid grid-cols-[120px_240px_140px_140px_200px_140px_140px_130px] 
+                    lg:grid-cols-[120px_1.4fr_140px_140px_1fr_140px_140px_160px] items-center px-3 py-5">
                       <span className="font-medium">{formatOrderNumber(primary.id)}</span>
                       <span className="truncate capitalize">{getOrderGroupProductSummary(group)}</span>
                       <span className="whitespace-nowrap capitalize">{normalizeOrderText(primary.orderType)}</span>
@@ -317,18 +483,26 @@ export default function OrdersForm() {
                       <span className="truncate capitalize">{primary.customerName}</span>
                       <span className="whitespace-nowrap">{formatDate(primary.created_At)}</span>
                       <span className="font-medium whitespace-nowrap">{formatPeso(group.total)}</span>
-                      <CollapsibleTrigger
-                        className="ml-auto flex cursor-pointer items-center gap-2 rounded-xl border border-[#DFE2E0] bg-white px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
-                        type="button"
-                      >
-                        View
-                        <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                      </CollapsibleTrigger>
+                      <div className="ml-auto flex items-center gap-2">
+                        <CollapsibleTrigger
+                          className="flex cursor-pointer items-center gap-2 rounded-xl border 
+                          border-[#DFE2E0] bg-white px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
+                          type="button"
+                        >
+                          View
+                          <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        </CollapsibleTrigger>
+                        <StatusAction
+                          actions={orderStatusActions}
+                          label="Order actions"
+                          onAction={(statusId) => handleUpdateOrderStatus(primary.id, statusId)}
+                        />
+                      </div>
                     </div>
 
                     {isExpanded ? (
                       <div className="border-t border-[#E2E2E2] bg-white p-4">
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid gap-4 grid-cols-4">
                           <DetailItem label="Driver" value={primary.driverName || 'Unassigned'} />
                           <DetailItem label="Bundle code" value={primary.bundleCode ?? '-'} />
                           <DetailItem label="Total" value={formatPeso(group.total)} />
@@ -337,16 +511,20 @@ export default function OrdersForm() {
                           <DetailItem label="Delivery address" value={primary.deliveryAddress ?? '-'} />
                         </div>
 
-                        <div className="mt-5 overflow-hidden rounded-lg border border-[#E2E2E2]">
-                          <div className="grid grid-cols-[1fr_120px_140px_140px] bg-[#F0F1F1] px-3 py-2 text-xs text-[#737A76]">
+                        <div className="mt-5 rounded-lg border border-[#E2E2E2] overflow-auto max-h-80 scrollbar-none">
+                          <div className="sticky top-0 grid grid-cols-[1fr_120px_120px_140px_140px] 
+                          bg-[#F0F1F1] px-3 py-2 text-xs text-[#737A76]">
                             <span>Product</span>
+                            <span>Order ID</span>
                             <span>Quantity</span>
                             <span>Amount</span>
                             <span>Bundle</span>
                           </div>
                           {group.orders.map((item) => (
-                            <div className="grid grid-cols-[1fr_120px_140px_140px] border-t border-[#E2E2E2] px-3 py-3 text-sm" key={item.id}>
+                            <div className="grid grid-cols-[1fr_120px_120px_140px_140px] border-t 
+                            border-[#E2E2E2] px-3 py-3 text-sm" key={item.id}>
                               <span className="truncate capitalize">{item.productName}</span>
+                              <span className="truncate capitalize font-medium">#{item.id}</span>
                               <span className="font-medium">{item.quantity}</span>
                               <span className="font-medium">{formatPeso(item.amount)}</span>
                               <span>{item.bundleCode ?? '-'}</span>
@@ -365,136 +543,201 @@ export default function OrdersForm() {
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-[#737A76]">
-          Showing {displayedOrders.length} of {rows} orders
+          Showing {displayedOrders.length} order groups from {rows} rows
         </span>
-
-        <div className="flex">
-          <PaginationDemo currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-        </div>
       </div>
 
       <AppModal
-        className="flex max-h-[90vh] flex-col overflow-hidden lg:max-w-2xl"
+        className="flex max-h-[92vh] w-[calc(100vw-2rem)] max-w-6xl flex-col overflow-hidden lg:max-w-6xl"
         onClose={() => setIsAddModalOpen(false)}
         open={isAddModalOpen}
       >
-        <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
-          <div className="flex flex-col">
-            <span className="text-xs text-[#737A76]">New order</span>
-            <span className="text-xl font-medium text-[#0c0d0d]">Add order</span>
-          </div>
+        <div className="flex w-full items-center justify-between gap-4 border-b border-[#E2E2E2] p-5">
+            <div className="flex min-w-0 flex-col">
+              <span className="text-xs text-[#737A76]">New order</span>
+              <span className="text-2xl font-medium tracking-tight text-[#0c0d0d]">Create order</span>
+            </div>
           <CloseButton onClick={() => setIsAddModalOpen(false)} />
         </div>
 
-        <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-1 text-sm text-[#121514]">
-              <span className="text-xs text-[#68716C]">Customer name</span>
-              <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                onChange={(event) => updateOrderFormField('customerName', event.target.value)}
-                value={orderForm.customerName}
-              />
-            </label>
+        <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
+          <div className="flex flex-col bg-white">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <label className="flex flex-col gap-1 text-sm text-[#121514]">
+                <span className="text-xs text-[#68716C]">Order type</span>
+                <Select
+                  disabled={orderTypesLoading}
+                  items={orderTypeSelectItems}
+                  onValueChange={(value) => updateOrderFormField('orderTypeId', value ?? '')}
+                  value={orderForm.orderTypeId}
+                >
+                  <SelectTrigger className="h-10 w-full rounded-xl border-[#DFE2E0] 
+                  bg-white px-3 text-sm focus-visible:border-[#121514] focus-visible:ring-[#121514]/20">
+                    <SelectValue placeholder="Select order type" />
+                  </SelectTrigger>
+                  <SelectContent className="capitalize">
+                    {orderTypeOptions.map((orderType) => (
+                      <SelectItem key={orderType.id} value={String(orderType.id)} className="capitalize">
+                        {orderType.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </label>
 
-            <label className="flex flex-col gap-1 text-sm text-[#121514]">
-              <span className="text-xs text-[#68716C]">Order type ID</span>
-              <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                min={1}
-                onChange={(event) => updateOrderFormField('orderTypeId', event.target.value)}
-                type="number"
-                value={orderForm.orderTypeId}
-              />
-            </label>
+              <label className="flex flex-col gap-1 text-sm text-[#121514]">
+                <span className="text-xs text-[#68716C]">Delivery rider</span>
+                <EntityDropdown
+                  emptyLabel="No riders found."
+                  isLoading={orderRidersLoading}
+                  onSelect={(riderId) => updateOrderFormField('deliveryRiderId', String(riderId))}
+                  options={orderRiderOptions}
+                  placeholder="Select delivery rider"
+                  searchPlaceholder="Search riders..."
+                  value={selectedOrderRiderLabel}
+                />
+              </label>
 
-            <label className="flex flex-col gap-1 text-sm text-[#121514]">
-              <span className="text-xs text-[#68716C]">Delivery rider ID</span>
-              <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                min={0}
-                onChange={(event) => updateOrderFormField('deliveryRiderId', event.target.value)}
-                type="number"
-                value={orderForm.deliveryRiderId}
-              />
-            </label>
+              <label className="flex flex-col gap-1 text-sm text-[#121514]">
+                <span className="text-xs text-[#68716C]">Customer name</span>
+                <Input
+                  className="capitalize h-10 rounded-xl border border-[#DFE2E0] 
+                  bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                  onChange={(event) => updateOrderFormField('customerName', event.target.value)}
+                  value={orderForm.customerName}
+                />
+              </label>
 
-            <label className="flex flex-col gap-1 text-sm text-[#121514]">
-              <span className="text-xs text-[#68716C]">Pick up address</span>
-              <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                onChange={(event) => updateOrderFormField('pickUpAddress', event.target.value)}
-                value={orderForm.pickUpAddress}
-              />
-            </label>
-          </div>
-
-          <label className="flex flex-col gap-1 text-sm text-[#121514]">
-            <span className="text-xs text-[#68716C]">Delivery address</span>
-            <input
-              className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-              onChange={(event) => updateOrderFormField('deliveryAddress', event.target.value)}
-              value={orderForm.deliveryAddress}
-            />
-          </label>
-
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs uppercase text-[#121514]">Products</span>
-              <button
-                className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-1.5 text-sm transition-colors hover:bg-[#DCE4DF]"
-                onClick={() => setOrderLines((current) => [...current, { productId: '', quantity: '1' }])}
-                type="button"
-              >
-                Add line
-              </button>
+              <label className="flex flex-col gap-1 text-sm text-[#121514]">
+                <span className="text-xs text-[#68716C]">Quantity (total items)</span>
+                <Input
+                  className="h-10 rounded-xl border border-[#DFE2E0] bg-[#F7F8F8] px-3 text-sm text-[#121514] outline-none"
+                  readOnly
+                  disabled
+                  value={totalOrderQuantity}
+                />
+                <span className="text-xs text-[#737A76]">Calculated from items below</span>
+              </label>
             </div>
 
-            {orderLines.map((line, index) => (
-              <div className="grid grid-cols-1 gap-3 rounded-lg bg-[#F0F1F1] p-3 sm:grid-cols-[1fr_120px_40px]" key={index}>
-                <label className="flex flex-col gap-1 text-sm text-[#121514]">
-                  <span className="text-xs text-[#68716C]">Product</span>
-                  <select
-                    className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                    disabled={productsLoading}
-                    onChange={(event) => updateOrderLine(index, 'productId', event.target.value)}
-                    value={line.productId}
-                  >
-                    <option value="">{productsLoading ? 'Loading products...' : 'Select product'}</option>
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <label className="flex flex-col gap-1 text-sm text-[#121514]">
+                <span className="text-xs text-[#68716C]">Pick up address</span>
+                <Input
+                  className="h-10 rounded-xl border border-[#DFE2E0] 
+                  bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                  onChange={(event) => updateOrderFormField('pickUpAddress', event.target.value)}
+                  value={orderForm.pickUpAddress}
+                />
+              </label>
 
-                <label className="flex flex-col gap-1 text-sm text-[#121514]">
-                  <span className="text-xs text-[#68716C]">Quantity</span>
-                  <input
-                    className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                    min={1}
-                    onChange={(event) => updateOrderLine(index, 'quantity', event.target.value)}
-                    type="number"
-                    value={line.quantity}
-                  />
-                </label>
+              <label className="flex flex-col gap-1 text-sm text-[#121514]">
+                <span className="text-xs text-[#68716C]">Delivery address</span>
+                <Input
+                  className="h-10 rounded-xl border border-[#DFE2E0] 
+                  bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                  onChange={(event) => updateOrderFormField('deliveryAddress', event.target.value)}
+                  value={orderForm.deliveryAddress}
+                />
+              </label>
+            </div>
+          </div>
 
-                <button
-                  aria-label="Remove order line"
-                  className="mt-auto flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[#DFE2E0] bg-white text-[#737A76] transition-colors hover:text-[#B42318]"
-                  disabled={orderLines.length === 1}
-                  onClick={() => setOrderLines((current) => current.filter((_, lineIndex) => lineIndex !== index))}
-                  type="button"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+          <div className="flex flex-col">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col">
+                <span className="text-xl font-medium text-[#0c0d0d]">Order items</span>
+                <span className="text-sm text-[#737A76]">Add one or more products to this order.</span>
               </div>
-            ))}
+              <Button
+                className="w-full rounded-xl px-3 py-2 text-sm sm:w-auto"
+                onClick={() => setOrderLines((current) => [...current, { productId: '', quantity: '1' }])}
+                type="button"
+                variant="outline"
+              >
+                <Plus className="h-4 w-4" />
+                Add product
+              </Button>
+            </div>
+
+            <div className="overflow-auto max-h-96 rounded-xl border border-[#DFE2E0]">
+              <Table>
+                <TableHeader className="bg-[#F7F8F8]">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-14 text-center text-[#121514]">#</TableHead>
+                    <TableHead className="min-w-72 text-[#121514]">Product</TableHead>
+                    <TableHead className="w-36 text-center text-[#121514]">Unit price</TableHead>
+                    <TableHead className="w-40 text-center text-[#121514]">Quantity</TableHead>
+                    <TableHead className="w-36 text-center text-[#121514]">Subtotal</TableHead>
+                    <TableHead className="w-24 text-center text-[#121514]">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {orderLineRows.map((line, index) => (
+                    <TableRow className="hover:bg-[#F7F8F8]" key={index}>
+                      <TableCell className="text-center font-medium text-[#121514]">{index + 1}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <EntityDropdown
+                            emptyLabel="No products found"
+                            isLoading={productsLoading}
+                            onSelect={(productId) => updateOrderLine(index, 'productId', String(productId))}
+                            options={productOptions}
+                            placeholder="Select product"
+                            searchPlaceholder="Search products..."
+                            value={line.product?.name ?? ''}
+                          />
+                          {line.product ? (
+                            <span className="text-xs text-[#737A76]">ID: {line.product.id}</span>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center text-[#121514]">{formatPeso(line.unitPrice)}</TableCell>
+                      <TableCell>
+                        <Input
+                          className="mx-auto h-10 w-28 rounded-xl 
+                          border border-[#DFE2E0] bg-white 
+                          px-3 text-center text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                          min={1}
+                          onChange={(event) => updateOrderLine(index, 'quantity', event.target.value)}
+                          type="number"
+                          value={line.quantity || ''}
+                        />
+                      </TableCell>
+                      <TableCell className="text-center font-medium text-[#121514]">{formatPeso(line.subtotal)}</TableCell>
+                      <TableCell className="text-center">
+                        <button
+                          aria-label="Remove order line"
+                          className="inline-flex h-10 w-10 cursor-pointer 
+                          items-center justify-center rounded-xl 
+                          border border-[#F4B2B2] bg-white text-[#D92D20] transition-colors hover:bg-[#FFF4F4]"
+                          disabled={orderLines.length === 1}
+                          onClick={() => setOrderLines((current) => current.filter((_, lineIndex) => lineIndex !== index))}
+                          type="button"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+                <TableFooter className="border-t border-[#DFE2E0] bg-white">
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell className="text-right text-sm font-semibold uppercase text-[#121514]" colSpan={4}>
+                      Total
+                    </TableCell>
+                    <TableCell className="text-center text-base font-medium text-[#159947]">
+                      {formatPeso(totalOrderAmount)}
+                    </TableCell>
+                    <TableCell />
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
+        <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-5">
           <Button
             className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
             onClick={() => setIsAddModalOpen(false)}
@@ -506,11 +749,106 @@ export default function OrdersForm() {
           <Button
             className="rounded-xl px-3 py-2 text-sm"
             disabled={!orderFormCanSubmit || addOrderMutation.isLoading}
-            onClick={handleAddOrder}
+            onClick={() => setIsConfirmAddModalOpen(true)}
             type="button"
           >
             <Plus className="h-4 w-4" />
             Add order
+          </Button>
+        </div>
+      </AppModal>
+
+      <AppModal
+        className="flex max-h-[90vh] w-[calc(100vw-2rem)] max-w-4xl flex-col overflow-hidden lg:max-w-4xl"
+        onClose={() => {
+          setIsConfirmAddModalOpen(false)
+        }}
+        open={isConfirmAddModalOpen}
+      >
+        <div className="flex w-full items-center justify-between gap-4 border-b border-[#E2E2E2] p-5">
+          <div className="flex flex-col">
+            <span className="text-xs text-[#737A76]">Confirm order</span>
+            <span className="text-2xl font-medium tracking-tight text-[#0c0d0d]">Review order details</span>
+          </div>
+          <CloseButton
+            onClick={() => {
+              setIsConfirmAddModalOpen(false)
+            }}
+          />
+        </div>
+
+        <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
+          <div className="grid grid-cols-1 gap-4 rounded-xl border border-[#DFE2E0] p-4 md:grid-cols-2 xl:grid-cols-3">
+            <DetailItem
+              label="Order type"
+              value={orderTypeOptions.find((item) => item.id === Number(orderForm.orderTypeId))?.label ?? '-'}
+            />
+            <DetailItem label="Delivery rider" value={selectedOrderRiderLabel || '-'} />
+            <DetailItem label="Customer" value={orderForm.customerName || '-'} />
+            <DetailItem label="Quantity" value={totalOrderQuantity} />
+            <DetailItem label="Pickup address" value={orderForm.pickUpAddress || '-'} />
+            <DetailItem label="Delivery address" value={orderForm.deliveryAddress || '-'} />
+          </div>
+
+          <div className="overflow-auto rounded-xl border border-[#DFE2E0]">
+            <Table>
+              <TableHeader className="bg-[#F7F8F8]">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-14 text-center text-[#121514]">#</TableHead>
+                  <TableHead className="min-w-72 text-[#121514]">Product</TableHead>
+                  <TableHead className="w-36 text-center text-[#121514]">Unit price</TableHead>
+                  <TableHead className="w-36 text-center text-[#121514]">Quantity</TableHead>
+                  <TableHead className="w-36 text-center text-[#121514]">Subtotal</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orderLineRows.map((line, index) => (
+                  <TableRow className="hover:bg-[#F7F8F8]" key={`${line.productId}-${index}`}>
+                    <TableCell className="text-center font-medium text-[#121514]">{index + 1}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium capitalize text-[#121514]">{line.product?.name ?? '-'}</span>
+                        <span className="text-xs text-[#737A76]">ID: {line.product?.id ?? '-'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center text-[#121514]">{formatPeso(line.unitPrice)}</TableCell>
+                    <TableCell className="text-center font-medium text-[#121514]">{line.quantity}</TableCell>
+                    <TableCell className="text-center font-medium text-[#121514]">{formatPeso(line.subtotal)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+              <TableFooter className="border-t border-[#DFE2E0] bg-white">
+                <TableRow className="hover:bg-transparent">
+                  <TableCell className="text-right text-sm font-semibold uppercase text-[#121514]" colSpan={4}>
+                    Total
+                  </TableCell>
+                  <TableCell className="text-center text-base font-medium text-[#159947]">
+                    {formatPeso(totalOrderAmount)}
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-5">
+          <Button
+            className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
+            onClick={() => {
+              setIsConfirmAddModalOpen(false)
+            }}
+            type="button"
+            variant="outline"
+          >
+            Back
+          </Button>
+          <Button
+            className="rounded-xl px-3 py-2 text-sm"
+            disabled={!orderFormCanSubmit || addOrderMutation.isLoading}
+            onClick={handleAddOrder}
+            type="button"
+          >
+            Confirm order
           </Button>
         </div>
       </AppModal>

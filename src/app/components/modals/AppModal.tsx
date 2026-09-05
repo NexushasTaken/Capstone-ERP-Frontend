@@ -14,7 +14,7 @@ export default function AppModal({
       onClick={onClose}
     >
       <div
-        className={`h-full xl:h-auto w-full rounded-none bg-white lg:max-w-lg lg:rounded-lg ${className}`}
+        className={`h-full xl:h-auto w-full rounded-none bg-white lg:rounded-lg ${className}`}
         onClick={(event) => event.stopPropagation()}
       >
         {children}

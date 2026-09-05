@@ -158,3 +158,20 @@ export interface PaginationProps {
   totalPages: number
   onPageChange: (page: number) => void
 }
+
+export interface InventoryEntryType {
+  id: number
+  type: string
+}
+
+export interface InventoryMovementItem {
+  quantity: number
+  label: string
+  created_At: string
+}
+
+export interface InventoryDamageItem {
+  quantity: number
+  reason: string
+  created_At: string
+}

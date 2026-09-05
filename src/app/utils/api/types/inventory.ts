@@ -1,4 +1,4 @@
-import { InventoryListItem } from "@/app/types/inventory"
+import type { InventoryListItem } from '@/app/types/inventory'
 
 export interface InventoryListContent {
   inventories: InventoryListItem[]
@@ -15,6 +15,7 @@ export interface FetchInventoriesParams {
 }
 
 export interface InsertInventoryPayload {
+  inventoryLabelId: number
   name: string
   quantity: number
   productId: number
@@ -29,4 +30,11 @@ export interface UpdateInventoryPayload {
   productId: number
   warehouseId: number
   reorderPoint: number
+}
+
+export interface MarkInventoryAsDamagePayload {
+  id: number
+  quantity: number
+  reason: string
+  created_At: string
 }

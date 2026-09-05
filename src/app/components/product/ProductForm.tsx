@@ -1,27 +1,30 @@
 'use client'
 
-import { Search, X, Tag, Layers, Plus, ChevronDown } from 'lucide-react'
+import { Search, X, Tag, Layers, Plus } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { deleteProduct, fetchProducts, insertProduct, updateProduct } from '@/app/utils/api/productApi'
+import { deleteProduct, fetchProducts, insertProduct, updateProduct } from '@/app/services/productApi'
 import { exportToCSV } from '@/app/utils/exportToCsv'
 import { useEffect, useState } from 'react'
 import SeeMoreModal from '@/app/components/modals/SeeMoreModal'
 import CloseButton from '@/app/components/CloseButton'
+import EntityDropdown from '@/app/components/EntityDropdown'
 import { PaginationDemo } from '@/app/components/Pagination'
 import SortPopover from '@/app/components/SortPopover'
 import { formatPeso } from '@/app/utils/helpers/saleHelpers'
-import { formatProductId, formatDate, PRODUCT_LOAD_PAGE_SIZE, categoryPresentByFilter, ITEMS_PER_PAGE, tableColumns, productSortOptions, type ProductSortBy } from '@/app/utils/helpers/productHelper'
-import type { InsertProductPayload, ProductCategoryFilter, ProductListItem } from '@/app/types/product'
+import { formatProductId, formatDate, PRODUCT_LOAD_PAGE_SIZE, categoryPresentByFilter, ITEMS_PER_PAGE, tableColumns, productSortOptions } from '@/app/utils/helpers/productHelper'
+import type { ProductCategoryFilter, ProductListItem, ProductSortBy } from '@/app/types/product'
+import type { InsertProductPayload } from '@/app/utils/api/types/product'
 import { Button } from '@/components/ui/button'
 import AppModal from '@/app/components/modals/AppModal'
 import { toast } from 'sonner'
 import { CategoryListItem } from '@/app/types/category'
-import { fetchCategories } from '@/app/utils/api/categoryApi'
+import { fetchCategories } from '@/app/services/categoryApi'
 import  Loading from "@/app/components/loaders/Loading"
 import StatusAction from '@/app/components/StatusAction'
 import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
-import { queryKeys } from '@/app/utils/api/queryKeys'
-import { invalidateProducts } from '@/app/utils/api/queryInvalidation'
+import { queryKeys } from '@/app/utils/query/queryKeys'
+import { invalidateProducts } from '@/app/utils/query/queryInvalidation'
+import { Input } from '@/components/ui/input'
 
 export default function ProductForm() {
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
@@ -92,6 +95,16 @@ export default function ProductForm() {
   })
   const products = productsResponse?.items ?? []
   const rows = productsResponse?.rows ?? 0
+  const categoryOptions = [
+    { id: 0, label: 'No category' },
+    ...categories.map((category) => ({
+      id: category.id,
+      label: category.type,
+      sublabel: `ID: ${category.id}`,
+    })),
+  ]
+  const selectedCategoryLabel =
+    categories.find((category) => category.id === Number(form.categoryId))?.type ?? ''
   const productCountByFilter: Record<ProductCategoryFilter, number> = {
     Categorized: categorizedCountResponse?.rows ?? 0,
     Uncategorized: uncategorizedCountResponse?.rows ?? 0,
@@ -323,7 +336,7 @@ export default function ProductForm() {
         <div className="flex flex-wrap items-center gap-2">
           {selectedFilter !== 'Uncategorized' ? (
             <div className="relative">
-              <input
+              <Input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -539,7 +552,7 @@ export default function ProductForm() {
       </SeeMoreModal>
 
       <AppModal
-          className="flex flex-col"
+          className="flex flex-col max-h-fit lg:max-w-lg"
           onClose={() => setIsAddModalOpen(false)}
           open={isAddModalOpen}
         >
@@ -554,7 +567,7 @@ export default function ProductForm() {
           <div className="flex flex-col gap-4 p-4">
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Product name</span>
-              <input
+              <Input
                 className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
                 onChange={(event) => updateFormField('name', event.target.value)}
                 value={form.name}
@@ -563,29 +576,20 @@ export default function ProductForm() {
 
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Category</span>
-              <div className="relative">
-                <select
-                  className="h-10 w-full appearance-none rounded-xl border border-[#DFE2E0] bg-white px-3 pr-10 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                  onChange={(event) => updateFormField('categoryId', event.target.value)}
-                  value={form.categoryId}
-                  disabled={categoriesLoading}
-                >
-                  <option value="">
-                    {categoriesLoading ? 'Loading categories...' : 'No category'}
-                  </option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.type}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#737A76]" />
-              </div>
+              <EntityDropdown
+                emptyLabel="No categories found"
+                isLoading={categoriesLoading}
+                onSelect={(categoryId) => updateFormField('categoryId', categoryId === 0 ? '' : String(categoryId))}
+                options={categoryOptions}
+                placeholder="No category"
+                searchPlaceholder="Search categories..."
+                value={selectedCategoryLabel}
+              />
             </label>
 
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Price</span>
-              <input
+              <Input
                 className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
                 min={1}
                 onChange={(event) => updateFormField('price', event.target.value)}
@@ -617,7 +621,7 @@ export default function ProductForm() {
       </AppModal>
 
       <AppModal
-          className="flex max-h-[90vh] flex-col"
+          className="flex max-h-fit flex-col lg:max-w-lg"
           onClose={() => {
             setIsEditModalOpen(false)
             resetForm()
@@ -640,7 +644,7 @@ export default function ProductForm() {
           <div className="flex flex-col gap-4 p-4">
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Product name</span>
-              <input
+              <Input
                 className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
                 onChange={(event) => updateFormField('name', event.target.value)}
                 value={form.name}
@@ -649,29 +653,20 @@ export default function ProductForm() {
 
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Category</span>
-              <div className="relative">
-                <select
-                  className="h-10 w-full appearance-none rounded-xl border border-[#DFE2E0] bg-white px-3 pr-10 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                  onChange={(event) => updateFormField('categoryId', event.target.value)}
-                  value={form.categoryId}
-                  disabled={categoriesLoading}
-                >
-                  <option value="">
-                    {categoriesLoading ? 'Loading categories...' : 'No category'}
-                  </option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.type}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#737A76]" />
-              </div>
+              <EntityDropdown
+                emptyLabel="No categories found"
+                isLoading={categoriesLoading}
+                onSelect={(categoryId) => updateFormField('categoryId', categoryId === 0 ? '' : String(categoryId))}
+                options={categoryOptions}
+                placeholder="No category"
+                searchPlaceholder="Search categories..."
+                value={selectedCategoryLabel}
+              />
             </label>
 
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Price</span>
-              <input
+              <Input
                 className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
                 min={1}
                 onChange={(event) => updateFormField('price', event.target.value)}
@@ -705,7 +700,7 @@ export default function ProductForm() {
       </AppModal>
 
       <AppModal
-          className="flex max-h-[90vh] flex-col"
+          className="flex max-h-fit flex-col lg:max-w-lg"
           onClose={() => {
             setIsDeleteModalOpen(false)
             resetForm()

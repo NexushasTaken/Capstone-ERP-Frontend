@@ -39,12 +39,13 @@ import {
   fetchWarehouses,
   insertWarehouse,
   updateWarehouse,
-} from '@/app/utils/api/warehouseApi'
+} from '@/app/services/warehouseApi'
 import type { WarehouseListItem } from '@/app/types/warehouseCapacity'
-import type { InsertWarehousePayload } from '@/app/utils/types/warehouseCapacity'
+import type { InsertWarehousePayload } from '@/app/utils/api/types/warehouseCapacity'
 import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
-import { queryKeys } from '@/app/utils/api/queryKeys'
-import { invalidateInventories, invalidateWarehouses } from '@/app/utils/api/queryInvalidation'
+import { queryKeys } from '@/app/utils/query/queryKeys'
+import { invalidateInventories, invalidateWarehouses } from '@/app/utils/query/queryInvalidation'
+import { Input } from '@/components/ui/input'
 
 function createInitialWarehouseState(
   initialCapacity: WarehouseCapacitySectionProps['initialCapacity']
@@ -238,9 +239,9 @@ export default function WarehouseCapacitySection({
     },
   })
   const isSubmitting =
-    addWarehouseMutation.isLoading ||
-    updateWarehouseMutation.isLoading ||
-    deleteWarehouseMutation.isLoading
+    addWarehouseMutation.isPending ||
+    updateWarehouseMutation.isPending ||
+    deleteWarehouseMutation.isPending
 
   function updateFormField(
     field: keyof WarehouseCapacityFormState,
@@ -354,7 +355,7 @@ export default function WarehouseCapacitySection({
                     {visibleSelectedWarehouseIds.length} of {MAX_SELECTED_WAREHOUSES} charts selected
                   </DropdownMenuLabel>
                   <div className="px-1.5 pb-2">
-                    <input
+                    <Input
                       className="h-9 w-full rounded-lg border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
                       onChange={(event) => setWarehouseSearch(event.target.value)}
                       onClick={(event) => event.stopPropagation()}
@@ -437,11 +438,13 @@ export default function WarehouseCapacitySection({
 
           <div className="grid gap-4 xl:col-span-3 xl:grid-cols-3">
             {isLoadingWarehouses ? (
-              <div className="flex min-h-72 items-center justify-center rounded-xl border border-dashed border-[#DCE4DE] bg-[#FAFBFA] text-sm text-[#737A76] xl:col-span-3">
+              <div className="flex min-h-72 items-center justify-center 
+              rounded-xl border border-dashed border-[#DCE4DE] bg-[#FAFBFA] text-sm text-[#737A76] xl:col-span-3">
                 <Loading />
               </div>
             ) : selectedWarehouses.length === 0 ? (
-              <div className="flex min-h-72 items-center justify-center rounded-xl border border-dashed border-[#DCE4DE] bg-[#FAFBFA] text-sm text-[#737A76] xl:col-span-3">
+              <div className="flex min-h-72 items-center justify-center 
+              rounded-xl border border-dashed border-[#DCE4DE] bg-[#FAFBFA] text-sm text-[#737A76] xl:col-span-3">
                 Select warehouse charts from the dropdown.
               </div>
             ) : (
@@ -478,7 +481,7 @@ export default function WarehouseCapacitySection({
         </div>
 
         <AppModal
-          className="flex max-h-[90vh] flex-col"
+          className="flex max-h-fit flex-col lg:max-w-lg"
           onClose={() => {
             setIsAddModalOpen(false)
             resetForm()
@@ -501,8 +504,9 @@ export default function WarehouseCapacitySection({
           <div className="flex flex-col gap-4 p-4">
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Warehouse name</span>
-              <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
+              <Input
+                className="h-10 rounded-xl border border-[#DFE2E0] 
+                bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
                 onChange={(event) =>
                   updateFormField('warehouseName', event.target.value)
                 }
@@ -512,8 +516,9 @@ export default function WarehouseCapacitySection({
 
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Address</span>
-              <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
+              <Input
+                className="h-10 rounded-xl border border-[#DFE2E0] 
+                bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
                 onChange={(event) =>
                   updateFormField('address', event.target.value)
                 }
@@ -523,8 +528,9 @@ export default function WarehouseCapacitySection({
 
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Maximum capacity</span>
-              <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+              <Input
+                className="h-10 rounded-xl border border-[#DFE2E0] 
+                bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
                 min={1}
                 onChange={(event) =>
                   updateFormField('maximumCapacity', event.target.value)
@@ -560,7 +566,7 @@ export default function WarehouseCapacitySection({
         </AppModal>
 
         <AppModal
-          className="flex max-h-[90vh] flex-col"
+          className="flex max-h-fit flex-col lg:max-w-lg"
           onClose={() => {
             setIsEditModalOpen(false)
             resetForm()
@@ -583,8 +589,9 @@ export default function WarehouseCapacitySection({
           <div className="flex flex-col gap-4 p-4">
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Warehouse name</span>
-              <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
+              <Input
+                className="h-10 rounded-xl border border-[#DFE2E0] 
+                bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
                 onChange={(event) =>
                   updateFormField('warehouseName', event.target.value)
                 }
@@ -594,8 +601,9 @@ export default function WarehouseCapacitySection({
 
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Address</span>
-              <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
+              <Input
+                className="h-10 rounded-xl border border-[#DFE2E0] 
+                bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
                 onChange={(event) =>
                   updateFormField('address', event.target.value)
                 }
@@ -605,8 +613,9 @@ export default function WarehouseCapacitySection({
 
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Maximum capacity</span>
-              <input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+              <Input
+                className="h-10 rounded-xl border border-[#DFE2E0] 
+                bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
                 min={1}
                 onChange={(event) =>
                   updateFormField('maximumCapacity', event.target.value)
@@ -641,7 +650,7 @@ export default function WarehouseCapacitySection({
         </AppModal>
 
         <AppModal
-          className="flex max-h-[90vh] flex-col"
+          className="flex max-h-fit flex-col lg:max-w-lg"
           onClose={() => {
             setIsDeleteModalOpen(false)
             resetForm()

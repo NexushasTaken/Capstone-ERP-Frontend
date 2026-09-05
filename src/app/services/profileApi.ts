@@ -1,5 +1,5 @@
 import type { CurrentUser } from '@/app/types/profile'
-import type { ApiEnvelope } from '@/app/utils/apiEnvelope'
+import type { ApiEnvelope } from '@/app/utils/api/apiEnvelope'
 
 const CURRENT_USER_STORAGE_KEY = 'erp.currentUser'
 

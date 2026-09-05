@@ -1,10 +1,8 @@
 import type {
-  InsertProductPayload,
   ProductListItem,
-  UpdateProductPayload,
 } from '@/app/types/product'
-import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/apiEnvelope'
-import { FetchProductsParams, ProductListContent } from '@/app/utils/types/product'
+import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/api/apiEnvelope'
+import type { FetchProductsParams, ProductListContent, InsertProductPayload, UpdateProductPayload } from '@/app/utils/api/types/product'
 
 // GET
 export async function fetchProducts(params: FetchProductsParams = {}): Promise<{

@@ -13,8 +13,8 @@ import { usePathname } from 'next/navigation'
 import cproLogo from "../../../public/cproLogo.png"
 import { getLinkClasses, profileFallback } from '@/app/utils/helpers/sidebarHelper'
 import { useQuery } from '@tanstack/react-query'
-import { queryKeys } from '@/app/utils/api/queryKeys'
-import { fetchCurrentUser, readStoredCurrentUser } from '@/app/utils/api/profileApi'
+import { queryKeys } from '@/app/utils/query/queryKeys'
+import { fetchCurrentUser, readStoredCurrentUser } from '@/app/services/profileApi'
 
 export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)

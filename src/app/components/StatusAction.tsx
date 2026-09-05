@@ -38,9 +38,9 @@ export default function StatusAction({
                 key={action.value}
                 variant={action.variant}
                 onClick={() => onAction(action.value)}
-                className="cursor-pointer gap-2 px-2 py-2"
+                className="cursor-pointer gap-2 px-2 py-2 capitalize"
               >
-                <Icon className="h-4 w-4" />
+                {Icon ? <Icon className="h-4 w-4" /> : null}
                 {action.label}
               </DropdownMenuItem>
             )

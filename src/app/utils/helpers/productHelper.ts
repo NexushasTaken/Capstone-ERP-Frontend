@@ -1,12 +1,4 @@
-import { ProductCategoryFilter } from '@/app/types/product'
-
-export type ProductSortBy = 'id' | 'name' | 'price' | 'createdAt'
-
-export interface ProductSortOption {
-  label: string
-  value: ProductSortBy
-  order: 'asc' | 'desc'
-}
+import type { ProductCategoryFilter, ProductSortOption } from '@/app/types/product'
 
 export const productSortOptions: ProductSortOption[] = [
   { label: 'Latest added', value: 'createdAt', order: 'desc' },

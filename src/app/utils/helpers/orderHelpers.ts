@@ -1,4 +1,5 @@
 import type { Order, OrderGroup, OrderSortOption } from '@/app/types/order'
+import type { ProductListItem } from '@/app/types/product'
 
 export function formatOrderId(orderId: string) {
   return `#${orderId}`
@@ -17,8 +18,6 @@ export const tableColumns = [
   'Order Date',
   'Amount',
 ]
-
-export const itemsPerPage = 10
 
 export const productSelectPageSize = 100
 
@@ -81,4 +80,31 @@ export function orderStatusDotClass(status: string) {
   if (normalized.includes('pending') || normalized.includes('process')) return 'bg-[#FFB020]'
 
   return 'bg-[#737A76]'
+}
+
+export function getOrderLineRows(
+  orderLines: { productId: string; quantity: string }[],
+  products: ProductListItem[]
+) {
+  return orderLines.map((line) => {
+    const product = products.find((item) => item.id === Number(line.productId)) ?? null
+    const quantity = Number(line.quantity) || 0
+    const unitPrice = product?.price ?? 0
+
+    return {
+      ...line,
+      product,
+      quantity,
+      unitPrice,
+      subtotal: unitPrice * quantity,
+    }
+  })
+}
+
+export function getOrderLineQuantityTotal(orderLines: ReturnType<typeof getOrderLineRows>) {
+  return orderLines.reduce((total, line) => total + line.quantity, 0)
+}
+
+export function getOrderLineAmountTotal(orderLines: ReturnType<typeof getOrderLineRows>) {
+  return orderLines.reduce((total, line) => total + line.subtotal, 0)
 }

@@ -6,9 +6,9 @@ import React, { ChangeEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import type { CurrentUser } from '@/app/types/profile'
-import type { ApiEnvelope } from '@/app/utils/apiEnvelope'
-import { queryKeys } from '@/app/utils/api/queryKeys'
-import { storeCurrentUser } from '@/app/utils/api/profileApi'
+import type { ApiEnvelope } from '@/app/utils/api/apiEnvelope'
+import { queryKeys } from '@/app/utils/query/queryKeys'
+import { storeCurrentUser } from '@/app/services/profileApi'
 
 export default function LoginForm() {
   const router = useRouter()

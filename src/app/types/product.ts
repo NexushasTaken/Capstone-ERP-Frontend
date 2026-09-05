@@ -21,17 +21,13 @@ export interface ProductListItem {
   created_At: string
 }
 
-export interface InsertProductPayload {
-  categoryId: number | null
-  name: string
-  price: number
-}
-
-export interface UpdateProductPayload {
-  categoryId: number
-  name: string
-  price: number
-  id: number
-}
-
 export type ProductCategoryFilter = 'Categorized' | 'Uncategorized'
+
+export type ProductSortBy = 'id' | 'name' | 'price' | 'createdAt'
+
+export interface ProductSortOption {
+  label: string
+  value: ProductSortBy
+  order: 'asc' | 'desc'
+}
+

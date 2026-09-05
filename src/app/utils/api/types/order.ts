@@ -14,3 +14,18 @@ export interface OrderListContent {
   pageCount: number
   rows: number
 }
+
+export interface InsertOrderPayloadItem {
+  productId: number
+  orderTypeId: number
+  deliveryRiderId: number
+  quantity: number
+  customerName: string
+  pickUpAddress: string
+  deliveryAddress: string
+}
+
+export interface UpdateOrderStatusPayload {
+  orderId: number
+  orderStatusId: number
+}

@@ -11,11 +11,12 @@ import { PaginationDemo } from '@/app/components/Pagination'
 import SortPopover from '@/app/components/SortPopover'
 import StatusAction from '@/app/components/StatusAction'
 import { Button } from '@/components/ui/button'
-import type { CategoryListItem, InsertCategoryPayload } from '@/app/types/category'
-import { deleteCategory, fetchCategories, insertCategory, updateCategory } from '@/app/utils/api/categoryApi'
+import { Input } from '@/components/ui/input'
+import type { CategoryListItem, CategorySortBy } from '@/app/types/category'
+import type { InsertCategoryPayload } from '@/app/utils/api/types/category'
+import { deleteCategory, fetchCategories, insertCategory, updateCategory } from '@/app/services/categoryApi'
 import {
   categorySortOptions,
-  type CategorySortBy,
   formatCategoryDate,
   formatCategoryId,
   ITEMS_PER_PAGE,
@@ -23,8 +24,8 @@ import {
 } from '@/app/utils/helpers/categoryHelper'
 import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
 import Loading from '@/app/components/loaders/Loading'
-import { queryKeys } from '@/app/utils/api/queryKeys'
-import { invalidateCategories } from '@/app/utils/api/queryInvalidation'
+import { queryKeys } from '@/app/utils/query/queryKeys'
+import { invalidateCategories } from '@/app/utils/query/queryInvalidation'
 
 export default function CategoryForm() {
   const [search, setSearch] = useState('')
@@ -210,7 +211,7 @@ export default function CategoryForm() {
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
-            <input
+            <Input
               type="text"
               value={search}
               onChange={(e) => {
@@ -329,7 +330,7 @@ export default function CategoryForm() {
       </div>
 
       <AppModal
-        className="flex max-h-[90vh] flex-col"
+        className="flex max-h-fit flex-col lg:max-w-lg"
         onClose={() => {
           setIsAddModalOpen(false)
           resetForm()
@@ -352,7 +353,7 @@ export default function CategoryForm() {
         <div className="flex flex-col gap-4 p-4">
           <label className="flex flex-col gap-1 text-sm text-[#121514]">
             <span className="text-xs text-[#68716C]">Category name</span>
-            <input
+            <Input
               className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
               onChange={(event) => setForm({ type: event.target.value })}
               value={form.type}
@@ -385,7 +386,7 @@ export default function CategoryForm() {
       </AppModal>
 
       <AppModal
-        className="flex max-h-[90vh] flex-col"
+        className="flex max-h-fit flex-col lg:max-w-lg"
         onClose={() => {
           setIsEditModalOpen(false)
           resetForm()
@@ -408,7 +409,7 @@ export default function CategoryForm() {
         <div className="flex flex-col gap-4 p-4">
           <label className="flex flex-col gap-1 text-sm text-[#121514]">
             <span className="text-xs text-[#68716C]">Type</span>
-            <input
+            <Input
               className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
               onChange={(event) => setForm({ type: event.target.value })}
               value={form.type}
@@ -440,7 +441,7 @@ export default function CategoryForm() {
       </AppModal>
 
       <AppModal
-        className="flex max-h-[90vh] flex-col"
+        className="flex max-h-fit flex-col lg:max-w-lg"
         onClose={() => {
           setIsDeleteModalOpen(false)
           resetForm()

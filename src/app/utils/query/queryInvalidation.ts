@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 
-import { queryKeys } from '@/app/utils/api/queryKeys'
+import { queryKeys } from '@/app/utils/query/queryKeys'
 
 export function invalidateProducts(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: ['products'] })

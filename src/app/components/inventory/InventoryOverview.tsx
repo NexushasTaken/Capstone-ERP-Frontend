@@ -5,15 +5,16 @@ import { AlertTriangle, Plus, Warehouse as WarehouseIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
-import { fetchInventories } from '@/app/utils/api/inventoryApi'
+import { fetchInventories } from '@/app/services/inventoryApi'
+import { fetchWarehouses } from '@/app/services/warehouseApi'
 import {
   getInventoryStatusStyleFromLabel,
-  getCapacityPercentage,
+  formatNumber,
   capitalize,
 } from '@/app/utils/helpers/inventoryHelpers'
 import Loading from '@/app/components/loaders/Loading'
 import { PaginationDemo } from '@/app/components/Pagination'
-import { queryKeys } from '@/app/utils/api/queryKeys'
+import { queryKeys } from '@/app/utils/query/queryKeys'
 
 const attentionItemsPerPage = 7
 
@@ -28,12 +29,16 @@ export default function InventoryOverview() {
   const criticalInventories = inventories.filter((item) => item.status === 'critical')
   const forecastWarningCount = criticalInventories.length
 
-  const warehouseCapacity = {
-    warehouse: 'All warehouses',
-    used: inventories.reduce((sum, item) => sum + item.quantity, 0),
-    total: 1000,
-  }
-  const warehouseUsage = getCapacityPercentage(warehouseCapacity)
+  const { data: warehouses = [], isLoading: isLoadingWarehouses, isError: isWarehouseError } = useQuery({
+    queryKey: queryKeys.warehouses.all,
+    queryFn: fetchWarehouses,
+  })
+  const allWarehouseRecord = warehouses.find(
+    (warehouse) => warehouse.name.trim().toLowerCase() === 'all warehouse record'
+  )
+  const totalCapacity = allWarehouseRecord?.capacity ?? warehouses.reduce(
+    (sum, warehouse) => sum + warehouse.capacity, 0
+  )
 
   const statusCounts = {
     available: inventories.filter((x) => x.status === 'available').length,
@@ -80,9 +85,10 @@ export default function InventoryOverview() {
         <div className="rounded-xl bg-white p-4">
           <div className="flex items-center gap-2">
             <WarehouseIcon size={18} className="text-[#68716C]" />
-            <span className="text-sm text-[#68716C]">Warehouse</span>
+            <span className="text-sm text-[#68716C]">Total warehouse capacity</span>
           </div>
-          <p className="mt-3 text-2xl font-semibold text-[#121514]">{isLoading ? '—' : `${warehouseUsage}%`}</p>
+          <p className="mt-3 text-2xl font-semibold text-[#121514]">{isLoadingWarehouses || isWarehouseError ? '\u2014' : `${formatNumber(totalCapacity)} units`}</p>
+          {isWarehouseError && <p role="alert" className="mt-1 text-xs text-red-600">Unable to load warehouse capacity.</p>}
         </div>
 
         <Link href="/dashboard/inventory#Risks" className="rounded-xl bg-white p-4 transition-colors hover:bg-[#FAFBFA]">

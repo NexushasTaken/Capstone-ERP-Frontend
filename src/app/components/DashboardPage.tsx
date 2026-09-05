@@ -10,17 +10,18 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Lottie } from 'lottie-react'
-import { ArrowUpDown, Calendar, MoveUpRight, Settings2 } from 'lucide-react'
+import { ArrowUpDown, MoveUpRight, Settings2 } from 'lucide-react'
 import { Check } from 'lucide-react'
 import { useState } from 'react'
 import animatedRobot from "@/app/assets/json/animatedRobot.json"
 import { PredictedStockout } from '@/app/types/inventory'
 import { useQuery } from '@tanstack/react-query'
-import { fetchInventories } from '@/app/utils/api/inventoryApi'
-import { queryKeys } from '@/app/utils/api/queryKeys'
+import { fetchInventories } from '@/app/services/inventoryApi'
+import { queryKeys } from '@/app/utils/query/queryKeys'
 import { formatNumber } from '@/app/utils/helpers/inventoryHelpers'
 import { PaginationDemo } from '@/app/components/Pagination'
 import Loading from '@/app/components/loaders/Loading'
+import { DatePickerWithRange } from '@/app/components/date-picker/RangePicker'
 
 const salesChartOptions: { label: string; value: SalesChartType }[] = [
   { label: 'Line chart', value: 'line' },
@@ -86,9 +87,9 @@ export default function DashboardPage() {
               <span className="text-[#0c0d0d] text-lg font-medium md:text-2xl">
                 Fulfillment Performance
               </span>
-              <button aria-label="Calendar" type="button" className="bg-transparent border-2 border-[#C6C6C7] rounded-xl text-[#0c0d0d] font-medium p-2 cursor-pointer transition-all duration-300 hover:scale-105 group">
-                <Calendar className="transition-all group-hover:scale-105" />
-              </button>
+              <span className='flex'>
+                <DatePickerWithRange />
+              </span>
             </div>
 
             <div className='relative w-full min-h-0 flex-1'>
