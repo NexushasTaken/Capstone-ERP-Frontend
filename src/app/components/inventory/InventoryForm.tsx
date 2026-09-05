@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import WarehouseCapacitySection from '@/app/components/inventory/WarehouseCapacitySection'
 import MovementVelocity from '@/app/components/inventory/MovementVelocity'
@@ -60,14 +60,14 @@ export default function InventoryForm() {
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
   const [sortBy, setSortBy] = useState<InventorySortBy>('latest')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const [selectedItem, setSelectedItem] = useState<InventoryListItem | null>(null)
+  const [selectedItemSnapshot, setSelectedItem] = useState<InventoryListItem | null>(null)
   const [selectedFilter, setSelectedFilter] = useState<InventoryFilter>('All')
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [exportCooldown, setExportCooldown] = useState(0)
   const itemsPerPage = 10
-  
 
-  const selectedInventoryId = selectedItem?.id ?? null
+  const selectedInventoryId = selectedItemSnapshot?.id ?? null
   const shouldLoadHistory = isSeeMoreOpen && selectedInventoryId !== null && selectedInventoryId > 0
   const movementsQuery = useQuery({
     queryKey: queryKeys.inventories.movements(selectedInventoryId),
@@ -134,12 +134,47 @@ export default function InventoryForm() {
     enabled: isAddModalOpen,
   })
   const entryTypes = entryTypesQuery.data ?? []
+  const selectedItem = inventoriesResponse?.items.find((item) => item.id === selectedInventoryId) ?? selectedItemSnapshot
   const damageInventoryMutation = useMutation({
     mutationFn: markInventoryAsDamage,
-    onError: (error) => toast.error(error instanceof Error ? error.message : 'Failed to mark inventory as damaged.'),
-    onSuccess: () => {
+    onMutate: async (payload) => {
       setIsDamageModalOpen(false)
       setDamageForm({ quantity: '', reason: '' })
+      await queryClient.cancelQueries({ queryKey: ['inventories'] })
+      const previousQuantity = queryClient.getQueryData<typeof inventoriesResponse>(inventoriesQueryKey)
+        ?.items.find((item) => item.id === payload.id)?.quantity
+      const damageKey = queryKeys.inventories.damageRecords(payload.id)
+      const previousDamageRecords = queryClient.getQueryData<Awaited<ReturnType<typeof fetchInventoryDamageRecords>>>(damageKey)
+
+      queryClient.setQueryData<typeof inventoriesResponse>(inventoriesQueryKey, (current) => current && ({
+        ...current,
+        items: current.items.map((item) => item.id === payload.id
+          ? { ...item, quantity: item.quantity - payload.quantity }
+          : item),
+      }))
+      // Only extend loaded history so an incomplete history is never cached as complete.
+      if (previousDamageRecords) {
+        queryClient.setQueryData(damageKey, [
+          { quantity: payload.quantity, reason: payload.reason, created_At: payload.created_At },
+          ...previousDamageRecords,
+        ])
+      }
+      return { previousQuantity, previousDamageRecords, damageKey }
+    },
+    onError: (error, payload, context) => {
+      if (context?.previousQuantity !== undefined) {
+        const quantity = context.previousQuantity
+        queryClient.setQueryData<typeof inventoriesResponse>(inventoriesQueryKey, (current) => current && ({
+          ...current,
+          items: current.items.map((item) => item.id === payload.id ? { ...item, quantity } : item),
+        }))
+      }
+      if (context?.previousDamageRecords) {
+        queryClient.setQueryData(context.damageKey, context.previousDamageRecords)
+      }
+      toast.error(error instanceof Error ? error.message : 'Failed to mark inventory as damaged.')
+    },
+    onSuccess: () => {
       toast.success('Inventory marked as damaged successfully.')
     },
     onSettled: () => invalidateInventories(queryClient),
@@ -149,7 +184,7 @@ export default function InventoryForm() {
     Number(damageForm.quantity) <= selectedItem.quantity && damageForm.reason.trim() !== ''
 
   function closeDamageModal() {
-    if (!damageInventoryMutation.isPending) setIsDamageModalOpen(false)
+    if (!damageInventoryMutation.isLoading) setIsDamageModalOpen(false)
   }
 
   const inventories = inventoriesResponse?.items ?? []
@@ -264,9 +299,10 @@ export default function InventoryForm() {
     onSettled: () => invalidateInventories(queryClient),
   })
   const isSubmitting =
-    addInventoryMutation.isPending ||
-    updateInventoryMutation.isPending ||
-    deleteInventoryMutation.isPending
+    addInventoryMutation.isLoading ||
+    updateInventoryMutation.isLoading ||
+    deleteInventoryMutation.isLoading ||
+    damageInventoryMutation.isLoading
 
   const formCanSubmit =
     entryTypes.some((entryType) => String(entryType.id) === form.inventoryLabelId) &&
@@ -426,6 +462,16 @@ export default function InventoryForm() {
 
   const selectedStatusStyle = selectedItem ? getInventoryStatusStyleFromLabel(selectedItem.status) : null
 
+  useEffect(() => {
+  if (exportCooldown <= 0) return
+
+  const timer = setTimeout(() => {
+    setExportCooldown((prev) => prev - 1)
+  }, 1000)
+
+  return () => clearTimeout(timer)
+}, [exportCooldown])
+
   return (
     <main className="flex h-dvh w-full p-3 xl:p-6 bg-white">
       <div className="flex w-full flex-col gap-5 flex-1 min-h-0 overflow-y-auto scrollbar-none">
@@ -481,25 +527,53 @@ export default function InventoryForm() {
               </div>
 
               <button
-                className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors hover:bg-[#DCE4DF]"
+                className={`rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors 
+                  ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}
+                  `}
                 type="button"
-                onClick={() =>
+                disabled={exportCooldown > 0}
+                onClick={() => {
                   exportToCSV(
                     displayedInventories,
                     [
-                      { header: 'Inventory ID', value: (item) => formatInventoryId(String(item.id)) },
-                      { header: 'Product', value: (item) => item.name },
-                      { header: 'Available', value: (item) => item.quantity },
-                      { header: 'Reorder point', value: (item) => item.reorderPoint },
-                      { header: 'Warehouse', value: (item) => item.warehouseName },
-                      { header: 'Status', value: (item) => item.status },
-                      { header: 'Date arrived', value: (item) => formatDate(item.dateArrived) },
+                      {
+                        header: 'Inventory ID',
+                        value: (item) => formatInventoryId(String(item.id)),
+                      },
+                      {
+                        header: 'Product',
+                        value: (item) => item.name,
+                      },
+                      {
+                        header: 'Available',
+                        value: (item) => item.quantity,
+                      },
+                      {
+                        header: 'Reorder point',
+                        value: (item) => item.reorderPoint,
+                      },
+                      {
+                        header: 'Warehouse',
+                        value: (item) => item.warehouseName,
+                      },
+                      {
+                        header: 'Status',
+                        value: (item) => item.status,
+                      },
+                      {
+                        header: 'Date arrived',
+                        value: (item) => formatDate(item.dateArrived),
+                      },
                     ],
                     'inventory'
                   )
-                }
+
+                  setExportCooldown(10)
+                }}
               >
-                Export to CSV
+                {exportCooldown > 0
+                  ? `Export again in ${exportCooldown}s`
+                  : 'Export to CSV'}
               </button>
               
               {inventoryStatusFilters.map((filter) => (
@@ -610,8 +684,8 @@ export default function InventoryForm() {
                                   setDamageForm({ quantity: '', reason: '' })
                                   setIsDamageModalOpen(true)
                                 }
-                                if (action === 'edit') openEditModal(item)
-                                if (action === 'delete') openDeleteModal(item)
+                                if (action === 'edit' && !isSubmitting) openEditModal(item)
+                                if (action === 'delete' && !isSubmitting) openDeleteModal(item)
                               }}
                             />
                           </div>
@@ -648,23 +722,23 @@ export default function InventoryForm() {
         </div>
         <form onSubmit={(event) => {
           event.preventDefault()
-          if (!damageCanSubmit || !selectedItem || damageInventoryMutation.isPending) return
+          if (!damageCanSubmit || !selectedItem || damageInventoryMutation.isLoading) return
           damageInventoryMutation.mutate({ id: selectedItem.id, quantity: Number(damageForm.quantity), reason: damageForm.reason.trim(), created_At: new Date().toISOString() })
         }}>
           <div className="flex flex-col gap-4 p-4">
             <p className="text-sm text-[#68716C]">{selectedItem?.name} ? {formatNumber(selectedItem?.quantity ?? 0)} available. Damaged quantity will be deducted from stock.</p>
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Quantity</span>
-              <Input required type="number" min={1} max={selectedItem?.quantity} step={1} disabled={damageInventoryMutation.isPending} value={damageForm.quantity} onChange={(event) => setDamageForm((previous) => ({ ...previous, quantity: event.target.value }))} className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm" />
+              <Input required type="number" min={1} max={selectedItem?.quantity} step={1} disabled={damageInventoryMutation.isLoading} value={damageForm.quantity} onChange={(event) => setDamageForm((previous) => ({ ...previous, quantity: event.target.value }))} className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm" />
             </label>
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Reason</span>
-              <Textarea required disabled={damageInventoryMutation.isPending} value={damageForm.reason} onChange={(event) => setDamageForm((previous) => ({ ...previous, reason: event.target.value }))} className="h-28 min-h-28 max-h-28 resize-none field-sizing-fixed overflow-y-auto rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]" />
+              <Textarea required disabled={damageInventoryMutation.isLoading} value={damageForm.reason} onChange={(event) => setDamageForm((previous) => ({ ...previous, reason: event.target.value }))} className="h-28 min-h-28 max-h-28 resize-none field-sizing-fixed overflow-y-auto rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]" />
             </label>
           </div>
           <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
-            <Button type="button" variant="outline" className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm" disabled={damageInventoryMutation.isPending} onClick={closeDamageModal}>Cancel</Button>
-            <Button type="submit" variant="destructive" className="rounded-xl px-3 py-2 text-sm" disabled={!damageCanSubmit || damageInventoryMutation.isPending}>{damageInventoryMutation.isPending ? 'Saving...' : 'Mark as damage'}</Button>
+            <Button type="button" variant="outline" className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm" disabled={damageInventoryMutation.isLoading} onClick={closeDamageModal}>Cancel</Button>
+            <Button type="submit" variant="destructive" className="rounded-xl px-3 py-2 text-sm" disabled={!damageCanSubmit || damageInventoryMutation.isLoading}>{damageInventoryMutation.isLoading ? 'Saving...' : 'Mark as damage'}</Button>
           </div>
         </form>
       </AppModal>

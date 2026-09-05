@@ -27,6 +27,18 @@ import { invalidateProducts } from '@/app/utils/query/queryInvalidation'
 import { Input } from '@/components/ui/input'
 
 export default function ProductForm() {
+  const [exportCooldown, setExportCooldown] = useState(0)
+
+  useEffect(() => {
+    if (exportCooldown <= 0) return
+
+    const timer = setTimeout(() => {
+      setExportCooldown((previous) => previous - 1)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [exportCooldown])
+
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -378,9 +390,10 @@ export default function ProductForm() {
               </button>
             ))}
           <button
-            className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors hover:bg-[#DCE4DF]"
+            className={`rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
+            disabled={exportCooldown > 0}
             type="button"
-            onClick={() =>
+            onClick={() => {
               exportToCSV(
                 displayedProducts,
                 [
@@ -392,9 +405,12 @@ export default function ProductForm() {
                 ],
                 'products'
               )
-            }
+              setExportCooldown(10)
+            }}
           >
-            Export to CSV
+            {exportCooldown > 0
+              ? `Export again in ${exportCooldown}s`
+              : 'Export to CSV'}
           </button>
           <Button
             className="rounded-xl cursor-pointer px-3 py-2 text-sm"
