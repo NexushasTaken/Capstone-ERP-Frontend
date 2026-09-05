@@ -1,3 +1,5 @@
+let isExportOnCooldown = false
+
 function escapeCSVValue(value: unknown): string {
   if (value === null || value === undefined) return ''
 
@@ -14,6 +16,14 @@ export function exportToCSV<T>(
   columns: CSVColumn<T>[],
   filename: string
 ): void {
+
+  if (isExportOnCooldown) {
+    console.warn('Export is on cooldown.')
+    return
+  }
+
+  isExportOnCooldown = true
+
   const csvContent = [
     columns.map((col) => escapeCSVValue(col.header)).join(','),
 
@@ -40,4 +50,8 @@ export function exportToCSV<T>(
   document.body.removeChild(link)
 
   URL.revokeObjectURL(url)
+
+  setTimeout(() => {
+    isExportOnCooldown = false
+  }, 10000)
 }

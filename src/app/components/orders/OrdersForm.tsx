@@ -77,6 +77,18 @@ function DetailItem({ label, value }: { label: string; value: string | number })
 }
 
 export default function OrdersForm() {
+  const [exportCooldown, setExportCooldown] = useState(0)
+
+  useEffect(() => {
+    if (exportCooldown <= 0) return
+
+    const timer = setTimeout(() => {
+      setExportCooldown((previous) => previous - 1)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [exportCooldown])
+
   const queryClient = useQueryClient()
   const [expandedOrderKey, setExpandedOrderKey] = useState<string | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -398,12 +410,17 @@ export default function OrdersForm() {
           </div>
 
           <button
-            className="cursor-pointer rounded-xl border border-[#DFE2E0] 
-            px-3 py-2 text-sm whitespace-nowrap transition-colors hover:bg-[#DCE4DF]"
+            className={`rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
+            disabled={exportCooldown > 0}
             type="button"
-            onClick={() => exportOrders(displayedOrders)}
+            onClick={() => {
+              exportOrders(displayedOrders)
+              setExportCooldown(10)
+            }}
           >
-            Export to CSV
+            {exportCooldown > 0
+              ? `Export again in ${exportCooldown}s`
+              : 'Export to CSV'}
           </button>
           <Button
             className="cursor-pointer rounded-xl px-3 py-2 text-sm"

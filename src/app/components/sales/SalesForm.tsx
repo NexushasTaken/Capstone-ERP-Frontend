@@ -13,7 +13,7 @@ import {
 } from '@/app/utils/helpers/saleHelpers'
 import { formatOrderId } from '@/app/utils/helpers/orderHelpers'
 import { exportToCSV } from '@/app/utils/exportToCsv'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Sale } from '@/app/types/sale'
 import { Input } from '@/components/ui/input'
 
@@ -32,6 +32,18 @@ const tableColumns = [
 ]
 
 export default function SalesForm() {
+  const [exportCooldown, setExportCooldown] = useState(0)
+
+  useEffect(() => {
+    if (exportCooldown <= 0) return
+
+    const timer = setTimeout(() => {
+      setExportCooldown((previous) => previous - 1)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [exportCooldown])
+
   const [search, setSearch] = useState('')
 
   const filteredSales = sales.filter((sale) => {
@@ -82,9 +94,10 @@ export default function SalesForm() {
             )}
           </div>
           <button
-            className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors hover:bg-[#DCE4DF]"
+            className={`rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
+            disabled={exportCooldown > 0}
             type="button"
-            onClick={() =>
+            onClick={() => {
               exportToCSV(
                 filteredSales,
                 [
@@ -100,9 +113,12 @@ export default function SalesForm() {
                 ],
                 'sales'
               )
-            }
+              setExportCooldown(10)
+            }}
           >
-            Export to CSV
+            {exportCooldown > 0
+              ? `Export again in ${exportCooldown}s`
+              : 'Export to CSV'}
           </button>
           <button aria-label="Sort sales" className="cursor-pointer rounded-xl border border-[#E1E4E2] p-2 text-[#121514]" type="button">
             <ArrowDownUp size={18} />
