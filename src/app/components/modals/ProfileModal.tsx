@@ -8,8 +8,8 @@ import { formatProfileDetails } from '@/app/utils/helpers/profileHelpers'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/app/utils/api/queryKeys'
-import { storeCurrentUser } from '@/app/utils/api/profileApi'
+import { queryKeys } from '@/app/utils/query/queryKeys'
+import { storeCurrentUser } from '@/app/services/profileApi'
 
 export default function ProfileModal({
   isOpen,

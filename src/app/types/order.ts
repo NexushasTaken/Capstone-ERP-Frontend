@@ -18,14 +18,20 @@ export interface OrderGroup {
   total: number
 }
 
-export interface InsertOrderPayloadItem {
-  productId: number
-  orderTypeId: number
-  deliveryRiderId: number
-  quantity: number
-  customerName: string
-  pickUpAddress: string
-  deliveryAddress: string
+export interface OrderType {
+  id: number
+  type: string
+}
+
+export interface OrderStatus {
+  id: number
+  status: string
+}
+
+export interface OrderRider {
+  id: number
+  firstName: string
+  lastName: string
 }
 
 export type OrdersSortBy = 'createdAt' | 'customerName' | 'quantity' | 'amount'

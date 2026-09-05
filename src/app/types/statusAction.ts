@@ -1,11 +1,11 @@
 import type { LucideIcon } from 'lucide-react'
 
-export type StatusActionValue = 'edit' | 'delete'
+export type StatusActionValue = string
 
 export interface StatusActionItem {
   label: string
   value: StatusActionValue
-  icon: LucideIcon
+  icon?: LucideIcon
   variant?: 'default' | 'destructive'
 }
 

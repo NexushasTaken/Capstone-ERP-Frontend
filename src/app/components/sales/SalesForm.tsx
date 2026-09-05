@@ -15,6 +15,7 @@ import { formatOrderId } from '@/app/utils/helpers/orderHelpers'
 import { exportToCSV } from '@/app/utils/exportToCsv'
 import { useState } from 'react'
 import type { Sale } from '@/app/types/sale'
+import { Input } from '@/components/ui/input'
 
 const sales: Sale[] = []
 
@@ -61,7 +62,7 @@ export default function SalesForm() {
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
-            <input
+            <Input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

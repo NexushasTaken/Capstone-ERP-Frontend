@@ -1,10 +1,4 @@
-export type CategorySortBy = 'id' | 'createdAt' | 'name'
-
-export interface CategorySortOption {
-  label: string
-  value: CategorySortBy
-  order: 'asc' | 'desc'
-}
+import type { CategorySortOption } from '@/app/types/category'
 
 export const categorySortOptions: CategorySortOption[] = [
   { label: 'Latest added', value: 'createdAt', order: 'desc' },

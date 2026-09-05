@@ -1,10 +1,10 @@
+import type { CategoryListItem } from '@/app/types/category'
 import type {
-  CategoryListItem,
   InsertCategoryPayload,
   RawCategoryListItem,
   UpdateCategoryPayload,
-} from '@/app/types/category'
-import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/apiEnvelope'
+} from '@/app/utils/api/types/category'
+import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/api/apiEnvelope'
 
 function mapCategory(item: RawCategoryListItem): CategoryListItem {
   return {

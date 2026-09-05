@@ -1,11 +1,12 @@
-import type { InventoryListItem } from '@/app/types/inventory'
-import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/apiEnvelope'
-import {
+import type { InventoryListItem, InventoryEntryType, InventoryMovementItem, InventoryDamageItem } from '@/app/types/inventory'
+import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/api/apiEnvelope'
+import type {
   FetchInventoriesParams,
+  MarkInventoryAsDamagePayload,
   InsertInventoryPayload,
   InventoryListContent,
   UpdateInventoryPayload,
-} from '@/app/utils/types/inventory'
+} from '@/app/utils/api/types/inventory'
 
 // GET
 export async function fetchInventories(params: FetchInventoriesParams = {}): Promise<{
@@ -40,6 +41,14 @@ export async function fetchInventories(params: FetchInventoriesParams = {}): Pro
     pageCount: data.content.pageCount,
     rows: data.content.rows,
   }
+}
+
+// GET
+export async function fetchInventoryEntryTypes(): Promise<InventoryEntryType[]> {
+  const response = await fetch('/api/Inventory/inventoryLabel/forInsert', { credentials: 'include' })
+  const data: ApiEnvelope<InventoryEntryType[]> = await response.json()
+  if (!response.ok || !data.success) throw new Error(data.message || 'Failed to fetch inventory entry types')
+  return data.content
 }
 
 // INSERT
@@ -83,6 +92,16 @@ export async function updateInventory(payload: UpdateInventoryPayload): Promise<
   return data
 }
 
+// PATCH
+export async function markInventoryAsDamage(payload: MarkInventoryAsDamagePayload): Promise<ApiEnvelopeNoContent> {
+  const response = await fetch('/api/Inventory/markasdamage', {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload),
+  })
+  const data: ApiEnvelopeNoContent = await response.json()
+  if (!response.ok || !data.success) throw new Error(data.message || 'Failed to mark inventory as damaged')
+  return data
+}
+
 // DELETE
 export async function deleteInventory(id: number): Promise<ApiEnvelopeNoContent> {
   const query = new URLSearchParams({ id: String(id) })
@@ -99,4 +118,30 @@ export async function deleteInventory(id: number): Promise<ApiEnvelopeNoContent>
   }
 
   return data
+}
+
+export async function fetchInventoryMovements(id: number): Promise<InventoryMovementItem[]> {
+  const query = new URLSearchParams({ id: String(id) })
+  const response = await fetch('/api/Inventory/movement/item?' + query, {
+    method: 'GET',
+    credentials: 'include',
+  })
+  const data: ApiEnvelope<InventoryMovementItem[]> = await response.json()
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || 'Failed to fetch inventory movement records')
+  }
+  return [...data.content].sort((a, b) => Date.parse(b.created_At) - Date.parse(a.created_At))
+}
+
+export async function fetchInventoryDamageRecords(id: number): Promise<InventoryDamageItem[]> {
+  const query = new URLSearchParams({ id: String(id) })
+  const response = await fetch('/api/Inventory/damage/item?' + query, {
+    method: 'GET',
+    credentials: 'include',
+  })
+  const data: ApiEnvelope<InventoryDamageItem[]> = await response.json()
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || 'Failed to fetch inventory damage records')
+  }
+  return [...data.content].sort((a, b) => Date.parse(b.created_At) - Date.parse(a.created_At))
 }

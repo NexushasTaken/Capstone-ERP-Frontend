@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import WarehouseCapacitySection from '@/app/components/inventory/WarehouseCapacitySection'
 import MovementVelocity from '@/app/components/inventory/MovementVelocity'
-import { deleteInventory, fetchInventories, insertInventory, updateInventory } from '@/app/utils/api/inventoryApi'
+import { deleteInventory, fetchInventoryMovements, fetchInventoryDamageRecords, fetchInventories, fetchInventoryEntryTypes, insertInventory, markInventoryAsDamage, updateInventory } from '@/app/services/inventoryApi'
 import {
   formatNumber,
   formatDate,
@@ -23,7 +23,6 @@ import type {
   InventorySortBy,
   InventoryFilter,
   InventoryStatusFilter,
-  MovementVelocityItem,
   WarehouseCapacity,
 } from '@/app/types/inventory'
 import {
@@ -45,13 +44,17 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import AppModal from '@/app/components/modals/AppModal'
 import EntityDropdown from '@/app/components/EntityDropdown'
-import { fetchProducts } from '@/app/utils/api/productApi'
+import { fetchProducts } from '@/app/services/productApi'
 import { ProductListItem } from '@/app/types/product'
 import { WarehouseListItem } from '@/app/types/warehouseCapacity'
-import { fetchWarehouses } from '@/app/utils/api/warehouseApi'
-import { queryKeys } from '@/app/utils/api/queryKeys'
-import { invalidateInventories } from '@/app/utils/api/queryInvalidation'
-import type { InsertInventoryPayload } from '@/app/utils/types/inventory'
+import { fetchWarehouses } from '@/app/services/warehouseApi'
+import { queryKeys } from '@/app/utils/query/queryKeys'
+import { invalidateInventories } from '@/app/utils/query/queryInvalidation'
+import type { InsertInventoryPayload } from '@/app/utils/api/types/inventory'
+import { Input } from '@/components/ui/input'
+import { DatePickerSimple } from '@/app/components/date-picker/BasicDatePicker'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 export default function InventoryForm() {
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
@@ -64,12 +67,26 @@ export default function InventoryForm() {
   const itemsPerPage = 10
   
 
-  const selectedTransactions: never[] = []
-  const selectedDamagedRecords: never[] = []
+  const selectedInventoryId = selectedItem?.id ?? null
+  const shouldLoadHistory = isSeeMoreOpen && selectedInventoryId !== null && selectedInventoryId > 0
+  const movementsQuery = useQuery({
+    queryKey: queryKeys.inventories.movements(selectedInventoryId),
+    queryFn: () => fetchInventoryMovements(selectedInventoryId!),
+    enabled: shouldLoadHistory,
+  })
+  const damageRecordsQuery = useQuery({
+    queryKey: queryKeys.inventories.damageRecords(selectedInventoryId),
+    queryFn: () => fetchInventoryDamageRecords(selectedInventoryId!),
+    enabled: shouldLoadHistory,
+  })
+  const selectedTransactions = movementsQuery.data ?? []
+  const selectedDamagedRecords = damageRecordsQuery.data ?? []
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isDamageModalOpen, setIsDamageModalOpen] = useState(false)
+  const [damageForm, setDamageForm] = useState({ quantity: '', reason: '' })
   const [productSearch, setProductSearch] = useState('')
 
   const [form, setForm] = useState({
@@ -77,6 +94,7 @@ export default function InventoryForm() {
     quantity: '',
     productId: '',
     warehouseId: '',
+    inventoryLabelId: '',
     dateArrived: '',
     reorderPoint: '',
   })
@@ -110,12 +128,37 @@ export default function InventoryForm() {
     queryFn: () => fetchWarehouses(),
     enabled: shouldLoadOptions,
   })
+  const entryTypesQuery = useQuery({
+    queryKey: queryKeys.inventories.entryTypes,
+    queryFn: fetchInventoryEntryTypes,
+    enabled: isAddModalOpen,
+  })
+  const entryTypes = entryTypesQuery.data ?? []
+  const damageInventoryMutation = useMutation({
+    mutationFn: markInventoryAsDamage,
+    onError: (error) => toast.error(error instanceof Error ? error.message : 'Failed to mark inventory as damaged.'),
+    onSuccess: () => {
+      setIsDamageModalOpen(false)
+      setDamageForm({ quantity: '', reason: '' })
+      toast.success('Inventory marked as damaged successfully.')
+    },
+    onSettled: () => invalidateInventories(queryClient),
+  })
+  const damageCanSubmit = selectedItem !== null && selectedItem.id > 0 &&
+    Number.isSafeInteger(Number(damageForm.quantity)) && Number(damageForm.quantity) > 0 &&
+    Number(damageForm.quantity) <= selectedItem.quantity && damageForm.reason.trim() !== ''
+
+  function closeDamageModal() {
+    if (!damageInventoryMutation.isPending) setIsDamageModalOpen(false)
+  }
+
   const inventories = inventoriesResponse?.items ?? []
   const products: ProductListItem[] = productResponse?.items ?? []
   const warehouses: WarehouseListItem[] = warehouseItems.filter(isSelectableWarehouse)
   const addInventoryMutation = useMutation({
     mutationFn: (payload: InsertInventoryPayload & { optimisticId: number }) =>
       insertInventory({
+        inventoryLabelId: payload.inventoryLabelId,
         name: payload.name,
         quantity: payload.quantity,
         productId: payload.productId,
@@ -221,11 +264,12 @@ export default function InventoryForm() {
     onSettled: () => invalidateInventories(queryClient),
   })
   const isSubmitting =
-    addInventoryMutation.isLoading ||
-    updateInventoryMutation.isLoading ||
-    deleteInventoryMutation.isLoading
+    addInventoryMutation.isPending ||
+    updateInventoryMutation.isPending ||
+    deleteInventoryMutation.isPending
 
   const formCanSubmit =
+    entryTypes.some((entryType) => String(entryType.id) === form.inventoryLabelId) &&
     form.name.trim() !== '' &&
     form.quantity.trim() !== '' &&
     Number(form.quantity) > 0 &&
@@ -250,7 +294,7 @@ export default function InventoryForm() {
   }
 
   function resetForm() {
-    setForm({ name: '', quantity: '', productId: '', warehouseId: '', dateArrived: '', reorderPoint: '' })
+    setForm({ inventoryLabelId: '', name: '', quantity: '', productId: '', warehouseId: '', dateArrived: '', reorderPoint: '' })
   }
 
   async function handleAddInventory() {
@@ -259,6 +303,7 @@ export default function InventoryForm() {
     setIsAddModalOpen(false)
     addInventoryMutation.mutate({
       optimisticId: -Date.now(),
+      inventoryLabelId: Number(form.inventoryLabelId),
       name: form.name,
       quantity: Number(form.quantity),
       productId: Number(form.productId),
@@ -300,6 +345,7 @@ export default function InventoryForm() {
   function openEditModal(item: InventoryListItem) {
     setSelectedItem(item)
     setForm({
+      inventoryLabelId: '',
       name: item.name,
       quantity: String(item.quantity),
       productId: String(item.productId),
@@ -318,7 +364,6 @@ export default function InventoryForm() {
 
   const forecastWarningCount = criticalInventories.length
 
-  const movementVelocity: MovementVelocityItem[] = []
 
   const warehouseCapacity: WarehouseCapacity = {
     warehouse: 'All warehouses',
@@ -399,7 +444,7 @@ export default function InventoryForm() {
               <p className="mt-2 text-sm text-[#68716C]">products currently marked Critical</p>
             </article>
 
-            <MovementVelocity items={movementVelocity} />
+            <MovementVelocity />
         </section>
 
         <section id="RawMaterials" className="relative flex w-full scroll-mt-6 flex-col rounded-2xl p-4 shadow-sm lg:p-5 border border-[#DCE4DE]">
@@ -412,7 +457,7 @@ export default function InventoryForm() {
 
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
-                <input
+                <Input
                   type="text"
                   value={search}
                   onChange={(e) => {
@@ -557,9 +602,14 @@ export default function InventoryForm() {
                               See more
                             </button>
                             <StatusAction
-                              actions={editDeleteActions}
+                              actions={[...editDeleteActions, { label: 'Mark as damage', value: 'damage', icon: AlertTriangle, variant: 'destructive' }]}
                               label={`More actions for inventory ${item.id}`}
                               onAction={(action) => {
+                                if (action === 'damage' && item.id > 0 && !isSubmitting) {
+                                  setSelectedItem(item)
+                                  setDamageForm({ quantity: '', reason: '' })
+                                  setIsDamageModalOpen(true)
+                                }
                                 if (action === 'edit') openEditModal(item)
                                 if (action === 'delete') openDeleteModal(item)
                               }}
@@ -587,6 +637,37 @@ export default function InventoryForm() {
 
         <WarehouseCapacitySection initialCapacity={warehouseCapacity} />
       </div>
+
+      <AppModal open={isDamageModalOpen} onClose={closeDamageModal} className="flex max-h-fit flex-col lg:max-w-lg">
+        <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
+          <div className="flex flex-col">
+            <span className="text-xs text-[#737A76]">{selectedItem ? formatInventoryId(String(selectedItem.id)) : ''}</span>
+            <span className="text-xl font-medium text-[#0c0d0d]">Mark as damage</span>
+          </div>
+          <CloseButton onClick={closeDamageModal} />
+        </div>
+        <form onSubmit={(event) => {
+          event.preventDefault()
+          if (!damageCanSubmit || !selectedItem || damageInventoryMutation.isPending) return
+          damageInventoryMutation.mutate({ id: selectedItem.id, quantity: Number(damageForm.quantity), reason: damageForm.reason.trim(), created_At: new Date().toISOString() })
+        }}>
+          <div className="flex flex-col gap-4 p-4">
+            <p className="text-sm text-[#68716C]">{selectedItem?.name} ? {formatNumber(selectedItem?.quantity ?? 0)} available. Damaged quantity will be deducted from stock.</p>
+            <label className="flex flex-col gap-1 text-sm text-[#121514]">
+              <span className="text-xs text-[#68716C]">Quantity</span>
+              <Input required type="number" min={1} max={selectedItem?.quantity} step={1} disabled={damageInventoryMutation.isPending} value={damageForm.quantity} onChange={(event) => setDamageForm((previous) => ({ ...previous, quantity: event.target.value }))} className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm text-[#121514]">
+              <span className="text-xs text-[#68716C]">Reason</span>
+              <Textarea required disabled={damageInventoryMutation.isPending} value={damageForm.reason} onChange={(event) => setDamageForm((previous) => ({ ...previous, reason: event.target.value }))} className="h-28 min-h-28 max-h-28 resize-none field-sizing-fixed overflow-y-auto rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]" />
+            </label>
+          </div>
+          <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
+            <Button type="button" variant="outline" className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm" disabled={damageInventoryMutation.isPending} onClick={closeDamageModal}>Cancel</Button>
+            <Button type="submit" variant="destructive" className="rounded-xl px-3 py-2 text-sm" disabled={!damageCanSubmit || damageInventoryMutation.isPending}>{damageInventoryMutation.isPending ? 'Saving...' : 'Mark as damage'}</Button>
+          </div>
+        </form>
+      </AppModal>
 
       <SeeMoreModal open={isSeeMoreOpen} onClose={() => setIsSeeMoreOpen(false)} className="flex flex-col h-auto lg:max-h-[70vh]">
         <div className="flex gap-2 w-full border-b border-[#E2E2E2] p-4 justify-between items-center">
@@ -658,12 +739,31 @@ export default function InventoryForm() {
               <div className="border-b border-[#E2E2E2] flex w-full h-px" />
             </div>
 
-            <div className="mt-4 flex w-full flex-col gap-2">
-              {selectedTransactions.length === 0 ? (
+            <div className="mt-4 flex w-full flex-col gap-2 max-h-72 overflow-auto scrollbar-none">
+              {movementsQuery.isLoading && shouldLoadHistory ? (
+                <div role="status" className="flex min-h-24 items-center justify-center rounded-xl bg-[#F0F1F1] text-sm text-[#737A76]">Loading movements...</div>
+              ) : movementsQuery.isError ? (
+                <div role="alert" className="flex min-h-24 items-center justify-center gap-2 rounded-xl bg-[#F0F1F1] p-4 text-sm text-[#B42318]">
+                  Unable to load movements.
+                  <button type="button" className="cursor-pointer underline" onClick={() => movementsQuery.refetch()}>Retry</button>
+                </div>
+              ) : selectedTransactions.length === 0 ? (
                 <div className="flex min-h-24 w-full items-center justify-center rounded-xl bg-[#F0F1F1] text-sm text-[#737A76]">
                   No movements found.
                 </div>
-              ) : null}
+              ) : (
+                selectedTransactions.map((record, index) => (
+                  <div key={record.created_At + '-' + index} className="flex items-center justify-between gap-4 p-2">
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <span className="text-sm font-medium text-[#121514] capitalize">{record.label}</span>
+                      <span className="text-xs text-[#737A76]">{formatDate(record.created_At)}</span>
+                    </div>
+                    <span className={record.quantity < 0 ? 'shrink-0 text-sm font-semibold text-[#B42318]' : 'shrink-0 text-sm font-semibold text-[#187B49]'}>
+                      {record.quantity > 0 ? '+' : ''}{formatNumber(record.quantity)} units
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="flex flex-col gap-2 mt-8">
@@ -671,19 +771,36 @@ export default function InventoryForm() {
               <div className="border-b border-[#E2E2E2] flex w-full h-px" />
             </div>
 
-            <div className="mt-4 flex w-full flex-col gap-2">
-              {selectedDamagedRecords.length === 0 ? (
+            <div className="mt-4 flex w-full flex-col gap-2 max-h-72 overflow-auto scrollbar-none">
+              {damageRecordsQuery.isLoading && shouldLoadHistory ? (
+                <div role="status" className="flex min-h-24 items-center justify-center rounded-xl bg-[#F0F1F1] text-sm text-[#737A76]">Loading damage reports...</div>
+              ) : damageRecordsQuery.isError ? (
+                <div role="alert" className="flex min-h-24 items-center justify-center gap-2 rounded-xl bg-[#F0F1F1] p-4 text-sm text-[#B42318]">
+                  Unable to load damage reports.
+                  <button type="button" className="cursor-pointer underline" onClick={() => damageRecordsQuery.refetch()}>Retry</button>
+                </div>
+              ) : selectedDamagedRecords.length === 0 ? (
                 <div className="flex min-h-24 w-full items-center justify-center rounded-xl bg-[#F0F1F1] text-sm text-[#737A76]">
                   No damage reports.
                 </div>
-              ) : null}
+              ) : (
+                selectedDamagedRecords.map((record, index) => (
+                  <div key={record.created_At + '-' + index} className="flex flex-col gap-2 p-2">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-sm font-semibold text-[#B42318]">{formatNumber(record.quantity)} units damaged</span>
+                      <span className="text-xs text-[#737A76]">{formatDate(record.created_At)}</span>
+                    </div>
+                    <p className="whitespace-pre-wrap wrap-anywhere text-sm text-[#121514]">{record.reason}</p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
       </SeeMoreModal>
 
       <AppModal
-        className="flex max-h-[90vh] flex-col"
+        className="flex max-h-fit flex-col lg:max-w-lg"
         onClose={() => setIsAddModalOpen(false)}
         open={isAddModalOpen}
       >
@@ -696,9 +813,29 @@ export default function InventoryForm() {
         </div>
 
         <div className="flex flex-col gap-4 p-4">
+          <div className="flex flex-col gap-1 text-sm text-[#121514]">
+            <label htmlFor="inventory-entry-type" className="text-xs text-[#68716C]">Inventory Entry Type</label>
+            <Select
+              items={entryTypes.map((entryType) => ({ value: String(entryType.id), label: capitalize(entryType.type) }))}
+              value={form.inventoryLabelId || null}
+              onValueChange={(value) => updateFormField('inventoryLabelId', value ?? '')}
+              disabled={entryTypesQuery.isLoading || entryTypesQuery.isError}
+            >
+              <SelectTrigger id="inventory-entry-type" className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm">
+                <SelectValue placeholder={entryTypesQuery.isLoading ? 'Loading entry types...' : 'Select entry type'} />
+              </SelectTrigger>
+              <SelectContent>
+                {entryTypes.map((entryType) => (
+                  <SelectItem key={entryType.id} value={String(entryType.id)}>{capitalize(entryType.type)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {entryTypesQuery.isError && <div className="text-xs text-red-600" role="alert">Unable to load entry types. <button type="button" className="underline" onClick={() => entryTypesQuery.refetch()}>Retry</button></div>}
+            {!entryTypesQuery.isLoading && !entryTypesQuery.isError && entryTypes.length === 0 && <span className="text-xs text-[#737A76]">No entry types available.</span>}
+          </div>
           <label className="flex flex-col gap-1 text-sm text-[#121514]">
             <span className="text-xs text-[#68716C]">Name</span>
-            <input
+            <Input
               className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
               onChange={(event) => updateFormField('name', event.target.value)}
               value={form.name}
@@ -707,7 +844,7 @@ export default function InventoryForm() {
 
           <label className="flex flex-col gap-1 text-sm text-[#121514]">
             <span className="text-xs text-[#68716C]">Quantity</span>
-            <input
+            <Input
               className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
               min={1}
               onChange={(event) => updateFormField('quantity', event.target.value)}
@@ -755,19 +892,15 @@ export default function InventoryForm() {
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-sm text-[#121514]">
-            <span className="text-xs text-[#68716C]">Date arrived</span>
-            <input
-              className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-              onChange={(event) => updateFormField('dateArrived', event.target.value)}
-              type="date"
-              value={form.dateArrived}
-            />
-          </label>
+          <DatePickerSimple
+            label="Date arrived"
+            value={form.dateArrived}
+            onChange={(value) => updateFormField('dateArrived', value)}
+          />
 
           <label className="flex flex-col gap-1 text-sm text-[#121514]">
             <span className="text-xs text-[#68716C]">Reorder point</span>
-            <input
+            <Input
               className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
               min={0}
               onChange={(event) => updateFormField('reorderPoint', event.target.value)}
@@ -799,7 +932,7 @@ export default function InventoryForm() {
       </AppModal>
 
       <AppModal
-        className="flex max-h-[90vh] flex-col"
+        className="flex max-h-fit flex-col lg:max-w-lg"
         onClose={() => {
           setIsEditModalOpen(false)
           resetForm()
@@ -822,7 +955,7 @@ export default function InventoryForm() {
         <div className="flex flex-col gap-4 p-4">
           <label className="flex flex-col gap-1 text-sm text-[#121514]">
             <span className="text-xs text-[#68716C]">Name</span>
-            <input
+            <Input
               className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
               onChange={(event) => updateFormField('name', event.target.value)}
               value={form.name}
@@ -870,7 +1003,7 @@ export default function InventoryForm() {
 
           <label className="flex flex-col gap-1 text-sm text-[#121514]">
             <span className="text-xs text-[#68716C]">Reorder point</span>
-            <input
+            <Input
               className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
               min={0}
               onChange={(event) => updateFormField('reorderPoint', event.target.value)}
@@ -904,7 +1037,7 @@ export default function InventoryForm() {
       </AppModal>
 
       <AppModal
-        className="flex max-h-[90vh] flex-col"
+        className="flex max-h-fit flex-col lg:max-w-lg"
         onClose={() => {
           setIsDeleteModalOpen(false)
           resetForm()

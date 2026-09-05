@@ -1,10 +1,10 @@
 import type { WarehouseListItem } from '@/app/types/warehouseCapacity'
-import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/apiEnvelope'
+import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/api/apiEnvelope'
 import {
   InsertWarehousePayload,
   RawWarehouse,
   UpdateWarehousePayload,
-} from '@/app/utils/types/warehouseCapacity'
+} from '@/app/utils/api/types/warehouseCapacity'
 
 // GET
 export async function fetchWarehouses(): Promise<WarehouseListItem[]> {

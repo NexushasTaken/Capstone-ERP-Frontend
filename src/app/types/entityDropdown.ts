@@ -9,11 +9,11 @@ export interface EntityDropdownProps {
   value: string
   placeholder: string
   emptyLabel: string
-  addHref: string
-  addLabel: string
+  addHref?: string
+  addLabel?: string
   onSelect: (id: number) => void
   isLoading?: boolean
-  onSearch?: (query: string, forceRefresh?: boolean) => void
+  onSearch?: (query: string) => void
   isSearching?: boolean
   searchPlaceholder?: string
 }

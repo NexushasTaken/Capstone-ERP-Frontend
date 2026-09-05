@@ -1,26 +1,38 @@
-import type { MovementVelocityItem } from '@/app/types/inventory'
-import { getVelocityColor } from '@/app/utils/helpers/inventoryHelpers'
+'use client'
 
-interface MovementVelocityProps {
-  items: MovementVelocityItem[]
-}
+import { Button } from '@/components/ui/button'
+import { useState } from 'react'
 
-export default function MovementVelocity({ items }: MovementVelocityProps) {
+const dayOptions = [7, 14, 21, 30]
+
+export default function MovementVelocity() {
+  const [selectedDays, setSelectedDays] = useState(7)
+
   return (
-    <article className="rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm flex h-96 lg:h-full">
-      <h2 className="font-semibold text-[#0c0d0d]">Movement Velocity <span className="text-sm font-normal text-[#68716C]">(Top 50)</span></h2>
+    <article className="rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm flex flex-col h-96 lg:h-full">
+      <div className="flex w-full justify-between gap-4">
+        <h2 className="font-semibold text-[#0c0d0d]">
+          Movement Velocity
+        </h2>
+
+        <div className="flex gap-1">
+          {dayOptions.map((days) => (
+            <Button
+              key={days}
+              type="button"
+              size="xs"
+              variant={selectedDays === days ? 'default' : 'outline'}
+              onClick={() => setSelectedDays(days)}
+              className="rounded-lg"
+            >
+              {days}D
+            </Button>
+          ))}
+        </div>
+      </div>
+
+
       <div className="mt-5 space-y-5">
-        {items.map((item) => (
-          <div key={item.category}>
-            <div className="mb-2 flex items-center justify-between gap-4 text-sm">
-              <span className="font-medium text-[#4E5752]">{item.label}</span>
-              <span className="font-semibold text-[#0c0d0d]">{item.percentage}%</span>
-            </div>
-            <div aria-label={`${item.label}: ${item.percentage}%`} aria-valuemax={100} aria-valuemin={0} aria-valuenow={item.percentage} className="h-3 overflow-hidden rounded-full bg-[#E6EAE7]" role="progressbar">
-              <div className={`h-full rounded-full ${getVelocityColor(item.category)}`} style={{ width: `${item.percentage}%` }} />
-            </div>
-          </div>
-        ))}
       </div>
     </article>
   )
