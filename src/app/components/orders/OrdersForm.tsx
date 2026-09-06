@@ -182,6 +182,10 @@ export default function OrdersForm() {
     id: orderType.id,
     label: normalizeOrderText(orderType.type),
   }))
+  const isWalkinSelected =
+  orderTypeOptions
+    .find((type) => type.id === Number(orderForm.orderTypeId))
+    ?.label.toLowerCase() === 'walkin'
   const orderStatusOptions = orderStatuses.map((orderStatus) => ({
     id: orderStatus.id,
     label: normalizeOrderText(orderStatus.status),
@@ -601,19 +605,21 @@ export default function OrdersForm() {
                   </SelectContent>
                 </Select>
               </label>
-
-              <label className="flex flex-col gap-1 text-sm text-[#121514]">
-                <span className="text-xs text-[#68716C]">Delivery rider</span>
-                <EntityDropdown
-                  emptyLabel="No riders found."
-                  isLoading={orderRidersLoading}
-                  onSelect={(riderId) => updateOrderFormField('deliveryRiderId', String(riderId))}
-                  options={orderRiderOptions}
-                  placeholder="Select delivery rider"
-                  searchPlaceholder="Search riders..."
-                  value={selectedOrderRiderLabel}
-                />
-              </label>
+              
+              {!isWalkinSelected && (
+                <label className="flex flex-col gap-1 text-sm text-[#121514]">
+                  <span className="text-xs text-[#68716C]">Delivery rider</span>
+                  <EntityDropdown
+                    emptyLabel="No riders found."
+                    isLoading={orderRidersLoading}
+                    onSelect={(riderId) => updateOrderFormField('deliveryRiderId', String(riderId))}
+                    options={orderRiderOptions}
+                    placeholder="Select delivery rider"
+                    searchPlaceholder="Search riders..."
+                    value={selectedOrderRiderLabel}
+                  />
+                </label>
+              )}
 
               <label className="flex flex-col gap-1 text-sm text-[#121514]">
                 <span className="text-xs text-[#68716C]">Customer name</span>
@@ -636,28 +642,30 @@ export default function OrdersForm() {
                 <span className="text-xs text-[#737A76]">Calculated from items below</span>
               </label>
             </div>
+            
+            {!isWalkinSelected && (
+              <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <label className="flex flex-col gap-1 text-sm text-[#121514]">
+                  <span className="text-xs text-[#68716C]">Pick up address</span>
+                  <Input
+                    className="h-10 rounded-xl border border-[#DFE2E0] 
+                    bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                    onChange={(event) => updateOrderFormField('pickUpAddress', event.target.value)}
+                    value={orderForm.pickUpAddress}
+                  />
+                </label>
 
-            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <label className="flex flex-col gap-1 text-sm text-[#121514]">
-                <span className="text-xs text-[#68716C]">Pick up address</span>
-                <Input
-                  className="h-10 rounded-xl border border-[#DFE2E0] 
-                  bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                  onChange={(event) => updateOrderFormField('pickUpAddress', event.target.value)}
-                  value={orderForm.pickUpAddress}
-                />
-              </label>
-
-              <label className="flex flex-col gap-1 text-sm text-[#121514]">
-                <span className="text-xs text-[#68716C]">Delivery address</span>
-                <Input
-                  className="h-10 rounded-xl border border-[#DFE2E0] 
-                  bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                  onChange={(event) => updateOrderFormField('deliveryAddress', event.target.value)}
-                  value={orderForm.deliveryAddress}
-                />
-              </label>
-            </div>
+                <label className="flex flex-col gap-1 text-sm text-[#121514]">
+                  <span className="text-xs text-[#68716C]">Delivery address</span>
+                  <Input
+                    className="h-10 rounded-xl border border-[#DFE2E0] 
+                    bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                    onChange={(event) => updateOrderFormField('deliveryAddress', event.target.value)}
+                    value={orderForm.deliveryAddress}
+                  />
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col">
@@ -699,7 +707,14 @@ export default function OrdersForm() {
                             emptyLabel="No products found"
                             isLoading={productsLoading}
                             onSelect={(productId) => updateOrderLine(index, 'productId', String(productId))}
-                            options={productOptions}
+                            options={productOptions.filter(
+                              (product) =>
+                                !orderLines.some(
+                                  (otherLine, otherIndex) =>
+                                    otherIndex !== index &&
+                                    Number(otherLine.productId) === product.id
+                                )
+                            )}
                             placeholder="Select product"
                             searchPlaceholder="Search products..."
                             value={line.product?.name ?? ''}
