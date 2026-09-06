@@ -1,4 +1,16 @@
-import type { InventoryListItem } from '@/app/types/inventory'
+import type { InventoryListItem, InventoryVelocityItem } from '@/app/types/inventory'
+
+export interface InventoryVelocityContent {
+  inventories: InventoryVelocityItem[]
+  pageCount: number
+  rows: number
+}
+
+export interface FetchInventoryVelocityParams {
+  cutOffDate: number
+  page?: number
+  pageSize?: number
+}
 
 export interface InventoryListContent {
   inventories: InventoryListItem[]

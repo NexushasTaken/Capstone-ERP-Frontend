@@ -2,11 +2,37 @@ import type { InventoryListItem, InventoryEntryType, InventoryMovementItem, Inve
 import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/api/apiEnvelope'
 import type {
   FetchInventoriesParams,
+  FetchInventoryVelocityParams,
+  InventoryVelocityContent,
   MarkInventoryAsDamagePayload,
   InsertInventoryPayload,
   InventoryListContent,
   UpdateInventoryPayload,
 } from '@/app/utils/api/types/inventory'
+
+// GET
+export async function fetchInventoryVelocity(params: FetchInventoryVelocityParams) {
+  const query = new URLSearchParams({ cutOffDate: String(params.cutOffDate) })
+  if (params.page !== undefined) query.set('page', String(params.page))
+  if (params.pageSize !== undefined) query.set('pageSize', String(params.pageSize))
+
+  const response = await fetch(`/api/Inventory/movement/velocity?${query}`, {
+    method: 'GET',
+    credentials: 'include',
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to fetch inventory velocity: ${response.status}`)
+  }
+  const data: ApiEnvelope<InventoryVelocityContent> = await response.json()
+  if (!data.success) {
+    throw new Error(data.message || 'Failed to fetch inventory velocity')
+  }
+  return {
+    items: data.content.inventories,
+    pageCount: data.content.pageCount,
+    rows: data.content.rows,
+  }
+}
 
 // GET
 export async function fetchInventories(params: FetchInventoriesParams = {}): Promise<{
