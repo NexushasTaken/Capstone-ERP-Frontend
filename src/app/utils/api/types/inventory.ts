@@ -27,7 +27,6 @@ export interface FetchInventoriesParams {
 }
 
 export interface InsertInventoryPayload {
-  inventoryLabelId: number
   name: string
   quantity: number
   productId: number
@@ -45,8 +44,15 @@ export interface UpdateInventoryPayload {
 }
 
 export interface MarkInventoryAsDamagePayload {
+  damagedType: 1 | 2
   id: number
   quantity: number
   reason: string
   created_At: string
+}
+
+export interface RestockInventoryPayload {
+  id: number
+  quantity: number
+  restockType: 1 | 2
 }

@@ -1,5 +1,7 @@
 'use client'
 
+import { Spinner } from '@/components/ui/spinner'
+
 import { ChevronDown, Plus, Search, Trash2, X } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
@@ -194,7 +196,10 @@ export default function OrdersForm() {
     value: String(orderType.id),
     label: orderType.label,
   }))
-  const orderStatusSelectItems = orderStatusOptions.map((status) => ({
+  const orderStatusFilterOptions = orderStatusOptions.filter(
+    (status) => status.label.trim().toLowerCase() !== 'completed'
+  )
+  const orderStatusSelectItems = orderStatusFilterOptions.map((status) => ({
     value: String(status.id),
     label: status.label,
   }))
@@ -381,7 +386,7 @@ export default function OrdersForm() {
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 {orderTypeOptions.map((orderType) => (
                   <SelectItem key={orderType.id} value={String(orderType.id)} className="capitalize">
                     {orderType.label}
@@ -403,8 +408,8 @@ export default function OrdersForm() {
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                {orderStatusOptions.map((status) => (
+                <SelectItem value="all">All Statuses</SelectItem>
+                {orderStatusFilterOptions.map((status) => (
                   <SelectItem key={status.id} value={String(status.id)} className="capitalize">
                     {status.label}
                   </SelectItem>
@@ -413,8 +418,11 @@ export default function OrdersForm() {
             </Select>
           </div>
 
-          <button
-            className={`rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
+          <Button
+
+
+            variant="outline"
+            className={`h-auto rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
             disabled={exportCooldown > 0}
             type="button"
             onClick={() => {
@@ -422,10 +430,13 @@ export default function OrdersForm() {
               setExportCooldown(10)
             }}
           >
-            {exportCooldown > 0
-              ? `Export again in ${exportCooldown}s`
-              : 'Export to CSV'}
-          </button>
+            {exportCooldown > 0 ? (
+              <>
+                <Spinner data-icon="inline-start" />
+                Cooldown
+              </>
+            ) : 'Export to CSV'}
+          </Button>
           <Button
             className="cursor-pointer rounded-xl px-3 py-2 text-sm"
             onClick={() => setIsAddModalOpen(true)}
@@ -513,11 +524,13 @@ export default function OrdersForm() {
                           View
                           <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                         </CollapsibleTrigger>
-                        <StatusAction
-                          actions={orderStatusActions}
-                          label="Order actions"
-                          onAction={(statusId) => handleUpdateOrderStatus(primary.id, statusId)}
-                        />
+                        {statusLabel.trim().toLowerCase() !== 'cancelled' && (
+                          <StatusAction
+                            actions={orderStatusActions}
+                            label="Order actions"
+                            onAction={(statusId) => handleUpdateOrderStatus(primary.id, statusId)}
+                          />
+                        )}
                       </div>
                     </div>
 

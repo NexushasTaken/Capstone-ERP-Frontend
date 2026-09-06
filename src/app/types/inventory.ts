@@ -159,11 +159,6 @@ export interface PaginationProps {
   onPageChange: (page: number) => void
 }
 
-export interface InventoryEntryType {
-  id: number
-  type: string
-}
-
 export interface InventoryMovementItem {
   quantity: number
   label: string
@@ -176,8 +171,9 @@ export interface InventoryDamageItem {
   created_At: string
 }
 export interface InventoryVelocityItem {
-  id: number
+  inventoryId: number
   name: string
+  warehouse: string
   classification: string
   velocityMetric: number
 }

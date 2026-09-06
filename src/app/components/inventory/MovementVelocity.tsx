@@ -108,14 +108,16 @@ export default function MovementVelocity() {
             <thead className="text-xs text-[#68716C]">
               <tr>
                 <th scope="col" className="pb-3 pr-3">Inventory</th>
+                <th scope="col" className="pb-3 pr-3">Warehouse</th>
                 <th scope="col" className="pb-3 pr-3">Classification</th>
                 <th scope="col" className="pb-3 text-right">Velocity</th>
               </tr>
             </thead>
             <tbody>
               {data.items.map((item) => (
-                <tr key={item.id} className="border-t border-[#E7ECE8]">
+                <tr key={item.inventoryId} className="border-t border-[#E7ECE8]">
                   <td className="py-3 pr-3 capitalize">{item.name}</td>
+                  <td className="py-3 pr-3">{item.warehouse}</td>
                   <td className="py-3 pr-3">{item.classification}</td>
                   <td className="py-3 text-right tabular-nums">{item.velocityMetric.toLocaleString()}</td>
                 </tr>

@@ -9,7 +9,6 @@ export const queryKeys = {
   inventories: {
     movements: (id: number | null) => ['inventories', 'movements', id] as const,
     damageRecords: (id: number | null) => ['inventories', 'damageRecords', id] as const,
-    entryTypes: ['inventoryEntryTypes'] as const,
     velocity: (params: FetchInventoryVelocityParams) => ['inventories', 'velocity', params] as const,
     all: (params: FetchInventoriesParams = {}) => ['inventories', params] as const,
   },
