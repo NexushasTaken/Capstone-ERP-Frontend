@@ -1,5 +1,8 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
+
 import { ArrowDownUp, Search, X } from 'lucide-react'
 import {
   formatPeso,
@@ -93,8 +96,10 @@ export default function SalesForm() {
               <Search className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#737A76]" />
             )}
           </div>
-          <button
-            className={`rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
+          <Button
+
+            variant="outline"
+            className={`h-auto rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
             disabled={exportCooldown > 0}
             type="button"
             onClick={() => {
@@ -116,10 +121,13 @@ export default function SalesForm() {
               setExportCooldown(10)
             }}
           >
-            {exportCooldown > 0
-              ? `Export again in ${exportCooldown}s`
-              : 'Export to CSV'}
-          </button>
+            {exportCooldown > 0 ? (
+              <>
+                <Spinner data-icon="inline-start" />
+                Cooldown
+              </>
+            ) : 'Export to CSV'}
+          </Button>
           <button aria-label="Sort sales" className="cursor-pointer rounded-xl border border-[#E1E4E2] p-2 text-[#121514]" type="button">
             <ArrowDownUp size={18} />
           </button>

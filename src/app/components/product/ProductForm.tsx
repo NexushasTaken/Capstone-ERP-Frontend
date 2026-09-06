@@ -1,5 +1,7 @@
 'use client'
 
+import { Spinner } from '@/components/ui/spinner'
+
 import { Search, X, Tag, Layers, Plus } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { deleteProduct, fetchProducts, insertProduct, updateProduct } from '@/app/services/productApi'
@@ -389,8 +391,10 @@ export default function ProductForm() {
                 {filter.label} <span className="ml-1">{productCountByFilter[filter.label]}</span>
               </button>
             ))}
-          <button
-            className={`rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
+          <Button
+
+            variant="outline"
+            className={`h-auto rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
             disabled={exportCooldown > 0}
             type="button"
             onClick={() => {
@@ -408,10 +412,13 @@ export default function ProductForm() {
               setExportCooldown(10)
             }}
           >
-            {exportCooldown > 0
-              ? `Export again in ${exportCooldown}s`
-              : 'Export to CSV'}
-          </button>
+            {exportCooldown > 0 ? (
+              <>
+                <Spinner data-icon="inline-start" />
+                Cooldown
+              </>
+            ) : 'Export to CSV'}
+          </Button>
           <Button
             className="rounded-xl cursor-pointer px-3 py-2 text-sm"
             onClick={() => setIsAddModalOpen(true)}

@@ -1,10 +1,12 @@
 'use client'
 
+import { Spinner } from '@/components/ui/spinner'
+
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import WarehouseCapacitySection from '@/app/components/inventory/WarehouseCapacitySection'
 import MovementVelocity from '@/app/components/inventory/MovementVelocity'
-import { deleteInventory, fetchInventoryMovements, fetchInventoryDamageRecords, fetchInventories, fetchInventoryEntryTypes, insertInventory, markInventoryAsDamage, updateInventory } from '@/app/services/inventoryApi'
+import { deleteInventory, fetchInventoryMovements, fetchInventoryDamageRecords, fetchInventories, insertInventory, markInventoryAsDamage, restockInventory, updateInventory } from '@/app/services/inventoryApi'
 import {
   formatNumber,
   formatDate,
@@ -57,6 +59,15 @@ import { DatePickerSimple } from '@/app/components/date-picker/BasicDatePicker'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
+const damageTypeOptions = [
+  { value: 1, label: 'Current Item' },
+  { value: 2, label: 'Return Item' },
+]
+const restockTypeOptions = [
+  { value: 1, label: 'Increase Stock' },
+  { value: 2, label: 'Return Stock' },
+]
+
 export default function InventoryForm() {
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
   const [sortBy, setSortBy] = useState<InventorySortBy>('latest')
@@ -88,7 +99,9 @@ export default function InventoryForm() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isDamageModalOpen, setIsDamageModalOpen] = useState(false)
   const [isRiskDetailsOpen, setIsRiskDetailsOpen] = useState(false)
-  const [damageForm, setDamageForm] = useState({ quantity: '', reason: '' })
+  const [damageForm, setDamageForm] = useState<{ quantity: string; reason: string; damagedType: 1 | 2 }>({ quantity: '', reason: '', damagedType: 1 })
+  const [isRestockModalOpen, setIsRestockModalOpen] = useState(false)
+  const [restockForm, setRestockForm] = useState<{ quantity: string; restockType: 1 | 2 }>({ quantity: '', restockType: 1 })
   const [productSearch, setProductSearch] = useState('')
 
   const [form, setForm] = useState({
@@ -96,7 +109,6 @@ export default function InventoryForm() {
     quantity: '',
     productId: '',
     warehouseId: '',
-    inventoryLabelId: '',
     dateArrived: '',
     reorderPoint: '',
   })
@@ -130,27 +142,23 @@ export default function InventoryForm() {
     queryFn: () => fetchWarehouses(),
     enabled: shouldLoadOptions,
   })
-  const entryTypesQuery = useQuery({
-    queryKey: queryKeys.inventories.entryTypes,
-    queryFn: fetchInventoryEntryTypes,
-    enabled: isAddModalOpen,
-  })
-  const entryTypes = entryTypesQuery.data ?? []
   const selectedItem = inventoriesResponse?.items.find((item) => item.id === selectedInventoryId) ?? selectedItemSnapshot
   const damageInventoryMutation = useMutation({
     mutationFn: markInventoryAsDamage,
     onMutate: async (payload) => {
       setIsDamageModalOpen(false)
-      setDamageForm({ quantity: '', reason: '' })
+      setDamageForm({ quantity: '', reason: '', damagedType: 1 })
       await queryClient.cancelQueries({ queryKey: ['inventories'] })
-      const previousQuantity = queryClient.getQueryData<typeof inventoriesResponse>(inventoriesQueryKey)
-        ?.items.find((item) => item.id === payload.id)?.quantity
+      const previousQuantity = payload.damagedType === 1
+        ? queryClient.getQueryData<typeof inventoriesResponse>(inventoriesQueryKey)
+          ?.items.find((item) => item.id === payload.id)?.quantity
+        : undefined
       const damageKey = queryKeys.inventories.damageRecords(payload.id)
       const previousDamageRecords = queryClient.getQueryData<Awaited<ReturnType<typeof fetchInventoryDamageRecords>>>(damageKey)
 
       queryClient.setQueryData<typeof inventoriesResponse>(inventoriesQueryKey, (current) => current && ({
         ...current,
-        items: current.items.map((item) => item.id === payload.id
+        items: current.items.map((item) => item.id === payload.id && payload.damagedType === 1
           ? { ...item, quantity: item.quantity - payload.quantity }
           : item),
       }))
@@ -181,9 +189,29 @@ export default function InventoryForm() {
     },
     onSettled: () => invalidateInventories(queryClient),
   })
+  const restockInventoryMutation = useMutation({
+    mutationFn: restockInventory,
+    onSuccess: () => {
+      setIsRestockModalOpen(false)
+      setRestockForm({ quantity: '', restockType: 1 })
+      toast.success('Inventory restocked successfully.')
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to restock inventory.')
+    },
+    onSettled: () => invalidateInventories(queryClient),
+  })
+  const restockCanSubmit = selectedItem !== null && selectedItem.id > 0 &&
+    Number.isSafeInteger(Number(restockForm.quantity)) && Number(restockForm.quantity) > 0
+
+  function closeRestockModal() {
+    if (!restockInventoryMutation.isLoading) setIsRestockModalOpen(false)
+  }
+
   const damageCanSubmit = selectedItem !== null && selectedItem.id > 0 &&
     Number.isSafeInteger(Number(damageForm.quantity)) && Number(damageForm.quantity) > 0 &&
-    Number(damageForm.quantity) <= selectedItem.quantity && damageForm.reason.trim() !== ''
+    (damageForm.damagedType === 2 || Number(damageForm.quantity) <= selectedItem.quantity) &&
+    damageForm.reason.trim() !== ''
 
   function closeDamageModal() {
     if (!damageInventoryMutation.isLoading) setIsDamageModalOpen(false)
@@ -195,7 +223,6 @@ export default function InventoryForm() {
   const addInventoryMutation = useMutation({
     mutationFn: (payload: InsertInventoryPayload & { optimisticId: number }) =>
       insertInventory({
-        inventoryLabelId: payload.inventoryLabelId,
         name: payload.name,
         quantity: payload.quantity,
         productId: payload.productId,
@@ -304,10 +331,10 @@ export default function InventoryForm() {
     addInventoryMutation.isLoading ||
     updateInventoryMutation.isLoading ||
     deleteInventoryMutation.isLoading ||
-    damageInventoryMutation.isLoading
+    damageInventoryMutation.isLoading ||
+    restockInventoryMutation.isLoading
 
   const formCanSubmit =
-    entryTypes.some((entryType) => String(entryType.id) === form.inventoryLabelId) &&
     form.name.trim() !== '' &&
     form.quantity.trim() !== '' &&
     Number(form.quantity) > 0 &&
@@ -332,7 +359,7 @@ export default function InventoryForm() {
   }
 
   function resetForm() {
-    setForm({ inventoryLabelId: '', name: '', quantity: '', productId: '', warehouseId: '', dateArrived: '', reorderPoint: '' })
+    setForm({ name: '', quantity: '', productId: '', warehouseId: '', dateArrived: '', reorderPoint: '' })
   }
 
   async function handleAddInventory() {
@@ -341,7 +368,6 @@ export default function InventoryForm() {
     setIsAddModalOpen(false)
     addInventoryMutation.mutate({
       optimisticId: -Date.now(),
-      inventoryLabelId: Number(form.inventoryLabelId),
       name: form.name,
       quantity: Number(form.quantity),
       productId: Number(form.productId),
@@ -383,7 +409,6 @@ export default function InventoryForm() {
   function openEditModal(item: InventoryListItem) {
     setSelectedItem(item)
     setForm({
-      inventoryLabelId: '',
       name: item.name,
       quantity: String(item.quantity),
       productId: String(item.productId),
@@ -539,8 +564,11 @@ export default function InventoryForm() {
                 )}
               </div>
 
-              <button
-                className={`rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors 
+              <Button
+
+
+                variant="outline"
+                className={`h-auto rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors
                   ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}
                   `}
                 type="button"
@@ -584,10 +612,13 @@ export default function InventoryForm() {
                   setExportCooldown(10)
                 }}
               >
-                {exportCooldown > 0
-                  ? `Export again in ${exportCooldown}s`
-                  : 'Export to CSV'}
-              </button>
+                {exportCooldown > 0 ? (
+                  <>
+                    <Spinner data-icon="inline-start" />
+                    Cooldown
+                  </>
+                ) : 'Export to CSV'}
+              </Button>
               
               {inventoryStatusFilters.map((filter) => (
                 <button
@@ -689,13 +720,21 @@ export default function InventoryForm() {
                               See more
                             </button>
                             <StatusAction
-                              actions={[...editDeleteActions, { label: 'Mark as damage', value: 'damage', icon: AlertTriangle, variant: 'destructive' }]}
+                              actions={[
+                                ...editDeleteActions, 
+                                { label: 'Restock', value: 'restock', icon: Plus }, 
+                                { label: 'Mark as damage', value: 'damage', icon: AlertTriangle, variant: 'destructive' }, ]}
                               label={`More actions for inventory ${item.id}`}
                               onAction={(action) => {
                                 if (action === 'damage' && item.id > 0 && !isSubmitting) {
                                   setSelectedItem(item)
-                                  setDamageForm({ quantity: '', reason: '' })
+                                  setDamageForm({ quantity: '', reason: '', damagedType: 1 })
                                   setIsDamageModalOpen(true)
+                                }
+                                if (action === 'restock' && item.id > 0 && !isSubmitting) {
+                                  setSelectedItem(item)
+                                  setRestockForm({ quantity: '', restockType: 1 })
+                                  setIsRestockModalOpen(true)
                                 }
                                 if (action === 'edit' && !isSubmitting) openEditModal(item)
                                 if (action === 'delete' && !isSubmitting) openDeleteModal(item)
@@ -736,13 +775,29 @@ export default function InventoryForm() {
         <form onSubmit={(event) => {
           event.preventDefault()
           if (!damageCanSubmit || !selectedItem || damageInventoryMutation.isLoading) return
-          damageInventoryMutation.mutate({ id: selectedItem.id, quantity: Number(damageForm.quantity), reason: damageForm.reason.trim(), created_At: new Date().toISOString() })
+          damageInventoryMutation.mutate({ id: selectedItem.id, damagedType: damageForm.damagedType, quantity: Number(damageForm.quantity), reason: damageForm.reason.trim(), created_At: new Date().toISOString() })
         }}>
           <div className="flex flex-col gap-4 p-4">
-            <p className="text-sm text-[#68716C]">{selectedItem?.name} ? {formatNumber(selectedItem?.quantity ?? 0)} available. Damaged quantity will be deducted from stock.</p>
+            <p className="text-sm text-[#68716C]">
+              {selectedItem?.name} · {formatNumber(selectedItem?.quantity ?? 0)} available.{' '}
+              {damageForm.damagedType === 1 ? 'Damaged quantity will be deducted from stock.' : 'Returned damage does not change current stock.'}
+            </p>
+            <div className="flex flex-col gap-1 text-sm text-[#121514]">
+              <label htmlFor="damage-type" className="text-xs text-[#68716C]">Damage type</label>
+              <Select items={damageTypeOptions} value={damageForm.damagedType} disabled={damageInventoryMutation.isLoading} onValueChange={(value) => {
+                if (value === 1 || value === 2) setDamageForm((previous) => ({ ...previous, damagedType: value }))
+              }}>
+                <SelectTrigger id="damage-type" className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {damageTypeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Quantity</span>
-              <Input required type="number" min={1} max={selectedItem?.quantity} step={1} disabled={damageInventoryMutation.isLoading} value={damageForm.quantity} onChange={(event) => setDamageForm((previous) => ({ ...previous, quantity: event.target.value }))} className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm" />
+              <Input required type="number" min={1} max={damageForm.damagedType === 1 ? selectedItem?.quantity : undefined} step={1} disabled={damageInventoryMutation.isLoading} value={damageForm.quantity} onChange={(event) => setDamageForm((previous) => ({ ...previous, quantity: event.target.value }))} className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm" />
             </label>
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Reason</span>
@@ -752,6 +807,48 @@ export default function InventoryForm() {
           <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
             <Button type="button" variant="outline" className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm" disabled={damageInventoryMutation.isLoading} onClick={closeDamageModal}>Cancel</Button>
             <Button type="submit" variant="destructive" className="rounded-xl px-3 py-2 text-sm" disabled={!damageCanSubmit || damageInventoryMutation.isLoading}>{damageInventoryMutation.isLoading ? 'Saving...' : 'Mark as damage'}</Button>
+          </div>
+        </form>
+      </AppModal>
+
+      <AppModal open={isRestockModalOpen} onClose={closeRestockModal} className="flex max-h-fit flex-col lg:max-w-lg">
+        <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
+          <div className="flex flex-col">
+            <span className="text-xs text-[#737A76]">{selectedItem ? formatInventoryId(String(selectedItem.id)) : ''}</span>
+            <span className="text-xl font-medium text-[#0c0d0d]">Restock inventory</span>
+          </div>
+          <CloseButton onClick={closeRestockModal} />
+        </div>
+        <form onSubmit={(event) => {
+          event.preventDefault()
+          if (!restockCanSubmit || !selectedItem || restockInventoryMutation.isLoading) return
+          restockInventoryMutation.mutate({ id: selectedItem.id, quantity: Number(restockForm.quantity), restockType: restockForm.restockType })
+        }}>
+          <div className="flex flex-col gap-4 p-4">
+            <p className="text-sm text-[#68716C]">{selectedItem?.name} ? {formatNumber(selectedItem?.quantity ?? 0)} available.</p>
+            <div className="flex flex-col gap-1 text-sm text-[#121514]">
+              <label htmlFor="restock-type" className="text-xs text-[#68716C]">Restock type</label>
+              <Select items={restockTypeOptions} value={restockForm.restockType} disabled={restockInventoryMutation.isLoading} onValueChange={(value) => {
+                if (value === 1 || value === 2) setRestockForm((previous) => ({ ...previous, restockType: value }))
+              }}>
+                <SelectTrigger id="restock-type" className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {restockTypeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <label className="flex flex-col gap-1 text-sm text-[#121514]">
+              <span className="text-xs text-[#68716C]">Quantity</span>
+              <Input required type="number" min={1} step={1} disabled={restockInventoryMutation.isLoading} value={restockForm.quantity} onChange={(event) => setRestockForm((previous) => ({ ...previous, quantity: event.target.value }))} className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm" />
+            </label>
+          </div>
+          <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
+            <Button type="button" variant="outline" className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm" disabled={restockInventoryMutation.isLoading} onClick={closeRestockModal}>Cancel</Button>
+            <Button type="submit" className="rounded-xl px-3 py-2 text-sm" disabled={!restockCanSubmit || restockInventoryMutation.isLoading}>
+              {restockInventoryMutation.isLoading ? <><Spinner data-icon="inline-start" />Saving...</> : 'Restock'}
+            </Button>
           </div>
         </form>
       </AppModal>
@@ -900,26 +997,6 @@ export default function InventoryForm() {
         </div>
 
         <div className="flex flex-col gap-4 p-4">
-          <div className="flex flex-col gap-1 text-sm text-[#121514]">
-            <label htmlFor="inventory-entry-type" className="text-xs text-[#68716C]">Inventory Entry Type</label>
-            <Select
-              items={entryTypes.map((entryType) => ({ value: String(entryType.id), label: capitalize(entryType.type) }))}
-              value={form.inventoryLabelId || null}
-              onValueChange={(value) => updateFormField('inventoryLabelId', value ?? '')}
-              disabled={entryTypesQuery.isLoading || entryTypesQuery.isError}
-            >
-              <SelectTrigger id="inventory-entry-type" className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm">
-                <SelectValue placeholder={entryTypesQuery.isLoading ? 'Loading entry types...' : 'Select entry type'} />
-              </SelectTrigger>
-              <SelectContent>
-                {entryTypes.map((entryType) => (
-                  <SelectItem key={entryType.id} value={String(entryType.id)}>{capitalize(entryType.type)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {entryTypesQuery.isError && <div className="text-xs text-red-600" role="alert">Unable to load entry types. <button type="button" className="underline" onClick={() => entryTypesQuery.refetch()}>Retry</button></div>}
-            {!entryTypesQuery.isLoading && !entryTypesQuery.isError && entryTypes.length === 0 && <span className="text-xs text-[#737A76]">No entry types available.</span>}
-          </div>
           <label className="flex flex-col gap-1 text-sm text-[#121514]">
             <span className="text-xs text-[#68716C]">Name</span>
             <Input

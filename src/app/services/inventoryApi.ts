@@ -1,10 +1,11 @@
-import type { InventoryListItem, InventoryEntryType, InventoryMovementItem, InventoryDamageItem } from '@/app/types/inventory'
+import type { InventoryListItem, InventoryMovementItem, InventoryDamageItem } from '@/app/types/inventory'
 import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/api/apiEnvelope'
 import type {
   FetchInventoriesParams,
   FetchInventoryVelocityParams,
   InventoryVelocityContent,
   MarkInventoryAsDamagePayload,
+  RestockInventoryPayload,
   InsertInventoryPayload,
   InventoryListContent,
   UpdateInventoryPayload,
@@ -69,14 +70,6 @@ export async function fetchInventories(params: FetchInventoriesParams = {}): Pro
   }
 }
 
-// GET
-export async function fetchInventoryEntryTypes(): Promise<InventoryEntryType[]> {
-  const response = await fetch('/api/Inventory/inventoryLabel/forInsert', { credentials: 'include' })
-  const data: ApiEnvelope<InventoryEntryType[]> = await response.json()
-  if (!response.ok || !data.success) throw new Error(data.message || 'Failed to fetch inventory entry types')
-  return data.content
-}
-
 // INSERT
 export async function insertInventory(
   payload: InsertInventoryPayload,
@@ -125,6 +118,18 @@ export async function markInventoryAsDamage(payload: MarkInventoryAsDamagePayloa
   })
   const data: ApiEnvelopeNoContent = await response.json()
   if (!response.ok || !data.success) throw new Error(data.message || 'Failed to mark inventory as damaged')
+  return data
+}
+
+export async function restockInventory(payload: RestockInventoryPayload): Promise<ApiEnvelopeNoContent> {
+  const response = await fetch('/api/Inventory/restock', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  })
+  const data: ApiEnvelopeNoContent = await response.json()
+  if (!response.ok || !data.success) throw new Error(data.message || 'Failed to restock inventory')
   return data
 }
 
