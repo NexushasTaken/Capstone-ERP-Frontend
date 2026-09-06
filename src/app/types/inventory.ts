@@ -175,3 +175,9 @@ export interface InventoryDamageItem {
   reason: string
   created_At: string
 }
+export interface InventoryVelocityItem {
+  id: number
+  name: string
+  classification: string
+  velocityMetric: number
+}

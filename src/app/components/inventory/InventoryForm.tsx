@@ -43,6 +43,7 @@ import Loading from '@/app/components/loaders/Loading'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import AppModal from '@/app/components/modals/AppModal'
+import PredictedStockouts from '@/app/components/PredictedStockouts'
 import EntityDropdown from '@/app/components/EntityDropdown'
 import { fetchProducts } from '@/app/services/productApi'
 import { ProductListItem } from '@/app/types/product'
@@ -86,6 +87,7 @@ export default function InventoryForm() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isDamageModalOpen, setIsDamageModalOpen] = useState(false)
+  const [isRiskDetailsOpen, setIsRiskDetailsOpen] = useState(false)
   const [damageForm, setDamageForm] = useState({ quantity: '', reason: '' })
   const [productSearch, setProductSearch] = useState('')
 
@@ -487,7 +489,18 @@ export default function InventoryForm() {
                 <span className="rounded-xl bg-[#FBE7E7] p-2 text-[#B42318]"><AlertTriangle className="h-5 w-5" /></span>
               </div>
               <p className="flex flex-1 mt-4 text-7xl font-semibold text-[#0c0d0d]">{forecastWarningCount}</p>
-              <p className="mt-2 text-sm text-[#68716C]">products currently marked Critical</p>
+              <div className='flex w-full justify-between items-center'>
+                <p className="mt-2 text-sm text-[#68716C]">products currently marked Critical</p>
+                <Button
+                    onClick={() => setIsRiskDetailsOpen(true)}
+                    type="button"
+                    size="xs"
+                    variant='outline'
+                    className="inline-flex gap-1 items-center rounded-lg"
+                  >
+                    View Details
+                </Button>
+              </div>
             </article>
 
             <MovementVelocity />
@@ -497,7 +510,7 @@ export default function InventoryForm() {
           <span id="Risks" className="absolute -top-6" aria-hidden="true" />
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-medium tracking-tight text-[#121514]">Inventory</h2>
+              <h2 className="text-2xl font-medium tracking-tight text-[#121514]">Inventory items</h2>
               <span className="rounded-md border border-[#DFE2E0] px-3 py-1 text-sm text-[#121514]">{inventories.length}</span>
             </div>
 
@@ -1162,6 +1175,17 @@ export default function InventoryForm() {
             Delete inventory
           </Button>
         </div>
+      </AppModal>
+
+      <AppModal
+        open={isRiskDetailsOpen}
+        onClose={() => setIsRiskDetailsOpen(false)}
+        className="flex max-h-[90dvh] flex-col overflow-y-auto p-4 lg:max-w-5xl"
+      >
+        <div className="mb-3 flex justify-end">
+          <CloseButton onClick={() => setIsRiskDetailsOpen(false)} />
+        </div>
+        <PredictedStockouts inventories={inventories} isLoading={isLoading} loadError={loadError} />
       </AppModal>
     </main>
   )
