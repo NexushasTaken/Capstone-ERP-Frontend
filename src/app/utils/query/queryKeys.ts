@@ -1,10 +1,19 @@
 import type { FetchInventoriesParams, FetchInventoryVelocityParams } from '@/app/utils/api/types/inventory'
 import type { FetchOrdersParams } from '@/app/utils/api/types/order'
 import type { FetchProductsParams } from '@/app/utils/api/types/product'
+import type { FetchDriversParams } from '@/app/utils/api/types/driver'
+import type { FetchSalesParams } from '@/app/utils/api/types/sale'
 
 export const queryKeys = {
   categories: {
     all: ['categories'] as const,
+  },
+  drivers: {
+    all: (params: FetchDriversParams = {}) => ['drivers', params] as const,
+  },
+  dashboard: {
+    salesOverview: (params: { from: string; to: string }) => ['dashboard', 'salesOverview', params] as const,
+    inventory: ['dashboard', 'inventory'] as const,
   },
   inventories: {
     movements: (id: number | null) => ['inventories', 'movements', id] as const,
@@ -20,6 +29,9 @@ export const queryKeys = {
   },
   products: {
     all: (params: FetchProductsParams = {}) => ['products', params] as const,
+  },
+  sales: {
+    all: (params: FetchSalesParams = {}) => ['sales', params] as const,
   },
   warehouses: {
     all: ['warehouses'] as const,

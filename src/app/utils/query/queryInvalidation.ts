@@ -18,6 +18,10 @@ export function invalidateCategories(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: queryKeys.categories.all })
 }
 
+export function invalidateDrivers(queryClient: QueryClient) {
+  return queryClient.invalidateQueries({ queryKey: ['drivers'] })
+}
+
 export function invalidateWarehouses(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: queryKeys.warehouses.all })
 }

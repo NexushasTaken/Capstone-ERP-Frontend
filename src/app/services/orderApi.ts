@@ -7,7 +7,7 @@ import type {
 import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/api/apiEnvelope'
 import type { FetchOrdersParams, OrderListContent, InsertOrderPayloadItem, UpdateOrderStatusPayload } from '@/app/utils/api/types/order'
 
-export async function fetchOrders(params: FetchOrdersParams = {}): Promise<{
+export async function fetchOrders(params: FetchOrdersParams = {}, signal?: AbortSignal): Promise<{
   items: OrderGroup[]
   pageCount: number
   rows: number
@@ -17,10 +17,10 @@ export async function fetchOrders(params: FetchOrdersParams = {}): Promise<{
   if (params.pageSize) query.set('pageSize', String(params.pageSize))
   if (params.name) query.set('name', params.name)
   if (params.filter !== undefined) query.set('filter', String(params.filter))
-  if (params.statusId !== undefined) query.set('statusId', String(params.statusId))
   if (params.orderTypeId !== undefined) query.set('orderTypeId', String(params.orderTypeId))
 
   const response = await fetch(`/api/Order/all?${query.toString()}`, {
+    signal,
     method: 'GET',
     credentials: 'include',
   })
@@ -40,26 +40,6 @@ export async function fetchOrders(params: FetchOrdersParams = {}): Promise<{
     pageCount: data.content.pageCount,
     rows: data.content.rows,
   }
-}
-
-export async function fetchAllOrders(params: Omit<FetchOrdersParams, 'page' | 'pageSize'> = {}): Promise<{
-  items: OrderGroup[]
-  pageCount: number
-  rows: number
-}> {
-  const firstPage = await fetchOrders({
-    ...params,
-    page: 1,
-    pageSize: 10,
-  })
-
-  if (firstPage.rows <= 10) return firstPage
-
-  return fetchOrders({
-    ...params,
-    page: 1,
-    pageSize: firstPage.rows,
-  })
 }
 
 export async function insertOrder(payload: InsertOrderPayloadItem[]): Promise<ApiEnvelopeNoContent> {

@@ -1,6 +1,6 @@
 'use client'
 
-import { FulfillmentChart, SalesChart, type SalesChartType } from '@/app/components/DashboardCharts'
+import { SalesChart, type SalesChartType } from '@/app/components/DashboardCharts'
 import PredictedStockouts from '@/app/components/PredictedStockouts'
 import InventoryOverview from '@/app/components/inventory/InventoryOverview'
 import {
@@ -11,14 +11,22 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Lottie } from 'lottie-react'
-import { ArrowUpDown, MoveUpRight, Settings2 } from 'lucide-react'
+import { ArrowUpDown, MoveUpRight } from 'lucide-react'
 import { Check } from 'lucide-react'
 import { useState } from 'react'
+import type { DateRange } from 'react-day-picker'
 import animatedRobot from "@/app/assets/json/animatedRobot.json"
 import { useQuery } from '@tanstack/react-query'
 import { fetchInventories } from '@/app/services/inventoryApi'
 import { queryKeys } from '@/app/utils/query/queryKeys'
 import { DatePickerWithRange } from '@/app/components/date-picker/RangePicker'
+import { fetchSalesOverview } from '@/app/services/dashboardApi'
+import {
+  formatDashboardDateParam,
+  formatDashboardPeso,
+  getDefaultCurrentYearDashboardRange,
+  getDateRangeMonthLabels,
+} from '@/app/utils/helpers/dashboardHelpers'
 
 const salesChartOptions: { label: string; value: SalesChartType }[] = [
   { label: 'Line chart', value: 'line' },
@@ -28,6 +36,7 @@ const salesChartOptions: { label: string; value: SalesChartType }[] = [
 
 export default function DashboardPage() {
   const [salesChartType, setSalesChartType] = useState<SalesChartType>('line')
+  const [salesDateRange, setSalesDateRange] = useState<DateRange>(getDefaultCurrentYearDashboardRange())
   //const [isRobotAnimationPlaying, setIsRobotAnimationPlaying] = useState(false)
   
 
@@ -43,6 +52,23 @@ export default function DashboardPage() {
   })
 
   const inventories = inventoriesResponse?.items ?? []
+  const salesOverviewParams = {
+    from: formatDashboardDateParam(salesDateRange.from!),
+    to: formatDashboardDateParam(salesDateRange.to ?? salesDateRange.from!),
+  }
+  const {
+    data: salesOverview,
+    isLoading: isSalesOverviewLoading,
+    error: salesOverviewError,
+  } = useQuery({
+    queryKey: queryKeys.dashboard.salesOverview(salesOverviewParams),
+    queryFn: ({ signal }) => fetchSalesOverview(salesOverviewParams, signal),
+    keepPreviousData: true,
+  })
+  const salesChartValues = salesOverview?.data.map((item) => item.data) ?? []
+  const salesChartLabels = getDateRangeMonthLabels(salesDateRange, salesChartValues.length)
+  const totalSales = salesOverview?.totalSales ?? 0
+  const growthPercentage = salesOverview?.growthPercentage ?? 0
 
 
   return (
@@ -58,7 +84,7 @@ export default function DashboardPage() {
         </div> */}
         <div className='flex flex-col xl:flex-row w-full'>
           {/* Fulfillment Performance */}
-          <div className="flex min-h-76 w-full flex-col gap-4 p-4 xl:w-1/2">
+          {/* <div className="flex min-h-76 w-full flex-col gap-4 p-4 xl:w-1/2">
             <div className="flex w-full gap-4 justify-between items-center">
               <span className="text-[#0c0d0d] text-lg font-medium md:text-2xl">
                 Fulfillment Performance
@@ -71,18 +97,19 @@ export default function DashboardPage() {
             <div className='relative w-full min-h-0 flex-1'>
               <FulfillmentChart />
             </div>
-          </div>
+          </div> */}
 
           {/* Sales Overview */}
-          <div className="flex min-h-76 w-full flex-col gap-4 p-4 xl:w-1/2">
+          <div className="flex min-h-76 w-full flex-col gap-4 p-4">
             <div className="flex w-full gap-4 justify-between items-center">
               <span className="text-[#0c0d0d] text-lg font-medium md:text-2xl">
                 Sales Overview
               </span>
               <div className="flex gap-2">
-                <button aria-label="Settings" type="button" className="bg-transparent border-2 border-[#C6C6C7] rounded-xl text-[#0c0d0d] font-medium p-2 cursor-pointer transition-all duration-300 hover:scale-105 group">
+                <DatePickerWithRange value={salesDateRange} onChange={setSalesDateRange} />
+                {/* <button aria-label="Settings" type="button" className="bg-transparent border-2 border-[#C6C6C7] rounded-xl text-[#0c0d0d] font-medium p-2 cursor-pointer transition-all duration-300 hover:scale-105 group">
                   <Settings2 className="transition-all group-hover:scale-105" />
-                </button>
+                </button> */}
                 <Popover>
                   <PopoverTrigger className="bg-transparent border-2 border-[#C6C6C7] rounded-xl text-[#0c0d0d] font-medium p-2 cursor-pointer transition-all duration-300 hover:scale-105 group">
                     <ArrowUpDown className="transition-all group-hover:scale-105" />
@@ -122,13 +149,19 @@ export default function DashboardPage() {
               <div className="flex items-end gap-3">
                 <span className="text-4xl font-bold text-[#0c0d0d] md:text-5xl">
                   <span className="text-[#909191]">&#8369;</span>
-                  440,925
+                  {isSalesOverviewLoading ? '...' : formatDashboardPeso(totalSales)}
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-md text-nowrap border border-[#D7DFD9] bg-[#F4F7F4] px-2 py-1 text-xs text-[#68716C] md:text-sm">
-                  32.2% <MoveUpRight className="h-4 w-4" />
+                  {growthPercentage.toFixed(1)}% <MoveUpRight className="h-4 w-4" />
                 </span>
               </div>
-              <SalesChart type={salesChartType} />
+              {salesOverviewError ? (
+                <div className="flex h-full min-h-64 items-center justify-center text-sm text-red-500">
+                  {salesOverviewError instanceof Error ? salesOverviewError.message : 'Failed to load sales overview'}
+                </div>
+              ) : (
+                <SalesChart type={salesChartType} labels={salesChartLabels} values={salesChartValues} />
+              )}
             </div>
           </div>
         </div>

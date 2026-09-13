@@ -9,10 +9,11 @@ import AppModal from '@/app/components/modals/AppModal'
 import CloseButton from '@/app/components/CloseButton'
 import EntityDropdown from '@/app/components/EntityDropdown'
 import Loading from '@/app/components/loaders/Loading'
+import { PaginationDemo } from '@/app/components/Pagination'
 import SortPopover from '@/app/components/SortPopover'
 import StatusAction from '@/app/components/StatusAction'
 import {
-  fetchAllOrders,
+  fetchOrders,
   fetchOrderRiders,
   fetchOrderStatuses,
   fetchOrderTypes,
@@ -27,7 +28,6 @@ import {
   formatDate,
   formatOrderNumber,
   getOrderGroupKey,
-  getOrderGroupPrimaryItem,
   getOrderGroupProductSummary,
   getOrderLineAmountTotal,
   getOrderLineQuantityTotal,
@@ -38,6 +38,7 @@ import {
   productSelectPageSize,
   tableColumns,
   orderSortOptions,
+  getOrderFilter,
 } from '@/app/utils/helpers/orderHelpers'
 import { formatPeso } from '@/app/utils/helpers/saleHelpers'
 import type { OrderGroup, OrderLineForm, OrdersSortBy } from '@/app/types/order'
@@ -94,12 +95,13 @@ export default function OrdersForm() {
   const queryClient = useQueryClient()
   const [expandedOrderKey, setExpandedOrderKey] = useState<string | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [sortBy, setSortBy] = useState<OrdersSortBy>('createdAt')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [sortBy, setSortBy] = useState<OrdersSortBy>('customerName')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState('')
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState('')
   const [isConfirmAddModalOpen, setIsConfirmAddModalOpen] = useState(false)
   const [orderForm, setOrderForm] = useState({
     orderTypeId: '',
@@ -114,22 +116,24 @@ export default function OrdersForm() {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setDebouncedSearch(search)
+      setDebouncedSearch(search.trim())
+      setCurrentPage(1)
     }, 400)
 
     return () => clearTimeout(timeout)
   }, [search])
 
   const ordersQueryParams = {
+    page: currentPage,
+    pageSize,
     name: debouncedSearch || undefined,
-    filter: 0,
-    statusId: selectedStatusFilter ? Number(selectedStatusFilter) : 0,
+    filter: getOrderFilter({ label: '', value: sortBy, order: sortOrder }),
     orderTypeId: selectedOrderTypeFilter ? Number(selectedOrderTypeFilter) : 0,
   }
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, isFetching, error } = useQuery({
     queryKey: queryKeys.orders.all(ordersQueryParams),
-    queryFn: () => fetchAllOrders(ordersQueryParams),
+    queryFn: ({ signal }) => fetchOrders(ordersQueryParams, signal),
     keepPreviousData: true,
   })
 
@@ -145,7 +149,7 @@ export default function OrdersForm() {
     queryFn: fetchOrderTypes,
   })
 
-  const { data: orderStatuses = [], isLoading: orderStatusesLoading } = useQuery({
+  const { data: orderStatuses = [] } = useQuery({
     queryKey: queryKeys.orders.statuses,
     queryFn: fetchOrderStatuses,
   })
@@ -179,6 +183,7 @@ export default function OrdersForm() {
 
   const orderGroups = data?.items ?? []
   const rows = data?.rows ?? 0
+  const pageCount = Math.max(1, data?.pageCount ?? 1)
   const products: ProductListItem[] = productsResponse?.items ?? []
   const orderTypeOptions = orderTypes.map((orderType) => ({
     id: orderType.id,
@@ -196,20 +201,9 @@ export default function OrdersForm() {
     value: String(orderType.id),
     label: orderType.label,
   }))
-  const orderStatusFilterOptions = orderStatusOptions.filter(
-    (status) => status.label.trim().toLowerCase() !== 'completed'
-  )
-  const orderStatusSelectItems = orderStatusFilterOptions.map((status) => ({
-    value: String(status.id),
-    label: status.label,
-  }))
   const orderTypeFilterSelectItems = [
     { value: 'all', label: 'All types' },
     ...orderTypeSelectItems,
-  ]
-  const orderStatusFilterSelectItems = [
-    { value: 'all', label: 'All statuses' },
-    ...orderStatusSelectItems,
   ]
   const orderRiderOptions = orderRiders.map((rider) => ({
     id: rider.id,
@@ -236,46 +230,20 @@ export default function OrdersForm() {
     orderForm.deliveryAddress.trim() !== '' &&
     orderLines.every((line) => Number(line.productId) > 0 && Number(line.quantity) > 0)
 
-  const sortedOrders = [...orderGroups].sort((a, b) => {
-    const first = getOrderGroupPrimaryItem(a)
-    const second = getOrderGroupPrimaryItem(b)
-
-    if (!first || !second) return 0
-
-    switch (sortBy) {
-      case 'customerName':
-        return sortOrder === 'asc'
-          ? first.customerName.localeCompare(second.customerName)
-          : second.customerName.localeCompare(first.customerName)
-      case 'quantity':
-        return sortOrder === 'asc'
-          ? first.quantity - second.quantity
-          : second.quantity - first.quantity
-      case 'amount':
-        return sortOrder === 'asc' ? a.total - b.total : b.total - a.total
-      case 'createdAt':
-        return sortOrder === 'asc'
-          ? Date.parse(first.created_At) - Date.parse(second.created_At)
-          : Date.parse(second.created_At) - Date.parse(first.created_At)
-      default:
-        return 0
-    }
-  })
-  const displayedOrders = sortedOrders
+  const displayedOrders = orderGroups
 
   function exportOrders(groups: OrderGroup[]) {
     exportToCSV(
-      groups.flatMap((group) => group.orders),
+      groups.flatMap((group) => group.orders.map((line) => ({ ...group, ...line }))),
       [
-        { header: 'Order ID', value: (order) => formatOrderNumber(order.id) },
+        { header: 'Order ID', value: (order) => formatOrderNumber(order.orderId) },
         { header: 'Product', value: (order) => order.productName },
         { header: 'Order type', value: (order) => normalizeOrderText(order.orderType) },
         { header: 'Status', value: (order) => normalizeOrderText(order.orderStatus) },
         { header: 'Customer', value: (order) => order.customerName },
         { header: 'Driver', value: (order) => order.driverName || 'Unassigned' },
         { header: 'Quantity', value: (order) => order.quantity },
-        { header: 'Amount', value: (order) => order.amount },
-        { header: 'Bundle code', value: (order) => order.bundleCode ?? '-' },
+        { header: 'Amount', value: (order) => order.totalAmount },
         { header: 'Pickup address', value: (order) => order.pickUpAddress ?? '-' },
         { header: 'Delivery address', value: (order) => order.deliveryAddress ?? '-' },
         { header: 'Created at', value: (order) => formatDate(order.created_At) },
@@ -295,11 +263,8 @@ export default function OrdersForm() {
   }
 
   function updateOrderTypeFilter(orderTypeId: number) {
+    setCurrentPage(1)
     setSelectedOrderTypeFilter(orderTypeId === 0 ? '' : String(orderTypeId))
-  }
-
-  function updateStatusFilter(statusId: number) {
-    setSelectedStatusFilter(statusId === 0 ? '' : String(statusId))
   }
 
   function handleUpdateOrderStatus(orderId: number, orderStatusId: string) {
@@ -396,34 +361,12 @@ export default function OrdersForm() {
             </Select>
           </div>
 
-          <div className="w-48">
-            <Select
-              disabled={orderStatusesLoading}
-              items={orderStatusFilterSelectItems}
-              onValueChange={(value) => updateStatusFilter(value === 'all' ? 0 : Number(value ?? 0))}
-              value={selectedStatusFilter || 'all'}
-            >
-              <SelectTrigger className="h-10 w-full rounded-xl 
-              border-[#DFE2E0] bg-white px-3 text-sm focus-visible:border-[#121514] focus-visible:ring-[#121514]/20">
-                <SelectValue placeholder="All statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                {orderStatusFilterOptions.map((status) => (
-                  <SelectItem key={status.id} value={String(status.id)} className="capitalize">
-                    {status.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           <Button
 
 
             variant="outline"
             className={`h-auto rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
-            disabled={exportCooldown > 0}
+            disabled={exportCooldown > 0 || isFetching || !!error || displayedOrders.length === 0}
             type="button"
             onClick={() => {
               exportOrders(displayedOrders)
@@ -435,7 +378,7 @@ export default function OrdersForm() {
                 <Spinner data-icon="inline-start" />
                 Cooldown
               </>
-            ) : 'Export to CSV'}
+            ) : 'Export page to CSV'}
           </Button>
           <Button
             className="cursor-pointer rounded-xl px-3 py-2 text-sm"
@@ -445,6 +388,7 @@ export default function OrdersForm() {
             <Plus className="h-4 w-4" />
             Add order
           </Button>
+          <span className="text-xs text-[#737A76]">Sort this page</span>
           <SortPopover
             value={sortBy}
             order={sortOrder}
@@ -452,6 +396,7 @@ export default function OrdersForm() {
             onChange={(value, order) => {
               setSortBy(value)
               setSortOrder(order)
+              setCurrentPage(1)
             }}
           />
         </div>
@@ -482,7 +427,7 @@ export default function OrdersForm() {
           ) : (
             <div className="flex flex-col gap-2">
               {displayedOrders.map((group) => {
-                const primary = getOrderGroupPrimaryItem(group)
+                const primary = group
                 if (!primary) return null
 
                 const orderKey = getOrderGroupKey(group)
@@ -505,7 +450,7 @@ export default function OrdersForm() {
                   >
                     <div className="grid grid-cols-[120px_240px_140px_140px_200px_140px_140px_130px] 
                     lg:grid-cols-[120px_1.4fr_140px_140px_1fr_140px_140px_160px] items-center px-3 py-5">
-                      <span className="font-medium">{formatOrderNumber(primary.id)}</span>
+                      <span className="font-medium">{formatOrderNumber(primary.orderId)}</span>
                       <span className="truncate capitalize">{getOrderGroupProductSummary(group)}</span>
                       <span className="whitespace-nowrap capitalize">{normalizeOrderText(primary.orderType)}</span>
                       <span className={`font-medium whitespace-nowrap capitalize ${orderStatusClass(primary.orderStatus)}`}>
@@ -528,7 +473,7 @@ export default function OrdersForm() {
                           <StatusAction
                             actions={orderStatusActions}
                             label="Order actions"
-                            onAction={(statusId) => handleUpdateOrderStatus(primary.id, statusId)}
+                            onAction={(statusId) => handleUpdateOrderStatus(primary.orderId, statusId)}
                           />
                         )}
                       </div>
@@ -538,7 +483,6 @@ export default function OrdersForm() {
                       <div className="border-t border-[#E2E2E2] bg-white p-4">
                         <div className="grid gap-4 grid-cols-4">
                           <DetailItem label="Driver" value={primary.driverName || 'Unassigned'} />
-                          <DetailItem label="Bundle code" value={primary.bundleCode ?? '-'} />
                           <DetailItem label="Total" value={formatPeso(group.total)} />
                           <DetailItem label="Created at" value={formatDate(primary.created_At)} />
                           <DetailItem label="Pickup address" value={primary.pickUpAddress ?? '-'} />
@@ -552,16 +496,16 @@ export default function OrdersForm() {
                             <span>Order ID</span>
                             <span>Quantity</span>
                             <span>Amount</span>
-                            <span>Bundle</span>
+                            <span>Unit price</span>
                           </div>
-                          {group.orders.map((item) => (
+                          {group.orders.map((item, index) => (
                             <div className="grid grid-cols-[1fr_120px_120px_140px_140px] border-t 
-                            border-[#E2E2E2] px-3 py-3 text-sm" key={item.id}>
+                            border-[#E2E2E2] px-3 py-3 text-sm" key={`${group.orderId}-${index}`}>
                               <span className="truncate capitalize">{item.productName}</span>
-                              <span className="truncate capitalize font-medium">#{item.id}</span>
+                              <span className="truncate capitalize font-medium">{formatOrderNumber(group.orderId)}</span>
                               <span className="font-medium">{item.quantity}</span>
-                              <span className="font-medium">{formatPeso(item.amount)}</span>
-                              <span>{item.bundleCode ?? '-'}</span>
+                              <span className="font-medium">{formatPeso(item.totalAmount)}</span>
+                              <span>{formatPeso(item.price)}</span>
                             </div>
                           ))}
                         </div>
@@ -577,8 +521,19 @@ export default function OrdersForm() {
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-[#737A76]">
-          Showing {displayedOrders.length} order groups from {rows} rows
+          Showing {displayedOrders.length} orders of {rows}
+          {isFetching ? ' - Updating...' : ''}
         </span>
+        <div className="flex">
+          <PaginationDemo
+            currentPage={currentPage}
+            totalPages={pageCount}
+            onPageChange={(page) => {
+              setCurrentPage(page)
+              setExpandedOrderKey(null)
+            }}
+          />
+        </div>
       </div>
 
       <AppModal

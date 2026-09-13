@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
 import { fetchInventories } from '@/app/services/inventoryApi'
-import { fetchWarehouses } from '@/app/services/warehouseApi'
+import { fetchDashboardInventory } from '@/app/services/dashboardApi'
 import {
   getInventoryStatusStyleFromLabel,
   formatNumber,
@@ -27,23 +27,21 @@ export default function InventoryOverview() {
   })
   const inventories = inventoriesResponse?.items ?? []
   const criticalInventories = inventories.filter((item) => item.status === 'critical')
-  const forecastWarningCount = criticalInventories.length
-
-  const { data: warehouses = [], isLoading: isLoadingWarehouses, isError: isWarehouseError } = useQuery({
-    queryKey: queryKeys.warehouses.all,
-    queryFn: fetchWarehouses,
+  const {
+    data: dashboardInventory,
+    isLoading: isDashboardInventoryLoading,
+    isError: isDashboardInventoryError,
+  } = useQuery({
+    queryKey: queryKeys.dashboard.inventory,
+    queryFn: ({ signal }) => fetchDashboardInventory(signal),
   })
-  const allWarehouseRecord = warehouses.find(
-    (warehouse) => warehouse.name.trim().toLowerCase() === 'all warehouse record'
-  )
-  const totalCapacity = allWarehouseRecord?.capacity ?? warehouses.reduce(
-    (sum, warehouse) => sum + warehouse.capacity, 0
-  )
+  const forecastWarningCount = dashboardInventory?.risk ?? criticalInventories.length
+  const totalCapacity = dashboardInventory?.totalWareHouseCapacity ?? 0
 
   const statusCounts = {
-    available: inventories.filter((x) => x.status === 'available').length,
-    lowStock: inventories.filter((x) => x.status === 'low stock').length,
-    critical: inventories.filter((x) => x.status === 'critical').length,
+    available: dashboardInventory?.inventoryStatus.find((item) => item.status === 'available')?.total ?? 0,
+    lowStock: dashboardInventory?.inventoryStatus.find((item) => item.status === 'low stock')?.total ?? 0,
+    critical: dashboardInventory?.inventoryStatus.find((item) => item.status === 'critical')?.total ?? 0,
   }
 
   const attentionItems = inventories.filter(
@@ -87,8 +85,8 @@ export default function InventoryOverview() {
             <WarehouseIcon size={18} className="text-[#68716C]" />
             <span className="text-sm text-[#68716C]">Total warehouse capacity</span>
           </div>
-          <p className="mt-3 text-2xl font-semibold text-[#121514]">{isLoadingWarehouses || isWarehouseError ? '\u2014' : `${formatNumber(totalCapacity)} units`}</p>
-          {isWarehouseError && <p role="alert" className="mt-1 text-xs text-red-600">Unable to load warehouse capacity.</p>}
+          <p className="mt-3 text-2xl font-semibold text-[#121514]">{isDashboardInventoryLoading || isDashboardInventoryError ? '-' : `${formatNumber(totalCapacity)} units`}</p>
+          {isDashboardInventoryError && <p role="alert" className="mt-1 text-xs text-red-600">Unable to load warehouse capacity.</p>}
         </div>
 
         <Link href="/dashboard/inventory#Risks" className="rounded-xl bg-white p-4 transition-colors hover:bg-[#FAFBFA]">
@@ -96,7 +94,7 @@ export default function InventoryOverview() {
             <AlertTriangle size={18} className="text-[#B42318]" />
             <span className="text-sm text-[#68716C]">Risks</span>
           </div>
-          <p className="mt-3 text-2xl font-semibold text-[#121514]">{isLoading ? '—' : forecastWarningCount}</p>
+          <p className="mt-3 text-2xl font-semibold text-[#121514]">{isDashboardInventoryLoading ? '-' : forecastWarningCount}</p>
         </Link>
       </div>
 
@@ -122,7 +120,7 @@ export default function InventoryOverview() {
       </div>
 
       <div className="mt-5 flex-1 rounded-xl bg-white p-4">
-        <h3 className="text-sm font-medium text-[#121514]">Needs Attention</h3>
+        <h3 className="text-sm font-medium text-[#121514]">Needs attention for stock below reorder point.</h3>
 
         <div className="mt-4 space-y-3">
           {isLoading ? (
