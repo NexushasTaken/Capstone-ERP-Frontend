@@ -138,6 +138,7 @@ export function formatDateForApi(isoDateString: string): string {
 export const inventoryColumns = ['Inventory ID', 'Name', 'Quantity', 'Reorder point', 'Warehouse', 'Status']
 
 export const inventorySortOptions = [
+  { label: 'Latest added', value: 'latest' as InventorySortBy, order: 'asc' as const },
   { label: 'Name (A to Z)', value: 'name' as InventorySortBy, order: 'asc' as const },
   { label: 'Name (Z to A)', value: 'name' as InventorySortBy, order: 'desc' as const },
   { label: 'Quantity (High to Low)', value: 'quantity' as InventorySortBy, order: 'desc' as const },

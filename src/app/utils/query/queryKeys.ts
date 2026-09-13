@@ -16,12 +16,14 @@ export const queryKeys = {
     inventory: ['dashboard', 'inventory'] as const,
   },
   inventories: {
+    statusCounts: ['inventories', 'statusCounts'] as const,
     movements: (id: number | null) => ['inventories', 'movements', id] as const,
     damageRecords: (id: number | null) => ['inventories', 'damageRecords', id] as const,
     velocity: (params: FetchInventoryVelocityParams) => ['inventories', 'velocity', params] as const,
     all: (params: FetchInventoriesParams = {}) => ['inventories', params] as const,
   },
   orders: {
+    statusCounts: ['orders', 'statusCounts'] as const,
     all: (params: FetchOrdersParams = {}) => ['orders', params] as const,
     types: ['orders', 'types'] as const,
     statuses: ['orders', 'statuses'] as const,

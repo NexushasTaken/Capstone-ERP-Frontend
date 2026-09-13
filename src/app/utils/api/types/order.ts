@@ -14,14 +14,13 @@ export interface OrderListContent {
   rows: number
 }
 
-export interface InsertOrderPayloadItem {
-  productId: number
+export interface InsertOrderPayload {
   orderTypeId: number
   deliveryRiderId: number
-  quantity: number
   customerName: string
   pickUpAddress: string
   deliveryAddress: string
+  orderLines: { productId: number; quantity: number }[]
 }
 
 export interface UpdateOrderStatusPayload {

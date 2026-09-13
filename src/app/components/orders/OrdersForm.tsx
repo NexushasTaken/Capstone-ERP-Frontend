@@ -15,6 +15,7 @@ import {
   fetchOrders,
   fetchOrderRiders,
   fetchOrderStatuses,
+  fetchOrderStatusCounts,
   fetchOrderTypes,
   insertOrder,
   updateOrderStatus,
@@ -39,7 +40,7 @@ import {
 } from '@/app/utils/helpers/orderHelpers'
 import { formatPeso } from '@/app/utils/helpers/saleHelpers'
 import type { OrderGroup, OrderLineForm } from '@/app/types/order'
-import type { InsertOrderPayloadItem } from '@/app/utils/api/types/order'
+import type { InsertOrderPayload } from '@/app/utils/api/types/order'
 import type { ProductListItem } from '@/app/types/product'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -151,6 +152,11 @@ export default function OrdersForm() {
     queryFn: fetchOrderStatuses,
   })
 
+  const { data: orderStatusCounts, isError: statusCountsError } = useQuery({
+    queryKey: queryKeys.orders.statusCounts,
+    queryFn: ({ signal }) => fetchOrderStatusCounts(signal),
+  })
+
   const { data: orderRiders = [], isLoading: orderRidersLoading } = useQuery({
     queryKey: queryKeys.orders.riders,
     queryFn: fetchOrderRiders,
@@ -227,11 +233,13 @@ export default function OrdersForm() {
   const totalOrderAmount = getOrderLineAmountTotal(orderLineRows)
   const orderFormCanSubmit =
     Number(orderForm.orderTypeId) > 0 &&
-    orderForm.deliveryRiderId.trim() !== '' &&
-    Number(orderForm.deliveryRiderId) >= 0 &&
     orderForm.customerName.trim() !== '' &&
-    orderForm.pickUpAddress.trim() !== '' &&
-    orderForm.deliveryAddress.trim() !== '' &&
+    (isWalkinSelected || (
+      orderForm.deliveryRiderId.trim() !== '' &&
+      Number(orderForm.deliveryRiderId) >= 0 &&
+      orderForm.pickUpAddress.trim() !== '' &&
+      orderForm.deliveryAddress.trim() !== ''
+    )) &&
     orderLines.every((line) => Number(line.productId) > 0 && Number(line.quantity) > 0)
 
   const displayedOrders = orderGroups
@@ -293,15 +301,17 @@ export default function OrdersForm() {
   function handleAddOrder() {
     if (!orderFormCanSubmit) return
 
-    const payload: InsertOrderPayloadItem[] = orderLines.map((line) => ({
-      productId: Number(line.productId),
+    const payload: InsertOrderPayload = {
       orderTypeId: Number(orderForm.orderTypeId),
-      deliveryRiderId: Number(orderForm.deliveryRiderId),
-      quantity: Number(line.quantity),
+      deliveryRiderId: isWalkinSelected ? 0 : Number(orderForm.deliveryRiderId),
       customerName: orderForm.customerName.trim(),
-      pickUpAddress: orderForm.pickUpAddress.trim(),
-      deliveryAddress: orderForm.deliveryAddress.trim(),
-    }))
+      pickUpAddress: isWalkinSelected ? '' : orderForm.pickUpAddress.trim(),
+      deliveryAddress: isWalkinSelected ? '' : orderForm.deliveryAddress.trim(),
+      orderLines: orderLines.map((line) => ({
+        productId: Number(line.productId),
+        quantity: Number(line.quantity),
+      })),
+    }
 
     setIsAddModalOpen(false)
     setIsConfirmAddModalOpen(false)
@@ -383,6 +393,13 @@ export default function OrdersForm() {
                 {orderStatusFilterSelectItems.map((status) => (
                   <SelectItem key={status.value} value={status.value} className="capitalize">
                     {status.label}
+                    {status.value !== 'all' && (
+                      <span className="ml-auto text-xs text-[#737A76]">
+                        {orderStatusCounts && !statusCountsError
+                          ? (orderStatusCounts.find((item) => item.status.trim().toLowerCase() === status.label.toLowerCase())?.count ?? 0).toLocaleString()
+                          : '-'}
+                      </span>
+                    )}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -798,11 +815,11 @@ export default function OrdersForm() {
               label="Order type"
               value={orderTypeOptions.find((item) => item.id === Number(orderForm.orderTypeId))?.label ?? '-'}
             />
-            <DetailItem label="Delivery rider" value={selectedOrderRiderLabel || '-'} />
+            {!isWalkinSelected && <DetailItem label="Delivery rider" value={selectedOrderRiderLabel || '-'} />}
             <DetailItem label="Customer" value={orderForm.customerName || '-'} />
             <DetailItem label="Quantity" value={totalOrderQuantity} />
-            <DetailItem label="Pickup address" value={orderForm.pickUpAddress || '-'} />
-            <DetailItem label="Delivery address" value={orderForm.deliveryAddress || '-'} />
+            {!isWalkinSelected && <DetailItem label="Pickup address" value={orderForm.pickUpAddress || '-'} />}
+            {!isWalkinSelected && <DetailItem label="Delivery address" value={orderForm.deliveryAddress || '-'} />}
           </div>
 
           <div className="overflow-auto rounded-xl border border-[#DFE2E0]">
