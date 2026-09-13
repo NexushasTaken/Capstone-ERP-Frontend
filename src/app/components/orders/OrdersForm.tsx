@@ -97,6 +97,7 @@ export default function OrdersForm() {
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState('')
+  const [selectedOrderStatusFilter, setSelectedOrderStatusFilter] = useState('')
   const [isConfirmAddModalOpen, setIsConfirmAddModalOpen] = useState(false)
   const [orderForm, setOrderForm] = useState({
     orderTypeId: '',
@@ -123,6 +124,7 @@ export default function OrdersForm() {
     pageSize,
     name: debouncedSearch || undefined,
     orderTypeId: selectedOrderTypeFilter ? Number(selectedOrderTypeFilter) : 0,
+    statusId: selectedOrderStatusFilter ? Number(selectedOrderStatusFilter) : 0,
   }
 
   const { data, isLoading, isFetching, error } = useQuery({
@@ -144,7 +146,7 @@ export default function OrdersForm() {
     queryFn: fetchOrderTypes,
   })
 
-  const { data: orderStatuses = [] } = useQuery({
+  const { data: orderStatuses = [], isLoading: orderStatusesLoading } = useQuery({
     queryKey: queryKeys.orders.statuses,
     queryFn: fetchOrderStatuses,
   })
@@ -192,6 +194,13 @@ export default function OrdersForm() {
     id: orderStatus.id,
     label: normalizeOrderText(orderStatus.status),
   }))
+  const orderStatusFilterSelectItems = [
+    { value: 'all', label: 'All statuses' },
+    ...orderStatusOptions.filter((status) => status.label.toLowerCase() !== 'completed').map((status) => ({
+      value: String(status.id),
+      label: status.label,
+    })),
+  ]
   const orderTypeSelectItems = orderTypeOptions.map((orderType) => ({
     value: String(orderType.id),
     label: orderType.label,
@@ -356,9 +365,31 @@ export default function OrdersForm() {
             </Select>
           </div>
 
+          <div className="w-48">
+            <Select
+              disabled={orderStatusesLoading}
+              items={orderStatusFilterSelectItems}
+              onValueChange={(value) => {
+                setSelectedOrderStatusFilter(value === 'all' ? '' : String(value ?? ''))
+                setCurrentPage(1)
+                setExpandedOrderKey(null)
+              }}
+              value={selectedOrderStatusFilter || 'all'}
+            >
+              <SelectTrigger aria-label="Filter orders by status" className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm focus-visible:border-[#121514] focus-visible:ring-[#121514]/20">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                {orderStatusFilterSelectItems.map((status) => (
+                  <SelectItem key={status.value} value={status.value} className="capitalize">
+                    {status.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <Button
-
-
             variant="outline"
             className={`h-auto rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
             disabled={exportCooldown > 0 || isFetching || !!error || displayedOrders.length === 0}
