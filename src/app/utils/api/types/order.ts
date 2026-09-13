@@ -5,6 +5,7 @@ export interface FetchOrdersParams {
   pageSize?: number
   name?: string
   orderTypeId?: number
+  statusId?: number
 }
 
 export interface OrderListContent {

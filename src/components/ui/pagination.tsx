@@ -52,10 +52,10 @@ function PaginationLink({
     <Button
       variant={isActive ? "outline" : "ghost"}
       size={size}
-      className={cn(className)}
+      className={cn("active:not-aria-[haspopup]:translate-y-0", className)}
       nativeButton={false}
       render={
-        <a
+        <a  
           aria-current={isActive ? "page" : undefined}
           data-slot="pagination-link"
           data-active={isActive}

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { AlertTriangle, Warehouse as WarehouseIcon } from 'lucide-react'
+import { Warehouse as WarehouseIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
@@ -35,7 +35,6 @@ export default function InventoryOverview() {
     queryKey: queryKeys.dashboard.inventory,
     queryFn: ({ signal }) => fetchDashboardInventory(signal),
   })
-  const forecastWarningCount = dashboardInventory?.risk ?? inventoriesResponse?.rows ?? 0
   const totalCapacity = dashboardInventory?.totalWareHouseCapacity ?? 0
 
   const statusCounts = {
@@ -65,8 +64,8 @@ export default function InventoryOverview() {
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-white p-4">
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+        <div className="min-w-0 flex-1 rounded-xl bg-white p-4">
           <div className="flex items-center gap-2">
             <WarehouseIcon size={18} className="text-[#68716C]" />
             <span className="text-sm text-[#68716C]">Total warehouse capacity</span>
@@ -75,32 +74,24 @@ export default function InventoryOverview() {
           {isDashboardInventoryError && <p role="alert" className="mt-1 text-xs text-red-600">Unable to load warehouse capacity.</p>}
         </div>
 
-        <Link href="/dashboard/inventory#Risks" className="rounded-xl bg-white p-4 transition-colors hover:bg-[#FAFBFA]">
-          <div className="flex items-center gap-2">
-            <AlertTriangle size={18} className="text-[#B42318]" />
-            <span className="text-sm text-[#68716C]">Risks</span>
-          </div>
-          <p className="mt-3 text-2xl font-semibold text-[#121514]">{isDashboardInventoryLoading ? '-' : forecastWarningCount}</p>
-        </Link>
-      </div>
+        <div className="min-w-0 flex-1 rounded-xl bg-white p-4">
+          <h3 className="text-sm font-medium text-[#121514]">Inventory</h3>
 
-      <div className="mt-5 rounded-xl bg-white p-4">
-        <h3 className="text-sm font-medium text-[#121514]">Inventory</h3>
+          <div className="mt-4 space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span>Available</span>
+              <span className="font-medium">{statusCounts.available}</span>
+            </div>
 
-        <div className="mt-4 space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span>Available</span>
-            <span className="font-medium">{statusCounts.available}</span>
-          </div>
+            <div className="flex justify-between">
+              <span>Low Stock</span>
+              <span className="font-medium">{statusCounts.lowStock}</span>
+            </div>
 
-          <div className="flex justify-between">
-            <span>Low Stock</span>
-            <span className="font-medium">{statusCounts.lowStock}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span>Critical</span>
-            <span className="font-medium">{statusCounts.critical}</span>
+            <div className="flex justify-between">
+              <span>Critical</span>
+              <span className="font-medium">{statusCounts.critical}</span>
+            </div>
           </div>
         </div>
       </div>
