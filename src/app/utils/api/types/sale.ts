@@ -4,7 +4,6 @@ export interface FetchSalesParams {
   page?: number
   pageSize?: number
   name?: string
-  filter?: number
   orderTypeId?: number
 }
 

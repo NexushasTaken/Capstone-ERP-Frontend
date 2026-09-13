@@ -9,13 +9,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-export interface SortOption<TSortBy extends string> {
+export interface SortOption<TSortBy extends string | number> {
   label: string
   value: TSortBy
   order: 'asc' | 'desc'
 }
 
-interface SortPopoverProps<TSortBy extends string> {
+interface SortPopoverProps<TSortBy extends string | number> {
   value: TSortBy
   order: 'asc' | 'desc'
   options: SortOption<TSortBy>[]
@@ -26,7 +26,7 @@ interface SortPopoverProps<TSortBy extends string> {
   trigger?: ReactNode
 }
 
-export default function SortPopover<TSortBy extends string>({
+export default function SortPopover<TSortBy extends string | number>({
   value,
   order,
   options,

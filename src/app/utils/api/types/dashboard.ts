@@ -6,6 +6,7 @@ export interface SalesOverviewContent {
   data: SalesOverviewPoint[]
   totalSales: number
   growthPercentage: number
+  growthErrorMessage?: string | null
 }
 
 export interface FetchSalesOverviewParams {

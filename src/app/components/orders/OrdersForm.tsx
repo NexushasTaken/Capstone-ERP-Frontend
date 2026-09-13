@@ -10,7 +10,6 @@ import CloseButton from '@/app/components/CloseButton'
 import EntityDropdown from '@/app/components/EntityDropdown'
 import Loading from '@/app/components/loaders/Loading'
 import { PaginationDemo } from '@/app/components/Pagination'
-import SortPopover from '@/app/components/SortPopover'
 import StatusAction from '@/app/components/StatusAction'
 import {
   fetchOrders,
@@ -37,11 +36,9 @@ import {
   orderStatusDotClass,
   productSelectPageSize,
   tableColumns,
-  orderSortOptions,
-  getOrderFilter,
 } from '@/app/utils/helpers/orderHelpers'
 import { formatPeso } from '@/app/utils/helpers/saleHelpers'
-import type { OrderGroup, OrderLineForm, OrdersSortBy } from '@/app/types/order'
+import type { OrderGroup, OrderLineForm } from '@/app/types/order'
 import type { InsertOrderPayloadItem } from '@/app/utils/api/types/order'
 import type { ProductListItem } from '@/app/types/product'
 import { Button } from '@/components/ui/button'
@@ -95,8 +92,6 @@ export default function OrdersForm() {
   const queryClient = useQueryClient()
   const [expandedOrderKey, setExpandedOrderKey] = useState<string | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [sortBy, setSortBy] = useState<OrdersSortBy>('customerName')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
   const [search, setSearch] = useState('')
@@ -127,13 +122,13 @@ export default function OrdersForm() {
     page: currentPage,
     pageSize,
     name: debouncedSearch || undefined,
-    filter: getOrderFilter({ label: '', value: sortBy, order: sortOrder }),
     orderTypeId: selectedOrderTypeFilter ? Number(selectedOrderTypeFilter) : 0,
   }
 
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: queryKeys.orders.all(ordersQueryParams),
     queryFn: ({ signal }) => fetchOrders(ordersQueryParams, signal),
+    staleTime: 0,
     keepPreviousData: true,
   })
 
@@ -388,17 +383,6 @@ export default function OrdersForm() {
             <Plus className="h-4 w-4" />
             Add order
           </Button>
-          <span className="text-xs text-[#737A76]">Sort this page</span>
-          <SortPopover
-            value={sortBy}
-            order={sortOrder}
-            options={orderSortOptions}
-            onChange={(value, order) => {
-              setSortBy(value)
-              setSortOrder(order)
-              setCurrentPage(1)
-            }}
-          />
         </div>
       </div>
 

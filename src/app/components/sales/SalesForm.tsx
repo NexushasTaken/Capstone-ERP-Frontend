@@ -6,7 +6,6 @@ import { Spinner } from '@/components/ui/spinner'
 import { ChevronDown, Search, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import SortPopover from '@/app/components/SortPopover'
 import {
   formatPeso,
   formatSaleId,
@@ -26,8 +25,6 @@ import { fetchSales } from '@/app/services/saleApi'
 import { fetchOrderTypes } from '@/app/services/orderApi'
 import { queryKeys } from '@/app/utils/query/queryKeys'
 import { normalizeOrderText } from '@/app/utils/helpers/orderHelpers'
-import type { SalesSortBy } from '@/app/types/sale'
-import { getSaleFilter, saleSortOptions } from '@/app/utils/helpers/saleSortHelpers'
 import {
   Select,
   SelectContent,
@@ -55,8 +52,6 @@ export default function SalesForm() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState('')
-  const [sortBy, setSortBy] = useState<SalesSortBy>('name')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const pageSize = 10
 
   useEffect(() => {
@@ -83,12 +78,12 @@ export default function SalesForm() {
     page: currentPage,
     pageSize,
     name: debouncedSearch || undefined,
-    filter: getSaleFilter({ value: sortBy, order: sortOrder }),
     orderTypeId: selectedOrderTypeFilter ? Number(selectedOrderTypeFilter) : 0,
   }
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: queryKeys.sales.all(salesQueryParams),
     queryFn: ({ signal }) => fetchSales(salesQueryParams, signal),
+    staleTime: 0,
     keepPreviousData: true,
   })
   const { data: orderTypes = [], isLoading: orderTypesLoading } = useQuery({
@@ -192,16 +187,6 @@ export default function SalesForm() {
               </>
             ) : 'Export page to CSV'}
           </Button>
-          <SortPopover
-            value={sortBy}
-            order={sortOrder}
-            options={saleSortOptions}
-            onChange={(value, order) => {
-              setSortBy(value)
-              setSortOrder(order)
-              setCurrentPage(1)
-            }}
-          />
         </div>
       </div>
 

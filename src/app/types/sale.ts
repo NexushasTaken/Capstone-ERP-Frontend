@@ -17,5 +17,3 @@ export interface Sale {
   total: number
   created_At: string
 }
-
-export type SalesSortBy = 'name' | 'quantity'
