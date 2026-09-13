@@ -138,13 +138,22 @@ export function formatDateForApi(isoDateString: string): string {
 export const inventoryColumns = ['Inventory ID', 'Name', 'Quantity', 'Reorder point', 'Warehouse', 'Status']
 
 export const inventorySortOptions = [
-  { label: 'Latest added', value: 'latest' as InventorySortBy, order: 'desc' as const },
   { label: 'Name (A to Z)', value: 'name' as InventorySortBy, order: 'asc' as const },
   { label: 'Name (Z to A)', value: 'name' as InventorySortBy, order: 'desc' as const },
   { label: 'Quantity (High to Low)', value: 'quantity' as InventorySortBy, order: 'desc' as const },
   { label: 'Quantity (Low to High)', value: 'quantity' as InventorySortBy, order: 'asc' as const },
-  { label: 'Reorder point', value: 'reorderPoint' as InventorySortBy, order: 'desc' as const },
+  { label: 'Reorder point (Ascending)', value: 'reorderPoint' as InventorySortBy, order: 'asc' as const },
+  { label: 'Warehouse ID (Ascending)', value: 'warehouseId' as InventorySortBy, order: 'asc' as const },
 ]
+
+export function getInventoryFilter(value: { value: InventorySortBy; order: 'asc' | 'desc' }) {
+  if (value.value === 'name') return value.order === 'asc' ? 1 : 2
+  if (value.value === 'quantity') return value.order === 'desc' ? 3 : 4
+  if (value.value === 'reorderPoint') return 5
+  if (value.value === 'warehouseId') return 6
+
+  return 0
+}
 
 export function isSelectableWarehouse(warehouse: WarehouseListItem) {
   return warehouse.name.toLowerCase() !== 'all warehouse record'

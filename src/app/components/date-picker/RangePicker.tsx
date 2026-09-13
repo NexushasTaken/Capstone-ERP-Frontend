@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { addDays } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { type DateRange } from "react-day-picker"
 
@@ -12,12 +11,23 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  clampRangeToCurrentYear,
+  getCurrentYearDateRange,
+} from "@/app/utils/helpers/dashboardHelpers"
 
-export function DatePickerWithRange() {
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(new Date().getFullYear(), 0, 20),
-    to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
-  })
+interface DatePickerWithRangeProps {
+  value?: DateRange
+  onChange?: (range: DateRange) => void
+}
+
+export function DatePickerWithRange({ value, onChange }: DatePickerWithRangeProps) {
+  const currentYearRange = getCurrentYearDateRange()
+  const date = value ?? currentYearRange
+
+  function handleSelect(range: DateRange | undefined) {
+    onChange?.(clampRangeToCurrentYear(range))
+  }
 
   return (
     <Field className="mx-auto w-fit">
@@ -35,8 +45,11 @@ export function DatePickerWithRange() {
           <Calendar
             mode="range"
             defaultMonth={date?.from}
+            startMonth={currentYearRange.from}
+            endMonth={currentYearRange.to}
+            disabled={{ before: currentYearRange.from!, after: currentYearRange.to! }}
             selected={date}
-            onSelect={setDate}
+            onSelect={handleSelect}
             numberOfMonths={2}
           />
         </PopoverContent>

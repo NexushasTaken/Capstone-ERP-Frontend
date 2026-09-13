@@ -1,12 +1,8 @@
-import type { Order, OrderGroup, OrderSortOption } from '@/app/types/order'
+import type { OrderGroup, OrderSortOption } from '@/app/types/order'
 import type { ProductListItem } from '@/app/types/product'
 
-export function formatOrderId(orderId: string) {
-  return `#${orderId}`
-}
-
 export function formatOrderNumber(orderId: number) {
-  return `#${orderId}`
+  return `ORD-${orderId}`
 }
 
 export const tableColumns = [
@@ -22,15 +18,18 @@ export const tableColumns = [
 export const productSelectPageSize = 100
 
 export const orderSortOptions: OrderSortOption[] = [
-  { label: 'Order Date (Newest first)', value: 'createdAt', order: 'desc' },
-  { label: 'Order Date (Oldest first)', value: 'createdAt', order: 'asc' },
-  { label: 'Customer (A to Z)', value: 'customerName', order: 'asc' },
-  { label: 'Customer (Z to A)', value: 'customerName', order: 'desc' },
+  { label: 'Name (A to Z)', value: 'customerName', order: 'asc' },
+  { label: 'Name (Z to A)', value: 'customerName', order: 'desc' },
   { label: 'Quantity (High to low)', value: 'quantity', order: 'desc' },
   { label: 'Quantity (Low to high)', value: 'quantity', order: 'asc' },
-  { label: 'Amount (High to low)', value: 'amount', order: 'desc' },
-  { label: 'Amount (Low to high)', value: 'amount', order: 'asc' },
 ]
+
+export function getOrderFilter(value: OrderSortOption) {
+  if (value.value === 'customerName') return value.order === 'asc' ? 1 : 2
+  if (value.value === 'quantity') return value.order === 'desc' ? 3 : 4
+
+  return 0
+}
 
 export function formatDate(dateString: string | null) {
   if (!dateString) return '-'
@@ -41,13 +40,8 @@ export function formatDate(dateString: string | null) {
   })
 }
 
-export function getOrderGroupPrimaryItem(group: OrderGroup): Order | null {
-  return group.orders[0] ?? null
-}
-
 export function getOrderGroupKey(group: OrderGroup) {
-  const primary = getOrderGroupPrimaryItem(group)
-  return primary?.bundleCode ?? String(primary?.id ?? 'empty-order')
+  return String(group.orderId)
 }
 
 export function getOrderGroupProductSummary(group: OrderGroup) {
@@ -62,8 +56,8 @@ export function normalizeOrderText(value: string | null | undefined) {
   return value.replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
-export function orderStatusClass(status: string) {
-  const normalized = status.toLowerCase()
+export function orderStatusClass(status: string | null | undefined) {
+  const normalized = (status ?? '').toLowerCase()
 
   if (normalized.includes('ship') || normalized.includes('complete')) return 'text-[#1F7A1F]'
   if (normalized.includes('cancel')) return 'text-[#B42318]'
@@ -72,8 +66,8 @@ export function orderStatusClass(status: string) {
   return 'text-[#737A76]'
 }
 
-export function orderStatusDotClass(status: string) {
-  const normalized = status.toLowerCase()
+export function orderStatusDotClass(status: string | null | undefined) {
+  const normalized = (status ?? '').toLowerCase()
 
   if (normalized.includes('ship') || normalized.includes('complete')) return 'bg-[#39B82C]'
   if (normalized.includes('cancel')) return 'bg-[#D92D20]'

@@ -122,35 +122,34 @@ export function FulfillmentChart() {
   )
 }
 
-const salesOverviewData = [
-  { total: 156646 },
-  { total: 86163 },
-  { total: 198116 },
-]
-
 export type SalesChartType = 'line' | 'pie' | 'bar'
-
-function getLastCompletedMonthLabels(referenceDate = new Date()) {
-  return Array.from({ length: 3 }, (_, index) => {
-    const monthOffset = 3 - index
-    const monthDate = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - monthOffset, 1)
-
-    return monthDate.toLocaleString('en-US', { month: 'long' })
-  })
-}
 
 interface SalesChartProps {
   type?: SalesChartType
+  labels: string[]
+  values: number[]
 }
 
-export function SalesChart({ type = 'line' }: SalesChartProps) {
+function getTooltipValue(context: { parsed: unknown; raw: unknown }) {
+  if (typeof context.parsed === 'number') return context.parsed
+  if (
+    context.parsed &&
+    typeof context.parsed === 'object' &&
+    'y' in context.parsed &&
+    typeof context.parsed.y === 'number'
+  ) {
+    return context.parsed.y
+  }
+  if (typeof context.raw === 'number') return context.raw
+
+  return 0
+}
+
+export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     if (!canvasRef.current) return
-
-    const labels = getLastCompletedMonthLabels()
-    const totals = salesOverviewData.map((month) => month.total)
 
     const config: ChartConfiguration = {
       type,
@@ -159,7 +158,7 @@ export function SalesChart({ type = 'line' }: SalesChartProps) {
         datasets: [
           {
             label: 'Sales',
-            data: totals,
+            data: values,
             borderColor: '#111513',
             backgroundColor: type === 'pie'
               ? ['#111513', '#7A8B80', '#D6DED8']
@@ -186,7 +185,7 @@ export function SalesChart({ type = 'line' }: SalesChartProps) {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (context) => `Sales: ${pesoFormatter.format(context.parsed.y ?? 0)}`,
+              label: (context) => `Sales: ${pesoFormatter.format(getTooltipValue(context))}`,
             },
           },
         },
@@ -214,11 +213,11 @@ export function SalesChart({ type = 'line' }: SalesChartProps) {
 
     const chart = new Chart(canvasRef.current, config)
     return () => chart.destroy()
-  }, [type])
+  }, [labels, type, values])
 
   return (
     <div className="h-full max-h-76 w-full">
-      <canvas aria-label={`Sales overview ${type} chart for the last three completed months`} ref={canvasRef} />
+      <canvas aria-label={`Sales overview ${type} chart`} ref={canvasRef} />
     </div>
   )
 }

@@ -21,9 +21,8 @@ export interface InventoryListContent {
 export interface FetchInventoriesParams {
   page?: number
   pageSize?: number
-  searchString?: string
+  name?: string
   filter?: number
-  statusId?: number
 }
 
 export interface InsertInventoryPayload {

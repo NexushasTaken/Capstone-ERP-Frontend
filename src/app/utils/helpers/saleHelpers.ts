@@ -1,7 +1,7 @@
 import type { Sale } from '@/app/types/sale'
 
-export function formatSaleId(saleId: string) {
-  return `#${saleId}`
+export function formatSaleId(saleId: string | number) {
+  return `SAL-${saleId}`
 }
 
 export function formatPeso(amount: number) {
@@ -13,7 +13,7 @@ export function formatPeso(amount: number) {
 }
 
 export function formatDate(dateString: string | null) {
-  if (!dateString) return '—'
+  if (!dateString) return '-'
   return new Date(dateString).toLocaleDateString('en-PH', {
     year: 'numeric',
     month: 'short',
@@ -26,24 +26,23 @@ export function getOrderForSale(_sale: Sale) {
   return null
 }
 
-export function getSaleProductName(_sale: Sale): string {
-  void _sale
-  return 'Unknown'
+export function getSaleProductName(sale: Sale): string {
+  if (sale.orders.length === 0) return '-'
+  if (sale.orders.length === 1) return sale.orders[0].productName
+
+  return `${sale.orders[0].productName} +${sale.orders.length - 1} more`
 }
 
-export function getSaleCustomerName(_sale: Sale): string {
-  void _sale
-  return 'Unknown'
+export function getSaleCustomerName(sale: Sale): string {
+  return sale.customerName
 }
 
-export function getSaleQuantity(_sale: Sale): number {
-  void _sale
-  return 0
+export function getSaleQuantity(sale: Sale): number {
+  return sale.orders.reduce((sum, order) => sum + order.quantity, 0)
 }
 
-export function getSaleStatusLabel(_sale: Sale): string {
-  void _sale
-  return 'Unknown'
+export function getSaleStatusLabel(sale: Sale): string {
+  return sale.orderStatus
 }
 
 const statusDotColors: Record<string, string> = {

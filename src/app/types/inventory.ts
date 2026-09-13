@@ -151,7 +151,7 @@ export interface InventoryStatusFilter {
   count: number
 }
 
-export type InventorySortBy = 'latest' | 'name' | 'quantity' | 'reorderPoint' | 'warehouse'
+export type InventorySortBy = 'name' | 'quantity' | 'reorderPoint' | 'warehouseId'
 
 export interface PaginationProps {
   currentPage: number

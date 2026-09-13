@@ -44,9 +44,8 @@ export async function fetchInventories(params: FetchInventoriesParams = {}): Pro
   const query = new URLSearchParams()
   if (params.page) query.set('page', String(params.page))
   if (params.pageSize) query.set('pageSize', String(params.pageSize))
-  if (params.searchString) query.set('searchString', params.searchString)
+  if (params.name) query.set('name', params.name)
   if (params.filter !== undefined) query.set('filter', String(params.filter))
-  if (params.statusId !== undefined) query.set('statusId', String(params.statusId))
 
   const response = await fetch(`/api/Inventory/all?${query.toString()}`, {
     method: 'GET',

@@ -1,20 +1,20 @@
-export interface Order {
-  id: number
+export interface OrderLine {
   productName: string
-  orderType: string
-  orderStatus: string
-  driverName: string
   quantity: number
-  customerName: string
-  pickUpAddress: string | null
-  deliveryAddress: string | null
-  amount: number
-  bundleCode: string | null
-  created_At: string
+  price: number
+  totalAmount: number
 }
 
 export interface OrderGroup {
-  orders: Order[]
+  orderId: number
+  orderType: string
+  orderStatus: string | null
+  driverName: string | null
+  customerName: string
+  pickUpAddress: string | null
+  deliveryAddress: string | null
+  created_At: string
+  orders: OrderLine[]
   total: number
 }
 
@@ -34,7 +34,7 @@ export interface OrderRider {
   lastName: string
 }
 
-export type OrdersSortBy = 'createdAt' | 'customerName' | 'quantity' | 'amount'
+export type OrdersSortBy = 'customerName' | 'quantity'
 
 export interface OrderSortOption {
   label: string

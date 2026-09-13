@@ -5,7 +5,6 @@ export interface FetchOrdersParams {
   pageSize?: number
   name?: string
   filter?: number
-  statusId?: number
   orderTypeId?: number
 }
 

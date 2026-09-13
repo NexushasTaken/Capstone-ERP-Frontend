@@ -18,6 +18,7 @@ import {
   isSelectableWarehouse,
   inventorySortOptions,
   inventoryColumns,
+  getInventoryFilter,
 } from '@/app/utils/helpers/inventoryHelpers'
 import { exportToCSV } from '@/app/utils/exportToCsv'
 import type {
@@ -70,11 +71,12 @@ const restockTypeOptions = [
 
 export default function InventoryForm() {
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
-  const [sortBy, setSortBy] = useState<InventorySortBy>('latest')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [sortBy, setSortBy] = useState<InventorySortBy>('name')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [selectedItemSnapshot, setSelectedItem] = useState<InventoryListItem | null>(null)
   const [selectedFilter, setSelectedFilter] = useState<InventoryFilter>('All')
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [exportCooldown, setExportCooldown] = useState(0)
   const itemsPerPage = 10
@@ -113,7 +115,12 @@ export default function InventoryForm() {
     reorderPoint: '',
   })
   const queryClient = useQueryClient()
-  const inventoriesQueryParams = { page: 1, pageSize: 100 }
+  const inventoriesQueryParams = {
+    page: currentPage,
+    pageSize: itemsPerPage,
+    name: debouncedSearch || undefined,
+    filter: getInventoryFilter({ value: sortBy, order: sortOrder }),
+  }
   const inventoriesQueryKey = queryKeys.inventories.all(inventoriesQueryParams)
   const {
     data: inventoriesResponse,
@@ -122,6 +129,7 @@ export default function InventoryForm() {
   } = useQuery({
     queryKey: inventoriesQueryKey,
     queryFn: () => fetchInventories(inventoriesQueryParams),
+    keepPreviousData: true,
   })
   const shouldLoadOptions = isAddModalOpen || isEditModalOpen
   const {
@@ -218,6 +226,7 @@ export default function InventoryForm() {
   }
 
   const inventories = inventoriesResponse?.items ?? []
+  const inventoryRows = inventoriesResponse?.rows ?? 0
   const products: ProductListItem[] = productResponse?.items ?? []
   const warehouses: WarehouseListItem[] = warehouseItems.filter(isSelectableWarehouse)
   const addInventoryMutation = useMutation({
@@ -445,43 +454,12 @@ export default function InventoryForm() {
   const filteredInventories = inventories.filter((item) => {
     const matchesFilter = selectedFilter === 'All' || item.status === selectedFilter
 
-    const matchesSearch =
-      search === '' ||
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.warehouseName.toLowerCase().includes(search.toLowerCase())
-
-    return matchesFilter && matchesSearch
+    return matchesFilter
   })
 
-  const totalPages = Math.ceil(filteredInventories.length / itemsPerPage)
-  const displayedInventories = [...filteredInventories].sort((a, b) => {
-    switch (sortBy) {
-      case 'latest':
-        return sortOrder === 'asc' ? a.id - b.id : b.id - a.id
-
-      case 'name':
-        return sortOrder === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
-
-      case 'quantity':
-        return sortOrder === 'asc' ? a.quantity - b.quantity : b.quantity - a.quantity
-
-      case 'reorderPoint':
-        return sortOrder === 'asc' ? a.reorderPoint - b.reorderPoint : b.reorderPoint - a.reorderPoint
-
-      case 'warehouse':
-        return sortOrder === 'asc'
-          ? a.warehouseName.localeCompare(b.warehouseName)
-          : b.warehouseName.localeCompare(a.warehouseName)
-
-      default:
-        return 0
-    }
-  })
-
-  const paginatedInventories = displayedInventories.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
+  const totalPages = Math.max(1, inventoriesResponse?.pageCount ?? 1)
+  const displayedInventories = filteredInventories
+  const paginatedInventories = displayedInventories
 
   function handleProductSearch(query: string) {
     setProductSearch(query)
@@ -498,6 +476,15 @@ export default function InventoryForm() {
 
   return () => clearTimeout(timer)
 }, [exportCooldown])
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(search.trim())
+      setCurrentPage(1)
+    }, 400)
+
+    return () => clearTimeout(timeout)
+  }, [search])
 
   return (
     <main className="flex h-dvh w-full p-3 xl:p-6 bg-white">
@@ -536,7 +523,7 @@ export default function InventoryForm() {
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-medium tracking-tight text-[#121514]">Inventory items</h2>
-              <span className="rounded-md border border-[#DFE2E0] px-3 py-1 text-sm text-[#121514]">{inventories.length}</span>
+              <span className="rounded-md border border-[#DFE2E0] px-3 py-1 text-sm text-[#121514]">{inventoryRows}</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -752,7 +739,7 @@ export default function InventoryForm() {
 
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-0 w-full justify-between items-center">
             <span className="text-sm text-[#737A76]">
-              Showing {paginatedInventories.length} of {filteredInventories.length} inventory items
+              Showing {paginatedInventories.length} of {inventoryRows} inventory items
             </span>
 
             <div className="flex">

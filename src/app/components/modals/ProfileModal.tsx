@@ -82,7 +82,7 @@ export default function ProfileModal({
           </span>
           <div>
             <p className="text-lg font-semibold text-[#0c0d0d]">{profile.firstName}</p>
-            <p className="text-sm text-[#747574]">{formatProfileDetails(profile)}</p>
+            <p className="text-sm text-[#747574] capitalize">{formatProfileDetails(profile)}</p>
           </div>
         </div>
 
