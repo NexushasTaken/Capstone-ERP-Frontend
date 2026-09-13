@@ -45,6 +45,7 @@ export async function fetchInventories(params: FetchInventoriesParams = {}): Pro
   if (params.page) query.set('page', String(params.page))
   if (params.pageSize) query.set('pageSize', String(params.pageSize))
   if (params.name) query.set('name', params.name)
+  if (params.statusId !== undefined) query.set('statusId', String(params.statusId))
   if (params.filter !== undefined) query.set('filter', String(params.filter))
 
   const response = await fetch(`/api/Inventory/all?${query.toString()}`, {
