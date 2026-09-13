@@ -392,14 +392,16 @@ export default function OrdersForm() {
               <SelectContent>
                 {orderStatusFilterSelectItems.map((status) => (
                   <SelectItem key={status.value} value={status.value} className="capitalize">
-                    {status.label}
-                    {status.value !== 'all' && (
-                      <span className="ml-auto text-xs text-[#737A76]">
-                        {orderStatusCounts && !statusCountsError
-                          ? (orderStatusCounts.find((item) => item.status.trim().toLowerCase() === status.label.toLowerCase())?.count ?? 0).toLocaleString()
-                          : '-'}
-                      </span>
+                    <span className="flex items-center gap-3 w-full justify-between">
+                      <span>{status.label}</span>
+                      {status.value !== 'all' && (
+                        <span className="shrink-0 text-right text-xs tabular-nums text-[#737A76]">
+                          {orderStatusCounts && !statusCountsError
+                            ? (orderStatusCounts.find((item) => item.status.trim().toLowerCase() === status.label.toLowerCase())?.count ?? 0).toLocaleString()
+                            : '-'}
+                        </span>
                     )}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
