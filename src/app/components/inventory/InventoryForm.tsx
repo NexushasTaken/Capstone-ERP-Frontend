@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import WarehouseCapacitySection from '@/app/components/inventory/WarehouseCapacitySection'
 import MovementVelocity from '@/app/components/inventory/MovementVelocity'
-import { deleteInventory, fetchInventoryMovements, fetchInventoryDamageRecords, fetchInventories, insertInventory, markInventoryAsDamage, restockInventory, updateInventory } from '@/app/services/inventoryApi'
+import { deleteInventory, fetchInventoryStatusCounts, fetchInventoryMovements, fetchInventoryDamageRecords, fetchInventories, insertInventory, markInventoryAsDamage, restockInventory, updateInventory } from '@/app/services/inventoryApi'
 import {
   formatNumber,
   formatDate,
@@ -71,7 +71,7 @@ const restockTypeOptions = [
 
 export default function InventoryForm() {
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
-  const [sortBy, setSortBy] = useState<InventorySortBy>('name')
+  const [sortBy, setSortBy] = useState<InventorySortBy>('latest')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [selectedItemSnapshot, setSelectedItem] = useState<InventoryListItem | null>(null)
   const [selectedFilter, setSelectedFilter] = useState<InventoryFilter>('All')
@@ -130,6 +130,10 @@ export default function InventoryForm() {
     queryKey: inventoriesQueryKey,
     queryFn: () => fetchInventories(inventoriesQueryParams),
     keepPreviousData: true,
+  })
+  const { data: inventoryStatusCounts, isError: statusCountsError } = useQuery({
+    queryKey: queryKeys.inventories.statusCounts,
+    queryFn: ({ signal }) => fetchInventoryStatusCounts(signal),
   })
   const shouldLoadOptions = isAddModalOpen || isEditModalOpen
   const {
@@ -444,10 +448,10 @@ export default function InventoryForm() {
   }
 
   const inventoryStatusFilters: InventoryStatusFilter[] = [
-    { label: 'All', count: inventories.length },
-    ...Array.from(new Set(inventories.map((item) => item.status))).map((status) => ({
-      label: status,
-      count: inventories.filter((item) => item.status === status).length,
+    { label: 'All', count: inventoryStatusCounts?.reduce((total, item) => total + item.count, 0) ?? 0 },
+    ...(inventoryStatusCounts ?? []).map((item) => ({
+      label: item.status,
+      count: item.count,
     })),
   ]
 
@@ -622,7 +626,7 @@ export default function InventoryForm() {
                   }`}
                 >
                   {filter.label === 'All' ? 'All' : capitalize(filter.label)}
-                  <span className="ml-1">{filter.count}</span>
+                  <span className="ml-1">{inventoryStatusCounts && !statusCountsError ? filter.count.toLocaleString() : '-'}</span>
                 </button>
               ))}
 

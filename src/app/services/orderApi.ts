@@ -1,3 +1,4 @@
+import type { StatusCount } from '@/app/utils/api/types/statusCount'
 import type {
   OrderGroup,
   OrderRider,
@@ -5,7 +6,7 @@ import type {
   OrderType,
 } from '@/app/types/order'
 import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/api/apiEnvelope'
-import type { FetchOrdersParams, OrderListContent, InsertOrderPayloadItem, UpdateOrderStatusPayload } from '@/app/utils/api/types/order'
+import type { FetchOrdersParams, OrderListContent, InsertOrderPayload, UpdateOrderStatusPayload } from '@/app/utils/api/types/order'
 
 export async function fetchOrders(params: FetchOrdersParams = {}, signal?: AbortSignal): Promise<{
   items: OrderGroup[]
@@ -43,7 +44,7 @@ export async function fetchOrders(params: FetchOrdersParams = {}, signal?: Abort
   }
 }
 
-export async function insertOrder(payload: InsertOrderPayloadItem[]): Promise<ApiEnvelopeNoContent> {
+export async function insertOrder(payload: InsertOrderPayload): Promise<ApiEnvelopeNoContent> {
   const response = await fetch('/api/Order/insert', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -120,4 +121,16 @@ export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Prom
   }
 
   return data
+}
+
+export async function fetchOrderStatusCounts(signal?: AbortSignal): Promise<StatusCount[]> {
+  const response = await fetch('/api/Order/status/count', {
+    credentials: 'include',
+    cache: 'no-store',
+    signal,
+  })
+  if (!response.ok) throw new Error('Failed to fetch order status counts: ' + response.status)
+  const data: ApiEnvelope<StatusCount[]> = await response.json()
+  if (!data.success) throw new Error(data.message || 'Failed to fetch status counts')
+  return data.content
 }

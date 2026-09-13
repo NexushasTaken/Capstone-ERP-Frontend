@@ -1,3 +1,4 @@
+import type { StatusCount } from '@/app/utils/api/types/statusCount'
 import type { InventoryListItem, InventoryMovementItem, InventoryDamageItem } from '@/app/types/inventory'
 import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/api/apiEnvelope'
 import type {
@@ -175,4 +176,16 @@ export async function fetchInventoryDamageRecords(id: number): Promise<Inventory
     throw new Error(data.message || 'Failed to fetch inventory damage records')
   }
   return [...data.content].sort((a, b) => Date.parse(b.created_At) - Date.parse(a.created_At))
+}
+
+export async function fetchInventoryStatusCounts(signal?: AbortSignal): Promise<StatusCount[]> {
+  const response = await fetch('/api/Inventory/status/count', {
+    credentials: 'include',
+    cache: 'no-store',
+    signal,
+  })
+  if (!response.ok) throw new Error('Failed to fetch inventory status counts: ' + response.status)
+  const data: ApiEnvelope<StatusCount[]> = await response.json()
+  if (!data.success) throw new Error(data.message || 'Failed to fetch status counts')
+  return data.content
 }
