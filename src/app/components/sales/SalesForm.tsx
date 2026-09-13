@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 
-import { Search, X } from 'lucide-react'
+import { ChevronDown, Search, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import SortPopover from '@/app/components/SortPopover'
@@ -21,6 +21,7 @@ import { exportToCSV } from '@/app/utils/exportToCsv'
 import { Input } from '@/components/ui/input'
 import { PaginationDemo } from '@/app/components/Pagination'
 import Loading from '@/app/components/loaders/Loading'
+import { Collapsible, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { fetchSales } from '@/app/services/saleApi'
 import { fetchOrderTypes } from '@/app/services/orderApi'
 import { queryKeys } from '@/app/utils/query/queryKeys'
@@ -44,9 +45,11 @@ const tableColumns = [
   'Total amount',
   'Sale date',
   'Status',
+  'Actions',
 ]
 
 export default function SalesForm() {
+  const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null)
   const [exportCooldown, setExportCooldown] = useState(0)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -70,6 +73,7 @@ export default function SalesForm() {
     const timeout = setTimeout(() => {
       setDebouncedSearch(search.trim())
       setCurrentPage(1)
+      setExpandedSaleId(null)
     }, 400)
 
     return () => clearTimeout(timeout)
@@ -212,50 +216,117 @@ export default function SalesForm() {
               ))}
             </tr>
           </thead>
-          <tbody>
             {isLoading ? (
-              <tr>
+              <tbody><tr>
                 <td colSpan={tableColumns.length} className="px-3 py-4 text-center text-sm text-[#737A76]">
                   <Loading />
                 </td>
-              </tr>
+              </tr></tbody>
             ) : error ? (
-              <tr>
+              <tbody><tr>
                 <td colSpan={tableColumns.length} className="px-3 py-4 text-center text-sm text-red-500">
                   {error instanceof Error ? error.message : 'Failed to load sales'}
                 </td>
-              </tr>
+              </tr></tbody>
             ) : sales.length === 0 ? (
-              <tr>
+              <tbody><tr>
                 <td colSpan={tableColumns.length} className="px-3 py-4 text-center text-sm text-[#737A76]">
                   No sales found.
                 </td>
-              </tr>
+              </tr></tbody>
             ) : (
               sales.map((sale) => {
                 const productName = getSaleProductName(sale)
                 const customerName = getSaleCustomerName(sale)
                 const quantity = getSaleQuantity(sale)
                 const statusLabel = getSaleStatusLabel(sale)
+                const isExpanded = expandedSaleId === sale.id
 
                 return (
-                  <tr className="bg-[#FAFBFA] text-sm text-[#121514]" key={sale.id}>
-                    <td className="rounded-l-xl px-3 py-4 font-medium whitespace-nowrap">{formatSaleId(sale.id)}</td>
-                    <td className="px-3 py-4 font-medium whitespace-nowrap capitalize">{productName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap capitalize">{normalizeOrderText(sale.orderType)}</td>
-                    <td className="px-3 py-4 font-medium whitespace-nowrap capitalize">{customerName}</td>
-                    <td className="px-3 py-4 text-center">{quantity}</td>
-                    <td className="px-3 py-4 font-medium whitespace-nowrap">{formatPeso(sale.total)}</td>
-                    <td className="px-3 py-4 font-medium whitespace-nowrap">{formatDate(sale.created_At)}</td>
-                    <td className="rounded-r-xl px-3 py-4 whitespace-nowrap capitalize">
-                      <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${saleStatusDotClass(statusLabel)}`} />
-                      {statusLabel}
-                    </td>
-                  </tr>
+                  <Collapsible
+                    key={sale.id}
+                    render={<tbody />}
+                    open={isExpanded}
+                    onOpenChange={(open) => setExpandedSaleId(open ? sale.id : null)}
+                  >
+                    <tr className="bg-[#FAFBFA] text-sm text-[#121514]">
+                      <td className="rounded-l-xl px-3 py-4 font-medium whitespace-nowrap">{formatSaleId(sale.id)}</td>
+                      <td className="px-3 py-4 font-medium whitespace-nowrap capitalize">{productName}</td>
+                      <td className="px-3 py-4 whitespace-nowrap capitalize">{normalizeOrderText(sale.orderType)}</td>
+                      <td className="px-3 py-4 font-medium whitespace-nowrap capitalize">{customerName}</td>
+                      <td className="px-3 py-4 text-center">{quantity}</td>
+                      <td className="px-3 py-4 font-medium whitespace-nowrap">{formatPeso(sale.total)}</td>
+                      <td className="px-3 py-4 font-medium whitespace-nowrap">{formatDate(sale.created_At)}</td>
+                      <td className="px-3 py-4 whitespace-nowrap capitalize">
+                        <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${saleStatusDotClass(statusLabel)}`} />
+                        {statusLabel}
+                      </td>
+                      <td className="rounded-r-xl px-3 py-4 whitespace-nowrap">
+                        <CollapsibleTrigger
+                          type="button"
+                          className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#DFE2E0] bg-white px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
+                          aria-label={'View ' + formatSaleId(sale.id) + ' details'}
+                        >
+                          View
+                          <ChevronDown className={'h-4 w-4 transition-transform ' + (isExpanded ? 'rotate-180' : '')} />
+                        </CollapsibleTrigger>
+                      </td>
+                    </tr>
+                    {isExpanded ? (
+                      <tr>
+                        <td colSpan={tableColumns.length} className="p-0">
+                          <div className="border-t border-[#E2E2E2] bg-white p-4">
+                            <dl className="grid grid-cols-4 gap-4 text-sm">
+                              {[
+                                ['Customer', getSaleCustomerName(sale)],
+                                ['Order type', normalizeOrderText(sale.orderType)],
+                                ['Status', getSaleStatusLabel(sale)],
+                                ['Driver', sale.driverName || 'Unassigned'],
+                                ['Pickup address', sale.pickUpAddress || '-'],
+                                ['Delivery address', sale.deliveryAddress || '-'],
+                                ['Sale date', formatDate(sale.created_At)],
+                                ['Quantity', getSaleQuantity(sale)],
+                                ['Total amount', formatPeso(sale.total)],
+                              ].map(([label, value]) => (
+                                <div key={label}>
+                                  <dt className="text-xs text-[#737A76]">{label}</dt>
+                                  <dd className="break-words font-medium text-[#121514] capitalize">{value}</dd>
+                                </div>
+                              ))}
+                            </dl>
+                            <div className="mt-5 max-h-80 overflow-auto rounded-lg border border-[#E2E2E2] scrollbar-none">
+                              <table className="w-full text-left text-sm">
+                                <caption className="sr-only">Sale products</caption>
+                                <thead className="sticky top-0 bg-[#F0F1F1] text-xs text-[#737A76]">
+                                  <tr>
+                                    {['Product', 'Quantity', 'Unit price', 'Amount'].map((column) => (
+                                      <th key={column} scope="col" className="px-3 py-2 font-normal">{column}</th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {sale.orders.map((item, index) => (
+                                    <tr key={`${sale.id}-${index}`} className="border-t border-[#E2E2E2]">
+                                      <td className="px-3 py-3 capitalize">{item.productName}</td>
+                                      <td className="px-3 py-3">{item.quantity}</td>
+                                      <td className="whitespace-nowrap px-3 py-3">{formatPeso(item.price)}</td>
+                                      <td className="whitespace-nowrap px-3 py-3 font-medium">{formatPeso(item.totalAmount)}</td>
+                                    </tr>
+                                  ))}
+                                  {sale.orders.length === 0 && (
+                                    <tr><td colSpan={4} className="px-3 py-3 text-[#737A76]">No products recorded.</td></tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : null}
+                  </Collapsible>
                 )
               })
             )}
-          </tbody>
         </table>
       </div>
 
@@ -265,7 +336,10 @@ export default function SalesForm() {
           {isFetching ? ' - Updating...' : ''}
         </span>
         <div className="flex">
-          <PaginationDemo currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
+          <PaginationDemo currentPage={currentPage} totalPages={pageCount} onPageChange={(page) => {
+              setCurrentPage(page)
+              setExpandedSaleId(null)
+            }} />
         </div>
       </div>
     </section>

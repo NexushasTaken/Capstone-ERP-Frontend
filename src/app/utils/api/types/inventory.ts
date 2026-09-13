@@ -19,6 +19,7 @@ export interface InventoryListContent {
 }
 
 export interface FetchInventoriesParams {
+  statusId?: number
   page?: number
   pageSize?: number
   name?: string

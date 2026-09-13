@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Lottie } from 'lottie-react'
-import { ArrowUpDown, MoveUpRight } from 'lucide-react'
+import { ArrowUpDown, MoveDownRight, MoveUpRight } from 'lucide-react'
 import { Check } from 'lucide-react'
 import { useState } from 'react'
 import type { DateRange } from 'react-day-picker'
@@ -152,7 +152,12 @@ export default function DashboardPage() {
                   {isSalesOverviewLoading ? '...' : formatDashboardPeso(totalSales)}
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-md text-nowrap border border-[#D7DFD9] bg-[#F4F7F4] px-2 py-1 text-xs text-[#68716C] md:text-sm">
-                  {growthPercentage.toFixed(1)}% <MoveUpRight className="h-4 w-4" />
+                  {growthPercentage.toFixed(1)}% 
+                  {growthPercentage < 0 ? (
+                    <MoveDownRight className="h-4 w-4" />
+                  ) : (
+                    <MoveUpRight className="h-4 w-4" />
+                  )}
                 </span>
               </div>
               {salesOverviewError ? (

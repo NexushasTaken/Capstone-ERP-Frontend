@@ -20,8 +20,8 @@ const attentionItemsPerPage = 7
 
 export default function InventoryOverview() {
   const [attentionPage, setAttentionPage] = useState(1)
-  const inventoryQueryParams = { page: 1, pageSize: 100 }
-  const { data: inventoriesResponse, isLoading } = useQuery({
+  const inventoryQueryParams = { page: attentionPage, pageSize: attentionItemsPerPage, statusId: 3 }
+  const { data: inventoriesResponse, isLoading, isError } = useQuery({
     queryKey: queryKeys.inventories.all(inventoryQueryParams),
     queryFn: () => fetchInventories(inventoryQueryParams),
   })
@@ -35,7 +35,7 @@ export default function InventoryOverview() {
     queryKey: queryKeys.dashboard.inventory,
     queryFn: ({ signal }) => fetchDashboardInventory(signal),
   })
-  const forecastWarningCount = dashboardInventory?.risk ?? criticalInventories.length
+  const forecastWarningCount = dashboardInventory?.risk ?? inventoriesResponse?.rows ?? 0
   const totalCapacity = dashboardInventory?.totalWareHouseCapacity ?? 0
 
   const statusCounts = {
@@ -44,15 +44,8 @@ export default function InventoryOverview() {
     critical: dashboardInventory?.inventoryStatus.find((item) => item.status === 'critical')?.total ?? 0,
   }
 
-  const attentionItems = inventories.filter(
-    (item) => item.status === 'low stock' || item.status === 'critical'
-  )
-
-  const attentionTotalPages = Math.ceil(attentionItems.length / attentionItemsPerPage)
-  const paginatedAttentionItems = attentionItems.slice(
-    (attentionPage - 1) * attentionItemsPerPage,
-    attentionPage * attentionItemsPerPage
-  )
+  const attentionItems = criticalInventories
+  const attentionTotalPages = inventoriesResponse?.pageCount ?? 0
 
   return (
     <div className="flex h-full w-full xl:w-3/5 overflow-y-auto flex-col rounded-lg bg-[#EBF3ED] p-4 scrollbar-none">
@@ -127,10 +120,12 @@ export default function InventoryOverview() {
             <div className="text-sm text-[#68716C]">
               <span className='flex h-full'><Loading /></span>
             </div>
+          ) : isError ? (
+            <p role="alert" className="text-sm text-red-600">Unable to load inventory needing attention.</p>
           ) : attentionItems.length === 0 ? (
             <p className="text-sm text-[#68716C]">Nothing needs attention right now.</p>
           ) : (
-            paginatedAttentionItems.map((item) => {
+            attentionItems.map((item) => {
               const statusStyle = getInventoryStatusStyleFromLabel(item.status)
 
               return (
@@ -149,7 +144,7 @@ export default function InventoryOverview() {
           )}
         </div>
 
-        {!isLoading && attentionItems.length > attentionItemsPerPage && (
+        {!isLoading && !isError && attentionTotalPages > 1 && (
           <div className="mt-4 flex justify-center">
             <PaginationDemo
               currentPage={attentionPage}
