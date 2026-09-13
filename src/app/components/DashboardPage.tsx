@@ -19,11 +19,15 @@ import animatedRobot from "@/app/assets/json/animatedRobot.json"
 import { useQuery } from '@tanstack/react-query'
 import { fetchInventories } from '@/app/services/inventoryApi'
 import { queryKeys } from '@/app/utils/query/queryKeys'
-import { DatePickerWithRange } from '@/app/components/date-picker/RangePicker'
+import { DatePickerSimple } from '@/app/components/date-picker/BasicDatePicker'
+import { format } from 'date-fns'
 import { fetchSalesOverview } from '@/app/services/dashboardApi'
 import {
+  clampDateToCurrentYear,
+  clampRangeToCurrentYear,
   formatDashboardDateParam,
   formatDashboardPeso,
+  getCurrentYearDateRange,
   getDefaultCurrentYearDashboardRange,
   getDateRangeMonthLabels,
 } from '@/app/utils/helpers/dashboardHelpers'
@@ -36,7 +40,9 @@ const salesChartOptions: { label: string; value: SalesChartType }[] = [
 
 export default function DashboardPage() {
   const [salesChartType, setSalesChartType] = useState<SalesChartType>('line')
-  const [salesDateRange, setSalesDateRange] = useState<DateRange>(getDefaultCurrentYearDashboardRange())
+  const [selectedSalesDateRange, setSalesDateRange] = useState<DateRange>(getDefaultCurrentYearDashboardRange())
+  const currentYearRange = getCurrentYearDateRange()
+  const salesDateRange = clampRangeToCurrentYear(selectedSalesDateRange)
   //const [isRobotAnimationPlaying, setIsRobotAnimationPlaying] = useState(false)
   
 
@@ -69,6 +75,7 @@ export default function DashboardPage() {
   const salesChartLabels = getDateRangeMonthLabels(salesDateRange, salesChartValues.length)
   const totalSales = salesOverview?.totalSales ?? 0
   const growthPercentage = salesOverview?.growthPercentage ?? 0
+  const growthErrorMessage = salesOverview?.growthErrorMessage?.trim()
 
 
   return (
@@ -101,12 +108,47 @@ export default function DashboardPage() {
 
           {/* Sales Overview */}
           <div className="flex min-h-76 w-full flex-col gap-4 p-4">
-            <div className="flex w-full gap-4 justify-between items-center">
+            <div className="flex w-full flex-wrap gap-4 justify-between items-center">
               <span className="text-[#0c0d0d] text-lg font-medium md:text-2xl">
                 Sales Overview
               </span>
-              <div className="flex gap-2">
-                <DatePickerWithRange value={salesDateRange} onChange={setSalesDateRange} />
+              <div className="flex flex-wrap items-end gap-2">
+                <div>
+                  <DatePickerSimple
+                    label="From"
+                    minDate={currentYearRange.from}
+                    maxDate={currentYearRange.to}
+                    value={format(salesDateRange.from!, 'yyyy-MM-dd')}
+                    onChange={(value) => {
+                      if (!value) return
+                      const parsedDate = new Date(`${value}T00:00:00`)
+                      if (Number.isNaN(parsedDate.getTime())) return
+                      const from = clampDateToCurrentYear(parsedDate)
+                      setSalesDateRange((range) => ({
+                        from,
+                        to: range.to && range.to >= from ? range.to : from,
+                      }))
+                    }}
+                  />
+                </div>
+                <div>
+                  <DatePickerSimple
+                    label="To"
+                    minDate={currentYearRange.from}
+                    maxDate={currentYearRange.to}
+                    value={format(salesDateRange.to ?? salesDateRange.from!, 'yyyy-MM-dd')}
+                    onChange={(value) => {
+                      if (!value) return
+                      const parsedDate = new Date(`${value}T00:00:00`)
+                      if (Number.isNaN(parsedDate.getTime())) return
+                      const to = clampDateToCurrentYear(parsedDate)
+                      setSalesDateRange((range) => ({
+                        from: range.from && range.from <= to ? range.from : to,
+                        to,
+                      }))
+                    }}
+                  />
+                </div>
                 {/* <button aria-label="Settings" type="button" className="bg-transparent border-2 border-[#C6C6C7] rounded-xl text-[#0c0d0d] font-medium p-2 cursor-pointer transition-all duration-300 hover:scale-105 group">
                   <Settings2 className="transition-all group-hover:scale-105" />
                 </button> */}
@@ -146,19 +188,24 @@ export default function DashboardPage() {
             </div>
 
             <div className='relative w-full min-h-0 flex-1'>
-              <div className="flex items-end gap-3">
+              <div className="flex flex-wrap items-end gap-3">
                 <span className="text-4xl font-bold text-[#0c0d0d] md:text-5xl">
                   <span className="text-[#909191]">&#8369;</span>
                   {isSalesOverviewLoading ? '...' : formatDashboardPeso(totalSales)}
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-md text-nowrap border border-[#D7DFD9] bg-[#F4F7F4] px-2 py-1 text-xs text-[#68716C] md:text-sm">
                   {growthPercentage.toFixed(1)}% 
-                  {growthPercentage < 0 ? (
+                  {!growthErrorMessage && (growthPercentage < 0 ? (
                     <MoveDownRight className="h-4 w-4" />
                   ) : (
                     <MoveUpRight className="h-4 w-4" />
-                  )}
+                  ))}
                 </span>
+                {growthErrorMessage && (
+                  <span className="text-xs text-red-600 md:text-sm">
+                    {growthErrorMessage}
+                  </span>
+                )}
               </div>
               {salesOverviewError ? (
                 <div className="flex h-full min-h-64 items-center justify-center text-sm text-red-500">

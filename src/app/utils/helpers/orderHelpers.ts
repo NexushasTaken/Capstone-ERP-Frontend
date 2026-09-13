@@ -1,4 +1,4 @@
-import type { OrderGroup, OrderSortOption } from '@/app/types/order'
+import type { OrderGroup } from '@/app/types/order'
 import type { ProductListItem } from '@/app/types/product'
 
 export function formatOrderNumber(orderId: number) {
@@ -16,20 +16,6 @@ export const tableColumns = [
 ]
 
 export const productSelectPageSize = 100
-
-export const orderSortOptions: OrderSortOption[] = [
-  { label: 'Name (A to Z)', value: 'customerName', order: 'asc' },
-  { label: 'Name (Z to A)', value: 'customerName', order: 'desc' },
-  { label: 'Quantity (High to low)', value: 'quantity', order: 'desc' },
-  { label: 'Quantity (Low to high)', value: 'quantity', order: 'asc' },
-]
-
-export function getOrderFilter(value: OrderSortOption) {
-  if (value.value === 'customerName') return value.order === 'asc' ? 1 : 2
-  if (value.value === 'quantity') return value.order === 'desc' ? 3 : 4
-
-  return 0
-}
 
 export function formatDate(dateString: string | null) {
   if (!dateString) return '-'

@@ -16,10 +16,10 @@ export async function fetchOrders(params: FetchOrdersParams = {}, signal?: Abort
   if (params.page) query.set('page', String(params.page))
   if (params.pageSize) query.set('pageSize', String(params.pageSize))
   if (params.name) query.set('name', params.name)
-  if (params.filter !== undefined) query.set('filter', String(params.filter))
   if (params.orderTypeId !== undefined) query.set('orderTypeId', String(params.orderTypeId))
 
   const response = await fetch(`/api/Order/all?${query.toString()}`, {
+    cache: 'no-store',
     signal,
     method: 'GET',
     credentials: 'include',

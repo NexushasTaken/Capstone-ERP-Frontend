@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { AlertTriangle, Plus, Warehouse as WarehouseIcon } from 'lucide-react'
+import { AlertTriangle, Warehouse as WarehouseIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
@@ -56,13 +56,6 @@ export default function InventoryOverview() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Link
-            href="/dashboard/inventory#RawMaterials"
-            className="inline-flex h-fit items-center gap-2 rounded-2xl bg-[#0c0d0d] px-3 py-2 text-xs font-medium text-white transition-all hover:bg-[#1B1C1C]"
-          >
-            <Plus className="h-4 w-4 text-white" />
-            Add Inventory
-          </Link>
           <Link
             href="/dashboard/inventory"
             className="flex items-center gap-1 text-sm font-medium text-[#767777] transition-all hover:text-[#121514]"

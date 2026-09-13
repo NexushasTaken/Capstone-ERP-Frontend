@@ -17,9 +17,11 @@ interface DatePickerSimpleProps {
   value: string
   onChange: (value: string) => void
   label?: string
+  minDate?: Date
+  maxDate?: Date
 }
 
-export function DatePickerSimple({ value, onChange, label = 'Date' }: DatePickerSimpleProps) {
+export function DatePickerSimple({ value, onChange, label = 'Date', minDate, maxDate }: DatePickerSimpleProps) {
   const id = React.useId()
   const [open, setOpen] = React.useState(false)
   const date = value ? new Date(value + 'T00:00:00') : undefined
@@ -36,6 +38,12 @@ export function DatePickerSimple({ value, onChange, label = 'Date' }: DatePicker
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
+            startMonth={minDate}
+            endMonth={maxDate}
+            disabled={[
+              ...(minDate ? [{ before: minDate }] : []),
+              ...(maxDate ? [{ after: maxDate }] : []),
+            ]}
             selected={date}
             onSelect={(selectedDate) => {
               onChange(selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '')

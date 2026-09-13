@@ -34,14 +34,6 @@ export interface OrderRider {
   lastName: string
 }
 
-export type OrdersSortBy = 'customerName' | 'quantity'
-
-export interface OrderSortOption {
-  label: string
-  value: OrdersSortBy
-  order: 'asc' | 'desc'
-}
-
 export interface OrderLineForm {
   productId: string
   quantity: string
