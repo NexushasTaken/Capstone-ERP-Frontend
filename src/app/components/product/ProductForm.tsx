@@ -537,7 +537,7 @@ export default function ProductForm() {
             <div className="flex items-center gap-2">
               <span className="text-xs">{selectedProduct ? formatProductId(selectedProduct.id) : ''}</span>
             </div>
-            <span className="text-xl font-medium text-[#0c0d0d]">{selectedProduct?.name}</span>
+            <span className="text-xl font-medium text-[#0c0d0d] capitalize">{selectedProduct?.name}</span>
           </div>
           <CloseButton onClick={() => setIsSeeMoreOpen(false)} />
         </div>
@@ -550,7 +550,7 @@ export default function ProductForm() {
               </span>
               <div className="flex min-w-0 flex-col">
                 <span className="text-xs">Category</span>
-                <span className="truncate text-base font-semibold">{selectedProduct?.categoryName ?? 'Uncategorized'}</span>
+                <span className="truncate text-base font-semibold capitalize">{selectedProduct?.categoryName ?? 'Uncategorized'}</span>
               </div>
             </div>
 
