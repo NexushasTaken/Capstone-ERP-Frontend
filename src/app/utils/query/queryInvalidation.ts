@@ -15,7 +15,7 @@ export function invalidateInventories(queryClient: QueryClient) {
 }
 
 export function invalidateCategories(queryClient: QueryClient) {
-  return queryClient.invalidateQueries({ queryKey: queryKeys.categories.all })
+  return queryClient.invalidateQueries({ queryKey: ['categories'] })
 }
 
 export function invalidateDrivers(queryClient: QueryClient) {

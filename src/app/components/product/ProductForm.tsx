@@ -104,13 +104,14 @@ export default function ProductForm() {
   })
   const shouldLoadCategories = isAddModalOpen || isEditModalOpen
   const {
-    data: categories = [],
+    data: categoriesResponse,
     isLoading: categoriesLoading,
-  } = useQuery<CategoryListItem[]>({
-    queryKey: queryKeys.categories.all,
-    queryFn: () => fetchCategories(),
+  } = useQuery({
+    queryKey: queryKeys.categories.all({ page: 1, pageSize: 1000 }),
+    queryFn: () => fetchCategories({ page: 1, pageSize: 1000 }),
     enabled: shouldLoadCategories,
   })
+  const categories: CategoryListItem[] = categoriesResponse?.items ?? []
   const products = (productsResponse?.items ?? []).filter((product) =>
     selectedFilter === 'Categorized' ? hasCategory(product) : !hasCategory(product)
   )

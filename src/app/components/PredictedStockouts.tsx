@@ -12,6 +12,7 @@ import { formatDate, formatInventoryId } from '@/app/utils/helpers/inventoryHelp
 
 export default function PredictedStockouts() {
   const [stockoutCurrentPage, setStockoutCurrentPage] = useState(1)
+  const [isShowingForcedForecast, setIsShowingForcedForecast] = useState(false)
   const stockoutItemsPerPage = 10
   const forecastParams = { page: stockoutCurrentPage, pageSize: stockoutItemsPerPage }
   const queryClient = useQueryClient()
@@ -31,6 +32,7 @@ export default function PredictedStockouts() {
         forecast
       )
       setStockoutCurrentPage(1)
+      setIsShowingForcedForecast(true)
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : 'Failed to force inventory forecast.')
@@ -51,6 +53,11 @@ export default function PredictedStockouts() {
           <p className="mt-1 text-xs text-[#68716C] lg:text-sm">Products forecast to run out soon</p>
         </div>
         <div className="flex items-center gap-2">
+          {isShowingForcedForecast && (
+            <span className="max-w-72 text-right text-xs text-[#68716C]">
+              Showing force-forecast data. Run it again to refresh the results.
+            </span>
+          )}
           <Button
             className="rounded-xl px-3 py-2 text-sm"
             disabled={forceForecastMutation.isPending}
@@ -75,7 +82,7 @@ export default function PredictedStockouts() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E7ECE8]">
-            {forecastQuery.isLoading ? (
+            {forecastQuery.isLoading || forceForecastMutation.isPending ? (
               <tr>
                 <td colSpan={3} className="px-5 py-6 text-center text-sm text-[#68716C]">
                   <Loading />

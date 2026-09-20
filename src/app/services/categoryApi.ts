@@ -1,6 +1,7 @@
 import type { CategoryListItem } from '@/app/types/category'
 import type {
   CategoryListContent,
+  FetchCategoriesParams,
   InsertCategoryPayload,
   RawCategoryListItem,
   UpdateCategoryPayload,
@@ -16,8 +17,16 @@ function mapCategory(item: RawCategoryListItem): CategoryListItem {
 }
 
 // GET
-export async function fetchCategories(): Promise<CategoryListItem[]> {
-  const response = await fetch(`/api/Category/all`, {
+export async function fetchCategories(params: FetchCategoriesParams = {}): Promise<{
+  items: CategoryListItem[]
+  pageCount: number
+  rows: number
+}> {
+  const query = new URLSearchParams()
+  if (params.page !== undefined) query.set('page', String(params.page))
+  if (params.pageSize !== undefined) query.set('pageSize', String(params.pageSize))
+
+  const response = await fetch(`/api/Category/all?${query.toString()}`, {
     method: 'GET',
     credentials: 'include',
   })
@@ -32,7 +41,11 @@ export async function fetchCategories(): Promise<CategoryListItem[]> {
     throw new Error(data.message || 'Failed to fetch categories')
   }
 
-  return data.content.categories.map(mapCategory)
+  return {
+    items: data.content.categories.map(mapCategory),
+    pageCount: data.content.pageCount,
+    rows: data.content.rows,
+  }
 }
 
 // INSERT
