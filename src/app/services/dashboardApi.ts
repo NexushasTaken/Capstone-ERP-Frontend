@@ -1,8 +1,9 @@
 import { ApiEnvelope } from '@/app/utils/api/apiEnvelope'
 import type {
   DashboardInventoryContent,
+  FetchInventoryForecastParams,
   FetchSalesOverviewParams,
-  InventoryForecastItem,
+  InventoryForecastContent,
   SalesOverviewContent,
 } from '@/app/utils/api/types/dashboard'
 
@@ -55,10 +56,16 @@ export async function fetchDashboardInventory(signal?: AbortSignal): Promise<Das
 }
 
 export async function fetchInventoryForecast(
-  forceForecast = false,
+  params: FetchInventoryForecastParams = {},
   signal?: AbortSignal
-): Promise<InventoryForecastItem[]> {
-  const query = new URLSearchParams({ forceForecast: String(forceForecast) })
+): Promise<{
+  items: InventoryForecastContent['forecastResults']
+  pageCount: number
+  rows: number
+}> {
+  const query = new URLSearchParams({ forceForecast: String(params.forceForecast ?? false) })
+  if (params.page !== undefined) query.set('page', String(params.page))
+  if (params.pageSize !== undefined) query.set('pageSize', String(params.pageSize))
   const response = await fetch(`/api/Dashboard/inventory/forecast?${query.toString()}`, {
     signal,
     method: 'GET',
@@ -69,11 +76,15 @@ export async function fetchInventoryForecast(
     throw new Error(`Failed to fetch inventory forecast: ${response.status}`)
   }
 
-  const data: ApiEnvelope<InventoryForecastItem[]> = await response.json()
+  const data: ApiEnvelope<InventoryForecastContent> = await response.json()
 
   if (!data.success) {
     throw new Error(data.message || 'Failed to fetch inventory forecast')
   }
 
-  return data.content
+  return {
+    items: data.content.forecastResults,
+    pageCount: data.content.pageCount,
+    rows: data.content.rows,
+  }
 }

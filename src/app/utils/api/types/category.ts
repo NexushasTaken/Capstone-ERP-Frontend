@@ -7,6 +7,12 @@ export interface RawCategoryListItem {
   Created_At?: string
 }
 
+export interface CategoryListContent {
+  categories: RawCategoryListItem[]
+  pageCount: number
+  rows: number
+}
+
 export interface InsertCategoryPayload {
   categoryName: string
 }
