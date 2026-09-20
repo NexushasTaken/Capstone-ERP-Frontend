@@ -423,7 +423,7 @@ export default function OrdersForm() {
                 <Spinner data-icon="inline-start" />
                 Cooldown
               </>
-            ) : 'Export page to CSV'}
+            ) : 'Export to CSV'}
           </Button>
           <Button
             className="cursor-pointer rounded-xl px-3 py-2 text-sm"
@@ -468,8 +468,16 @@ export default function OrdersForm() {
                 const isExpanded = expandedOrderKey === orderKey
                 const statusLabel = normalizeOrderText(primary.orderStatus)
                 const isWalkinOrder = normalizeOrderText(primary.orderType).toLowerCase() === 'walkin'
+                const isShippedOrder = statusLabel.toLowerCase() === 'shipped'
                 const orderStatusActions = orderStatusOptions
-                  .filter((status) => !(isWalkinOrder && status.label.toLowerCase() === 'shipped'))
+                  .filter((status) => {
+                    const actionStatus = status.label.toLowerCase()
+
+                    return !(
+                      (isWalkinOrder && actionStatus === 'shipped') ||
+                      (isShippedOrder && actionStatus === 'processing')
+                    )
+                  })
                   .map((status) => ({
                     label: status.label,
                     value: String(status.id),
@@ -782,7 +790,7 @@ export default function OrdersForm() {
           </Button>
           <Button
             className="rounded-xl px-3 py-2 text-sm"
-            disabled={!orderFormCanSubmit || addOrderMutation.isLoading}
+            disabled={!orderFormCanSubmit || addOrderMutation.isPending}
             onClick={() => setIsConfirmAddModalOpen(true)}
             type="button"
           >
@@ -878,7 +886,7 @@ export default function OrdersForm() {
           </Button>
           <Button
             className="rounded-xl px-3 py-2 text-sm"
-            disabled={!orderFormCanSubmit || addOrderMutation.isLoading}
+            disabled={!orderFormCanSubmit || addOrderMutation.isPending}
             onClick={handleAddOrder}
             type="button"
           >

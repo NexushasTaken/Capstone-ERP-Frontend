@@ -185,7 +185,7 @@ export default function SalesForm() {
                 <Spinner data-icon="inline-start" />
                 Cooldown
               </>
-            ) : 'Export page to CSV'}
+            ) : 'Export to CSV'}
           </Button>
         </div>
       </div>
@@ -275,7 +275,7 @@ export default function SalesForm() {
                               ].map(([label, value]) => (
                                 <div key={label}>
                                   <dt className="text-xs text-[#737A76]">{label}</dt>
-                                  <dd className="break-words font-medium text-[#121514] capitalize">{value}</dd>
+                                  <dd className="wrap-break-word font-medium text-[#121514] capitalize">{value}</dd>
                                 </div>
                               ))}
                             </dl>

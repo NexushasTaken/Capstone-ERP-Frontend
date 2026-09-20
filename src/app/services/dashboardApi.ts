@@ -2,6 +2,7 @@ import { ApiEnvelope } from '@/app/utils/api/apiEnvelope'
 import type {
   DashboardInventoryContent,
   FetchSalesOverviewParams,
+  InventoryForecastItem,
   SalesOverviewContent,
 } from '@/app/utils/api/types/dashboard'
 
@@ -48,6 +49,30 @@ export async function fetchDashboardInventory(signal?: AbortSignal): Promise<Das
 
   if (!data.success) {
     throw new Error(data.message || 'Failed to fetch dashboard inventory')
+  }
+
+  return data.content
+}
+
+export async function fetchInventoryForecast(
+  forceForecast = false,
+  signal?: AbortSignal
+): Promise<InventoryForecastItem[]> {
+  const query = new URLSearchParams({ forceForecast: String(forceForecast) })
+  const response = await fetch(`/api/Dashboard/inventory/forecast?${query.toString()}`, {
+    signal,
+    method: 'GET',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch inventory forecast: ${response.status}`)
+  }
+
+  const data: ApiEnvelope<InventoryForecastItem[]> = await response.json()
+
+  if (!data.success) {
+    throw new Error(data.message || 'Failed to fetch inventory forecast')
   }
 
   return data.content

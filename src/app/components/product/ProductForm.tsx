@@ -28,6 +28,10 @@ import { queryKeys } from '@/app/utils/query/queryKeys'
 import { invalidateProducts } from '@/app/utils/query/queryInvalidation'
 import { Input } from '@/components/ui/input'
 
+function hasCategory(product: ProductListItem) {
+  return product.categoryId !== null && product.categoryId !== 0
+}
+
 export default function ProductForm() {
   const [exportCooldown, setExportCooldown] = useState(0)
 
@@ -79,13 +83,13 @@ export default function ProductForm() {
   })
   const categorizedCountParams = {
     page: 1,
-    pageSize: 1,
+    pageSize: PRODUCT_LOAD_PAGE_SIZE,
     name: debouncedSearch || undefined,
     categoryPresent: categoryPresentByFilter.Categorized,
   }
   const uncategorizedCountParams = {
     page: 1,
-    pageSize: 1,
+    pageSize: PRODUCT_LOAD_PAGE_SIZE,
     categoryPresent: categoryPresentByFilter.Uncategorized,
   }
   const { data: categorizedCountResponse } = useQuery({
@@ -107,8 +111,10 @@ export default function ProductForm() {
     queryFn: () => fetchCategories(),
     enabled: shouldLoadCategories,
   })
-  const products = productsResponse?.items ?? []
-  const rows = productsResponse?.rows ?? 0
+  const products = (productsResponse?.items ?? []).filter((product) =>
+    selectedFilter === 'Categorized' ? hasCategory(product) : !hasCategory(product)
+  )
+  const rows = products.length
   const categoryOptions = [
     { id: 0, label: 'No category' },
     ...categories.map((category) => ({
@@ -118,10 +124,12 @@ export default function ProductForm() {
     })),
   ]
   const selectedCategoryLabel =
-    categories.find((category) => category.id === Number(form.categoryId))?.type ?? ''
+    form.categoryId === '0'
+      ? 'No category'
+      : categories.find((category) => category.id === Number(form.categoryId))?.type ?? ''
   const productCountByFilter: Record<ProductCategoryFilter, number> = {
-    Categorized: categorizedCountResponse?.rows ?? 0,
-    Uncategorized: uncategorizedCountResponse?.rows ?? 0,
+    Categorized: categorizedCountResponse?.items.filter(hasCategory).length ?? 0,
+    Uncategorized: uncategorizedCountResponse?.items.filter((product) => !hasCategory(product)).length ?? 0,
   }
   const addProductMutation = useMutation({
     mutationFn: (payload: InsertProductPayload & { optimisticId: number }) =>
@@ -134,9 +142,12 @@ export default function ProductForm() {
       await queryClient.cancelQueries({ queryKey: ['products'] })
       const previous = queryClient.getQueryData<typeof productsResponse>(productsQueryKey)
       const categoryId = payload.categoryId
+      const belongsToCurrentFilter = categoryId === 0
+        ? selectedFilter === 'Uncategorized'
+        : selectedFilter === 'Categorized'
       const optimisticProduct: ProductListItem = {
         id: payload.optimisticId,
-        categoryId,
+        categoryId: categoryId || null,
         name: payload.name,
         price: payload.price,
         categoryName: categories.find((category) => category.id === categoryId)?.type ?? null,
@@ -144,7 +155,7 @@ export default function ProductForm() {
       }
 
       queryClient.setQueryData<typeof productsResponse>(productsQueryKey, (current) => {
-        if (!current) return current
+        if (!current || !belongsToCurrentFilter) return current
 
         return {
           ...current,
@@ -222,9 +233,9 @@ export default function ProductForm() {
     onSettled: () => invalidateProducts(queryClient),
   })
   const isSubmitting =
-    addProductMutation.isLoading ||
-    updateProductMutation.isLoading ||
-    deleteProductMutation.isLoading
+    addProductMutation.isPending ||
+    updateProductMutation.isPending ||
+    deleteProductMutation.isPending
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -281,7 +292,7 @@ export default function ProductForm() {
   async function handleAddProduct() {
     if (!formCanSubmit) return
 
-    const categoryId = form.categoryId ? Number(form.categoryId) : null
+    const categoryId = form.categoryId ? Number(form.categoryId) : 0
 
     setIsAddModalOpen(false)
     resetForm()
@@ -591,7 +602,7 @@ export default function ProductForm() {
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Product name</span>
               <Input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
                 onChange={(event) => updateFormField('name', event.target.value)}
                 value={form.name}
               />
@@ -668,7 +679,7 @@ export default function ProductForm() {
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Product name</span>
               <Input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
                 onChange={(event) => updateFormField('name', event.target.value)}
                 value={form.name}
               />

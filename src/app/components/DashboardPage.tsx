@@ -10,14 +10,13 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Lottie } from 'lottie-react'
+// import { Lottie } from 'lottie-react'
 import { ArrowUpDown, MoveDownRight, MoveUpRight } from 'lucide-react'
 import { Check } from 'lucide-react'
 import { useState } from 'react'
 import type { DateRange } from 'react-day-picker'
-import animatedRobot from "@/app/assets/json/animatedRobot.json"
+// import animatedRobot from "@/app/assets/json/animatedRobot.json"
 import { useQuery } from '@tanstack/react-query'
-import { fetchInventories } from '@/app/services/inventoryApi'
 import { queryKeys } from '@/app/utils/query/queryKeys'
 import { DatePickerSimple } from '@/app/components/date-picker/BasicDatePicker'
 import { format } from 'date-fns'
@@ -46,18 +45,6 @@ export default function DashboardPage() {
   //const [isRobotAnimationPlaying, setIsRobotAnimationPlaying] = useState(false)
   
 
-  const inventoriesQueryParams = { page: 1, pageSize: 100 }
-  const inventoriesQueryKey = queryKeys.inventories.all(inventoriesQueryParams)
-  const {
-      data: inventoriesResponse,
-      isLoading,
-      error: loadError,
-    } = useQuery({
-      queryKey: inventoriesQueryKey,
-      queryFn: () => fetchInventories(inventoriesQueryParams),
-  })
-
-  const inventories = inventoriesResponse?.items ?? []
   const salesOverviewParams = {
     from: formatDashboardDateParam(salesDateRange.from!),
     to: formatDashboardDateParam(salesDateRange.to ?? salesDateRange.from!),
@@ -223,7 +210,7 @@ export default function DashboardPage() {
       <div className="flex flex-col xl:flex-row gap-4 w-full">
         <div className="flex flex-col w-full h-full gap-4">
           {/* AI KUNO NAMED STEVEN */}
-          <div
+          {/* <div
             className='flex w-full'
             // onBlur={() => setIsRobotAnimationPlaying(false)}
             // onFocus={() => setIsRobotAnimationPlaying(true)}
@@ -244,9 +231,9 @@ export default function DashboardPage() {
                   
               </div>
             </div>
-          </div>
+          </div> */}
 
-          <PredictedStockouts inventories={inventories} isLoading={isLoading} loadError={loadError} />
+          <PredictedStockouts />
         </div>
 
         {/* INVENTORY OVERVIEW */}

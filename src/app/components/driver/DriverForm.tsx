@@ -101,9 +101,9 @@ export default function DriverForm() {
     },
   })
   const isSubmitting =
-    addDriverMutation.isLoading ||
-    updateDriverMutation.isLoading ||
-    deleteDriverMutation.isLoading
+    addDriverMutation.isPending ||
+    updateDriverMutation.isPending ||
+    deleteDriverMutation.isPending
   const formCanSubmit = form.firstName.trim() !== '' && form.lastName.trim() !== ''
 
   function resetForm() {

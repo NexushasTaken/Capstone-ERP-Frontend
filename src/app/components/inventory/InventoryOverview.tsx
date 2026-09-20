@@ -70,7 +70,7 @@ export default function InventoryOverview() {
             <WarehouseIcon size={18} className="text-[#68716C]" />
             <span className="text-sm text-[#68716C]">Total warehouse capacity</span>
           </div>
-          <p className="mt-3 text-2xl font-semibold text-[#121514]">{isDashboardInventoryLoading || isDashboardInventoryError ? '-' : `${formatNumber(totalCapacity)} units`}</p>
+          <p className="mt-3 text-4xl font-semibold text-[#121514]">{isDashboardInventoryLoading || isDashboardInventoryError ? '-' : `${formatNumber(totalCapacity)} units`}</p>
           {isDashboardInventoryError && <p role="alert" className="mt-1 text-xs text-red-600">Unable to load warehouse capacity.</p>}
         </div>
 

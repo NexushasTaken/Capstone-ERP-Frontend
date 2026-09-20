@@ -111,9 +111,9 @@ export default function CategoryForm() {
     onSettled: () => invalidateCategories(queryClient),
   })
   const isSubmitting =
-    addCategoryMutation.isLoading ||
-    updateCategoryMutation.isLoading ||
-    deleteCategoryMutation.isLoading
+    addCategoryMutation.isPending ||
+    updateCategoryMutation.isPending ||
+    deleteCategoryMutation.isPending
 
   const filteredCategories = useMemo(() => {
     const searchValue = search.trim().toLowerCase()

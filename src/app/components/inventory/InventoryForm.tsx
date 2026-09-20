@@ -46,7 +46,6 @@ import Loading from '@/app/components/loaders/Loading'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import AppModal from '@/app/components/modals/AppModal'
-import PredictedStockouts from '@/app/components/PredictedStockouts'
 import EntityDropdown from '@/app/components/EntityDropdown'
 import { fetchProducts } from '@/app/services/productApi'
 import { ProductListItem } from '@/app/types/product'
@@ -68,6 +67,13 @@ const restockTypeOptions = [
   { value: 1, label: 'Increase Stock' },
   { value: 2, label: 'Return Stock' },
 ]
+
+const inventoryStatusIds: Record<string, number> = {
+  All: 0,
+  available: 1,
+  'low stock': 2,
+  critical: 3,
+}
 
 export default function InventoryForm() {
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
@@ -100,7 +106,6 @@ export default function InventoryForm() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isDamageModalOpen, setIsDamageModalOpen] = useState(false)
-  const [isRiskDetailsOpen, setIsRiskDetailsOpen] = useState(false)
   const [damageForm, setDamageForm] = useState<{ quantity: string; reason: string; damagedType: 1 | 2 }>({ quantity: '', reason: '', damagedType: 1 })
   const [isRestockModalOpen, setIsRestockModalOpen] = useState(false)
   const [restockForm, setRestockForm] = useState<{ quantity: string; restockType: 1 | 2 }>({ quantity: '', restockType: 1 })
@@ -119,6 +124,7 @@ export default function InventoryForm() {
     page: currentPage,
     pageSize: itemsPerPage,
     name: debouncedSearch || undefined,
+    statusId: inventoryStatusIds[selectedFilter] ?? 0,
     filter: getInventoryFilter({ value: sortBy, order: sortOrder }),
   }
   const inventoriesQueryKey = queryKeys.inventories.all(inventoriesQueryParams)
@@ -217,7 +223,7 @@ export default function InventoryForm() {
     Number.isSafeInteger(Number(restockForm.quantity)) && Number(restockForm.quantity) > 0
 
   function closeRestockModal() {
-    if (!restockInventoryMutation.isLoading) setIsRestockModalOpen(false)
+    if (!restockInventoryMutation.isPending) setIsRestockModalOpen(false)
   }
 
   const damageCanSubmit = selectedItem !== null && selectedItem.id > 0 &&
@@ -226,7 +232,7 @@ export default function InventoryForm() {
     damageForm.reason.trim() !== ''
 
   function closeDamageModal() {
-    if (!damageInventoryMutation.isLoading) setIsDamageModalOpen(false)
+    if (!damageInventoryMutation.isPending) setIsDamageModalOpen(false)
   }
 
   const inventories = inventoriesResponse?.items ?? []
@@ -341,11 +347,11 @@ export default function InventoryForm() {
     onSettled: () => invalidateInventories(queryClient),
   })
   const isSubmitting =
-    addInventoryMutation.isLoading ||
-    updateInventoryMutation.isLoading ||
-    deleteInventoryMutation.isLoading ||
-    damageInventoryMutation.isLoading ||
-    restockInventoryMutation.isLoading
+    addInventoryMutation.isPending ||
+    updateInventoryMutation.isPending ||
+    deleteInventoryMutation.isPending ||
+    damageInventoryMutation.isPending ||
+    restockInventoryMutation.isPending
 
   const formCanSubmit =
     form.name.trim() !== '' &&
@@ -455,15 +461,8 @@ export default function InventoryForm() {
     })),
   ]
 
-  const filteredInventories = inventories.filter((item) => {
-    const matchesFilter = selectedFilter === 'All' || item.status === selectedFilter
-
-    return matchesFilter
-  })
-
   const totalPages = Math.max(1, inventoriesResponse?.pageCount ?? 1)
-  const displayedInventories = filteredInventories
-  const paginatedInventories = displayedInventories
+  const paginatedInventories = inventories
 
   function handleProductSearch(query: string) {
     setProductSearch(query)
@@ -505,18 +504,7 @@ export default function InventoryForm() {
                 <span className="rounded-xl bg-[#FBE7E7] p-2 text-[#B42318]"><AlertTriangle className="h-5 w-5" /></span>
               </div>
               <p className="flex flex-1 mt-4 text-7xl font-semibold text-[#0c0d0d]">{forecastWarningCount}</p>
-              <div className='flex w-full justify-between items-center'>
                 <p className="mt-2 text-sm text-[#68716C]">products currently marked Critical</p>
-                <Button
-                    onClick={() => setIsRiskDetailsOpen(true)}
-                    type="button"
-                    size="xs"
-                    variant='outline'
-                    className="inline-flex gap-1 items-center rounded-lg"
-                  >
-                    View Details
-                </Button>
-              </div>
             </article>
 
             <MovementVelocity />
@@ -566,7 +554,7 @@ export default function InventoryForm() {
                 disabled={exportCooldown > 0}
                 onClick={() => {
                   exportToCSV(
-                    displayedInventories,
+                    paginatedInventories,
                     [
                       {
                         header: 'Inventory ID',
@@ -765,7 +753,7 @@ export default function InventoryForm() {
         </div>
         <form onSubmit={(event) => {
           event.preventDefault()
-          if (!damageCanSubmit || !selectedItem || damageInventoryMutation.isLoading) return
+          if (!damageCanSubmit || !selectedItem || damageInventoryMutation.isPending) return
           damageInventoryMutation.mutate({ id: selectedItem.id, damagedType: damageForm.damagedType, quantity: Number(damageForm.quantity), reason: damageForm.reason.trim(), created_At: new Date().toISOString() })
         }}>
           <div className="flex flex-col gap-4 p-4">
@@ -775,7 +763,7 @@ export default function InventoryForm() {
             </p>
             <div className="flex flex-col gap-1 text-sm text-[#121514]">
               <label htmlFor="damage-type" className="text-xs text-[#68716C]">Damage type</label>
-              <Select items={damageTypeOptions} value={damageForm.damagedType} disabled={damageInventoryMutation.isLoading} onValueChange={(value) => {
+              <Select items={damageTypeOptions} value={damageForm.damagedType} disabled={damageInventoryMutation.isPending} onValueChange={(value) => {
                 if (value === 1 || value === 2) setDamageForm((previous) => ({ ...previous, damagedType: value }))
               }}>
                 <SelectTrigger id="damage-type" className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm">
@@ -788,16 +776,16 @@ export default function InventoryForm() {
             </div>
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Quantity</span>
-              <Input required type="number" min={1} max={damageForm.damagedType === 1 ? selectedItem?.quantity : undefined} step={1} disabled={damageInventoryMutation.isLoading} value={damageForm.quantity} onChange={(event) => setDamageForm((previous) => ({ ...previous, quantity: event.target.value }))} className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm" />
+              <Input required type="number" min={1} max={damageForm.damagedType === 1 ? selectedItem?.quantity : undefined} step={1} disabled={damageInventoryMutation.isPending} value={damageForm.quantity} onChange={(event) => setDamageForm((previous) => ({ ...previous, quantity: event.target.value }))} className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm" />
             </label>
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Reason</span>
-              <Textarea required disabled={damageInventoryMutation.isLoading} value={damageForm.reason} onChange={(event) => setDamageForm((previous) => ({ ...previous, reason: event.target.value }))} className="h-28 min-h-28 max-h-28 resize-none field-sizing-fixed overflow-y-auto rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]" />
+              <Textarea required disabled={damageInventoryMutation.isPending} value={damageForm.reason} onChange={(event) => setDamageForm((previous) => ({ ...previous, reason: event.target.value }))} className="h-28 min-h-28 max-h-28 resize-none field-sizing-fixed overflow-y-auto rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]" />
             </label>
           </div>
           <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
-            <Button type="button" variant="outline" className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm" disabled={damageInventoryMutation.isLoading} onClick={closeDamageModal}>Cancel</Button>
-            <Button type="submit" variant="destructive" className="rounded-xl px-3 py-2 text-sm" disabled={!damageCanSubmit || damageInventoryMutation.isLoading}>{damageInventoryMutation.isLoading ? 'Saving...' : 'Mark as damage'}</Button>
+            <Button type="button" variant="outline" className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm" disabled={damageInventoryMutation.isPending} onClick={closeDamageModal}>Cancel</Button>
+            <Button type="submit" variant="destructive" className="rounded-xl px-3 py-2 text-sm" disabled={!damageCanSubmit || damageInventoryMutation.isPending}>{damageInventoryMutation.isPending ? 'Saving...' : 'Mark as damage'}</Button>
           </div>
         </form>
       </AppModal>
@@ -812,14 +800,14 @@ export default function InventoryForm() {
         </div>
         <form onSubmit={(event) => {
           event.preventDefault()
-          if (!restockCanSubmit || !selectedItem || restockInventoryMutation.isLoading) return
+          if (!restockCanSubmit || !selectedItem || restockInventoryMutation.isPending) return
           restockInventoryMutation.mutate({ id: selectedItem.id, quantity: Number(restockForm.quantity), restockType: restockForm.restockType })
         }}>
           <div className="flex flex-col gap-4 p-4">
             <p className="text-sm text-[#68716C]">{selectedItem?.name} ? {formatNumber(selectedItem?.quantity ?? 0)} available.</p>
             <div className="flex flex-col gap-1 text-sm text-[#121514]">
               <label htmlFor="restock-type" className="text-xs text-[#68716C]">Restock type</label>
-              <Select items={restockTypeOptions} value={restockForm.restockType} disabled={restockInventoryMutation.isLoading} onValueChange={(value) => {
+              <Select items={restockTypeOptions} value={restockForm.restockType} disabled={restockInventoryMutation.isPending} onValueChange={(value) => {
                 if (value === 1 || value === 2) setRestockForm((previous) => ({ ...previous, restockType: value }))
               }}>
                 <SelectTrigger id="restock-type" className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm">
@@ -832,13 +820,13 @@ export default function InventoryForm() {
             </div>
             <label className="flex flex-col gap-1 text-sm text-[#121514]">
               <span className="text-xs text-[#68716C]">Quantity</span>
-              <Input required type="number" min={1} step={1} disabled={restockInventoryMutation.isLoading} value={restockForm.quantity} onChange={(event) => setRestockForm((previous) => ({ ...previous, quantity: event.target.value }))} className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm" />
+              <Input required type="number" min={1} step={1} disabled={restockInventoryMutation.isPending} value={restockForm.quantity} onChange={(event) => setRestockForm((previous) => ({ ...previous, quantity: event.target.value }))} className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm" />
             </label>
           </div>
           <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
-            <Button type="button" variant="outline" className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm" disabled={restockInventoryMutation.isLoading} onClick={closeRestockModal}>Cancel</Button>
-            <Button type="submit" className="rounded-xl px-3 py-2 text-sm" disabled={!restockCanSubmit || restockInventoryMutation.isLoading}>
-              {restockInventoryMutation.isLoading ? <><Spinner data-icon="inline-start" />Saving...</> : 'Restock'}
+            <Button type="button" variant="outline" className="rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm" disabled={restockInventoryMutation.isPending} onClick={closeRestockModal}>Cancel</Button>
+            <Button type="submit" className="rounded-xl px-3 py-2 text-sm" disabled={!restockCanSubmit || restockInventoryMutation.isPending}>
+              {restockInventoryMutation.isPending ? <><Spinner data-icon="inline-start" />Saving...</> : 'Restock'}
             </Button>
           </div>
         </form>
@@ -1243,17 +1231,6 @@ export default function InventoryForm() {
             Delete inventory
           </Button>
         </div>
-      </AppModal>
-
-      <AppModal
-        open={isRiskDetailsOpen}
-        onClose={() => setIsRiskDetailsOpen(false)}
-        className="flex max-h-[90dvh] flex-col overflow-y-auto p-4 lg:max-w-5xl"
-      >
-        <div className="mb-3 flex justify-end">
-          <CloseButton onClick={() => setIsRiskDetailsOpen(false)} />
-        </div>
-        <PredictedStockouts inventories={inventories} isLoading={isLoading} loadError={loadError} />
       </AppModal>
     </main>
   )
