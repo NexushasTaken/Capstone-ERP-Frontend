@@ -14,7 +14,7 @@ export interface ProductListContent {
 }
 
 export interface InsertProductPayload {
-  categoryId: number | null
+  categoryId: number
   name: string
   price: number
 }

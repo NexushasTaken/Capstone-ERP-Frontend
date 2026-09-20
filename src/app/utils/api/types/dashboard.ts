@@ -24,3 +24,9 @@ export interface DashboardInventoryContent {
   risk: number
   inventoryStatus: DashboardInventoryStatusItem[]
 }
+
+export interface InventoryForecastItem {
+  inventoryId: number
+  name: string
+  earliestStockOutDay: string
+}

@@ -14,6 +14,7 @@ export const queryKeys = {
   dashboard: {
     salesOverview: (params: { from: string; to: string }) => ['dashboard', 'salesOverview', params] as const,
     inventory: ['dashboard', 'inventory'] as const,
+    inventoryForecast: ['dashboard', 'inventory', 'forecast'] as const,
   },
   inventories: {
     statusCounts: ['inventories', 'statusCounts'] as const,
