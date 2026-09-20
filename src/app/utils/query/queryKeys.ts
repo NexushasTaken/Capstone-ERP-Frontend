@@ -4,10 +4,11 @@ import type { FetchProductsParams } from '@/app/utils/api/types/product'
 import type { FetchDriversParams } from '@/app/utils/api/types/driver'
 import type { FetchSalesParams } from '@/app/utils/api/types/sale'
 import type { FetchInventoryForecastParams } from '@/app/utils/api/types/dashboard'
+import type { FetchCategoriesParams } from '@/app/utils/api/types/category'
 
 export const queryKeys = {
   categories: {
-    all: ['categories'] as const,
+    all: (params: FetchCategoriesParams = {}) => ['categories', params] as const,
   },
   drivers: {
     all: (params: FetchDriversParams = {}) => ['drivers', params] as const,

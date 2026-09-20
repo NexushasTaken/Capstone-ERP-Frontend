@@ -48,6 +48,7 @@ import { toast } from 'sonner'
 import AppModal from '@/app/components/modals/AppModal'
 import EntityDropdown from '@/app/components/EntityDropdown'
 import { fetchProducts } from '@/app/services/productApi'
+import { fetchInventoryForecast } from '@/app/services/dashboardApi'
 import { ProductListItem } from '@/app/types/product'
 import { WarehouseListItem } from '@/app/types/warehouseCapacity'
 import { fetchWarehouses } from '@/app/services/warehouseApi'
@@ -140,6 +141,11 @@ export default function InventoryForm() {
   const { data: inventoryStatusCounts, isError: statusCountsError } = useQuery({
     queryKey: queryKeys.inventories.statusCounts,
     queryFn: ({ signal }) => fetchInventoryStatusCounts(signal),
+  })
+  const forecastParams = { page: 1, pageSize: 1 }
+  const { data: forecastResponse } = useQuery({
+    queryKey: queryKeys.dashboard.inventoryForecast(forecastParams),
+    queryFn: ({ signal }) => fetchInventoryForecast(forecastParams, signal),
   })
   const shouldLoadOptions = isAddModalOpen || isEditModalOpen
   const {
@@ -442,9 +448,7 @@ export default function InventoryForm() {
     setSelectedItem(item)
     setIsDeleteModalOpen(true)
   }
-  const criticalInventories = inventories.filter((item) => item.status === 'critical')
-
-  const forecastWarningCount = criticalInventories.length
+  const forecastWarningCount = forecastResponse?.rows ?? 0
 
 
   const warehouseCapacity: WarehouseCapacity = {
@@ -453,13 +457,17 @@ export default function InventoryForm() {
     total: 1000,
   }
 
+  const allInventoryCount = inventoryStatusCounts?.reduce((total, item) => total + item.count, 0) ?? 0
   const inventoryStatusFilters: InventoryStatusFilter[] = [
-    { label: 'All', count: inventoryStatusCounts?.reduce((total, item) => total + item.count, 0) ?? 0 },
+    { label: 'All', count: allInventoryCount },
     ...(inventoryStatusCounts ?? []).map((item) => ({
       label: item.status,
       count: item.count,
     })),
   ]
+  const selectedInventoryCount = inventoryStatusFilters.find(
+    (filter) => filter.label === selectedFilter
+  )?.count ?? 0
 
   const totalPages = Math.max(1, inventoriesResponse?.pageCount ?? 1)
   const paginatedInventories = inventories
@@ -504,7 +512,7 @@ export default function InventoryForm() {
                 <span className="rounded-xl bg-[#FBE7E7] p-2 text-[#B42318]"><AlertTriangle className="h-5 w-5" /></span>
               </div>
               <p className="flex flex-1 mt-4 text-7xl font-semibold text-[#0c0d0d]">{forecastWarningCount}</p>
-                <p className="mt-2 text-sm text-[#68716C]">products currently marked Critical</p>
+                <p className="mt-2 text-sm text-[#68716C]">products forecast to run out</p>
             </article>
 
             <MovementVelocity />
@@ -515,7 +523,9 @@ export default function InventoryForm() {
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-medium tracking-tight text-[#121514]">Inventory items</h2>
-              <span className="rounded-md border border-[#DFE2E0] px-3 py-1 text-sm text-[#121514]">{inventoryRows}</span>
+              <span className="rounded-md border border-[#DFE2E0] px-3 py-1 text-sm text-[#121514]">
+                {inventoryStatusCounts && !statusCountsError ? selectedInventoryCount.toLocaleString() : '-'}
+              </span>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">

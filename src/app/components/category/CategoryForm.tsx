@@ -38,35 +38,40 @@ export default function CategoryForm() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryListItem | null>(null)
   const [form, setForm] = useState({ type: '' })
   const queryClient = useQueryClient()
+  const categoryQueryParams = { page: currentPage, pageSize: ITEMS_PER_PAGE }
+  const categoryQueryKey = queryKeys.categories.all(categoryQueryParams)
   const {
-    data: categories = [],
+    data: categoriesResponse,
     isLoading,
     error,
   } = useQuery({
-    queryKey: queryKeys.categories.all,
-    queryFn: () => fetchCategories(),
+    queryKey: categoryQueryKey,
+    queryFn: () => fetchCategories(categoryQueryParams),
+    keepPreviousData: true,
   })
+  const categories = useMemo(() => categoriesResponse?.items ?? [], [categoriesResponse?.items])
   const addCategoryMutation = useMutation({
     mutationFn: (payload: InsertCategoryPayload & { optimisticId: number }) =>
       insertCategory({ categoryName: payload.categoryName }),
     onMutate: async ({ categoryName, optimisticId }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.categories.all })
-      const previous = queryClient.getQueryData<CategoryListItem[]>(queryKeys.categories.all)
+      await queryClient.cancelQueries({ queryKey: ['categories'] })
+      const previous = queryClient.getQueryData<typeof categoriesResponse>(categoryQueryKey)
       const tempCategory: CategoryListItem = {
         id: optimisticId,
         type: categoryName,
         created_At: new Date().toISOString(),
       }
 
-      queryClient.setQueryData<CategoryListItem[]>(queryKeys.categories.all, (current = []) => [
-        tempCategory,
+      queryClient.setQueryData<typeof categoriesResponse>(categoryQueryKey, (current) => current && ({
         ...current,
-      ])
+        items: [tempCategory, ...current.items].slice(0, ITEMS_PER_PAGE),
+        rows: current.rows + 1,
+      }))
 
       return { previous }
     },
     onError: (err, _payload, context) => {
-      if (context?.previous) queryClient.setQueryData(queryKeys.categories.all, context.previous)
+      if (context?.previous) queryClient.setQueryData(categoryQueryKey, context.previous)
       toast.error(err instanceof Error ? err.message : 'Failed to add category')
     },
     onSuccess: () => toast.success('Category added successfully'),
@@ -75,17 +80,18 @@ export default function CategoryForm() {
   const updateCategoryMutation = useMutation({
     mutationFn: updateCategory,
     onMutate: async ({ id, type }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.categories.all })
-      const previous = queryClient.getQueryData<CategoryListItem[]>(queryKeys.categories.all)
+      await queryClient.cancelQueries({ queryKey: ['categories'] })
+      const previous = queryClient.getQueryData<typeof categoriesResponse>(categoryQueryKey)
 
-      queryClient.setQueryData<CategoryListItem[]>(queryKeys.categories.all, (current = []) =>
-        current.map((category) => (category.id === id ? { ...category, type } : category))
-      )
+      queryClient.setQueryData<typeof categoriesResponse>(categoryQueryKey, (current) => current && ({
+        ...current,
+        items: current.items.map((category) => category.id === id ? { ...category, type } : category),
+      }))
 
       return { previous }
     },
     onError: (err, _payload, context) => {
-      if (context?.previous) queryClient.setQueryData(queryKeys.categories.all, context.previous)
+      if (context?.previous) queryClient.setQueryData(categoryQueryKey, context.previous)
       toast.error(err instanceof Error ? err.message : 'Failed to update category')
     },
     onSuccess: () => toast.success('Category updated successfully'),
@@ -94,17 +100,19 @@ export default function CategoryForm() {
   const deleteCategoryMutation = useMutation({
     mutationFn: deleteCategory,
     onMutate: async (categoryId) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.categories.all })
-      const previous = queryClient.getQueryData<CategoryListItem[]>(queryKeys.categories.all)
+      await queryClient.cancelQueries({ queryKey: ['categories'] })
+      const previous = queryClient.getQueryData<typeof categoriesResponse>(categoryQueryKey)
 
-      queryClient.setQueryData<CategoryListItem[]>(queryKeys.categories.all, (current = []) =>
-        current.filter((category) => category.id !== categoryId)
-      )
+      queryClient.setQueryData<typeof categoriesResponse>(categoryQueryKey, (current) => current && ({
+        ...current,
+        items: current.items.filter((category) => category.id !== categoryId),
+        rows: Math.max(0, current.rows - 1),
+      }))
 
       return { previous }
     },
     onError: (err, _categoryId, context) => {
-      if (context?.previous) queryClient.setQueryData(queryKeys.categories.all, context.previous)
+      if (context?.previous) queryClient.setQueryData(categoryQueryKey, context.previous)
       toast.error(err instanceof Error ? err.message : 'Failed to delete category')
     },
     onSuccess: () => toast.success('Category deleted successfully'),
@@ -142,11 +150,8 @@ export default function CategoryForm() {
     })
   }, [categories, search, sortBy, sortOrder])
 
-  const pageCount = Math.max(1, Math.ceil(filteredCategories.length / ITEMS_PER_PAGE))
-  const paginatedCategories = filteredCategories.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  )
+  const pageCount = Math.max(1, categoriesResponse?.pageCount ?? 1)
+  const paginatedCategories = filteredCategories
   const formCanSubmit = form.type.trim() !== ''
 
   function resetForm() {
@@ -205,7 +210,7 @@ export default function CategoryForm() {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-medium tracking-tight text-[#121514]">Categories</h1>
           <span className="rounded-md border border-[#DFE2E0] px-3 py-1 text-sm text-[#121514]">
-            {categories.length}
+            {categoriesResponse?.rows ?? 0}
           </span>
         </div>
 
@@ -322,7 +327,7 @@ export default function CategoryForm() {
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-[#737A76]">
-          Showing {paginatedCategories.length} of {filteredCategories.length} categories
+          Showing {paginatedCategories.length} of {categoriesResponse?.rows ?? 0} categories
         </span>
         <div className="flex">
           <PaginationDemo currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />

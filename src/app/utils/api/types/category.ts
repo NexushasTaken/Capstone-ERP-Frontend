@@ -13,6 +13,11 @@ export interface CategoryListContent {
   rows: number
 }
 
+export interface FetchCategoriesParams {
+  page?: number
+  pageSize?: number
+}
+
 export interface InsertCategoryPayload {
   categoryName: string
 }
