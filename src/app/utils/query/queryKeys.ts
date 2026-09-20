@@ -3,6 +3,7 @@ import type { FetchOrdersParams } from '@/app/utils/api/types/order'
 import type { FetchProductsParams } from '@/app/utils/api/types/product'
 import type { FetchDriversParams } from '@/app/utils/api/types/driver'
 import type { FetchSalesParams } from '@/app/utils/api/types/sale'
+import type { FetchInventoryForecastParams } from '@/app/utils/api/types/dashboard'
 
 export const queryKeys = {
   categories: {
@@ -14,7 +15,8 @@ export const queryKeys = {
   dashboard: {
     salesOverview: (params: { from: string; to: string }) => ['dashboard', 'salesOverview', params] as const,
     inventory: ['dashboard', 'inventory'] as const,
-    inventoryForecast: ['dashboard', 'inventory', 'forecast'] as const,
+    inventoryForecast: (params: FetchInventoryForecastParams = {}) =>
+      ['dashboard', 'inventory', 'forecast', params] as const,
   },
   inventories: {
     statusCounts: ['inventories', 'statusCounts'] as const,

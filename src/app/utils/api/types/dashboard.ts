@@ -30,3 +30,15 @@ export interface InventoryForecastItem {
   name: string
   earliestStockOutDay: string
 }
+
+export interface InventoryForecastContent {
+  forecastResults: InventoryForecastItem[]
+  pageCount: number
+  rows: number
+}
+
+export interface FetchInventoryForecastParams {
+  forceForecast?: boolean
+  page?: number
+  pageSize?: number
+}

@@ -199,7 +199,9 @@ export default function DashboardPage() {
                   {salesOverviewError instanceof Error ? salesOverviewError.message : 'Failed to load sales overview'}
                 </div>
               ) : (
+                <div className='mt-4 py-4'>
                 <SalesChart type={salesChartType} labels={salesChartLabels} values={salesChartValues} />
+                </div>
               )}
             </div>
           </div>

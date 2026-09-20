@@ -13,15 +13,23 @@ import { formatDate, formatInventoryId } from '@/app/utils/helpers/inventoryHelp
 export default function PredictedStockouts() {
   const [stockoutCurrentPage, setStockoutCurrentPage] = useState(1)
   const stockoutItemsPerPage = 10
+  const forecastParams = { page: stockoutCurrentPage, pageSize: stockoutItemsPerPage }
   const queryClient = useQueryClient()
   const forecastQuery = useQuery({
-    queryKey: queryKeys.dashboard.inventoryForecast,
-    queryFn: ({ signal }) => fetchInventoryForecast(false, signal),
+    queryKey: queryKeys.dashboard.inventoryForecast(forecastParams),
+    queryFn: ({ signal }) => fetchInventoryForecast(forecastParams, signal),
   })
   const forceForecastMutation = useMutation({
-    mutationFn: () => fetchInventoryForecast(true),
+    mutationFn: () => fetchInventoryForecast({
+      forceForecast: true,
+      page: 1,
+      pageSize: stockoutItemsPerPage,
+    }),
     onSuccess: (forecast) => {
-      queryClient.setQueryData(queryKeys.dashboard.inventoryForecast, forecast)
+      queryClient.setQueryData(
+        queryKeys.dashboard.inventoryForecast({ page: 1, pageSize: stockoutItemsPerPage }),
+        forecast
+      )
       setStockoutCurrentPage(1)
     },
     onError: (error) => {
@@ -29,15 +37,11 @@ export default function PredictedStockouts() {
     },
   })
 
-  const predictedStockouts = forecastQuery.data ?? []
+  const predictedStockouts = forecastQuery.data?.items ?? []
   const loadError = forecastQuery.error
-  const forecastWarningCount = predictedStockouts.length
-  const stockoutTotalPages = Math.max(1, Math.ceil(predictedStockouts.length / stockoutItemsPerPage))
+  const forecastWarningCount = forecastQuery.data?.rows ?? 0
+  const stockoutTotalPages = Math.max(1, forecastQuery.data?.pageCount ?? 1)
   const effectivePage = Math.min(stockoutCurrentPage, stockoutTotalPages)
-  const paginatedStockouts = predictedStockouts.slice(
-    (effectivePage - 1) * stockoutItemsPerPage,
-    effectivePage * stockoutItemsPerPage
-  )
 
   return (
     <article className="w-full min-w-0 rounded-2xl border border-[#DCE4DE] bg-white shadow-sm">
@@ -83,14 +87,14 @@ export default function PredictedStockouts() {
                   {loadError instanceof Error ? loadError.message : 'Failed to load predicted stockouts'}
                 </td>
               </tr>
-            ) : paginatedStockouts.length === 0 ? (
+            ) : predictedStockouts.length === 0 ? (
               <tr>
                 <td colSpan={3} className="px-5 py-6 text-center text-sm text-[#68716C]">
                   No predicted stockouts.
                 </td>
               </tr>
             ) : (
-              paginatedStockouts.map((item) => (
+              predictedStockouts.map((item) => (
                 <tr className="text-[#0c0d0d]" key={item.inventoryId}>
                   <td className="px-5 py-4 font-medium capitalize">{item.name}</td>
                   <td className="px-4 py-4">{formatInventoryId(String(item.inventoryId))}</td>
@@ -106,14 +110,16 @@ export default function PredictedStockouts() {
 
       <div className="flex flex-col items-center justify-between gap-4 border-t border-[#E7ECE8] p-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-[#737A76]">
-          Showing {forecastQuery.isLoading || loadError ? 0 : paginatedStockouts.length} of{' '}
-          {forecastQuery.isLoading || loadError ? 0 : predictedStockouts.length} predicted stockouts
+          Showing {forecastQuery.isLoading || loadError ? 0 : predictedStockouts.length} of{' '}
+          {forecastQuery.isLoading || loadError ? 0 : forecastWarningCount} predicted stockouts
         </span>
+        <div className='flex'>
         <PaginationDemo
           currentPage={effectivePage}
           totalPages={stockoutTotalPages}
           onPageChange={setStockoutCurrentPage}
         />
+        </div>
       </div>
     </article>
   )

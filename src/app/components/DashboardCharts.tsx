@@ -9,6 +9,7 @@ import {
   LinearScale,
   LineController,
   LineElement,
+  Legend,
   PieController,
   PointElement,
   Tooltip,
@@ -16,7 +17,22 @@ import {
 } from 'chart.js'
 import { useEffect, useRef } from 'react'
 
-Chart.register(ArcElement, BarController, BarElement, CategoryScale, LinearScale, LineController, LineElement, PieController, PointElement, Tooltip)
+Chart.register(ArcElement, BarController, BarElement, CategoryScale, Legend, LinearScale, LineController, LineElement, PieController, PointElement, Tooltip)
+
+const salesPieColors = [
+  '#1F618D',
+  '#CB4335',
+  '#F1C40F',
+  '#27AE60',
+  '#884EA0',
+  '#D35400',
+  '#148F77',
+  '#2E86C1',
+  '#C0392B',
+  '#7D3C98',
+  '#B7950B',
+  '#117864',
+]
 
 const pesoFormatter = new Intl.NumberFormat('en-PH', {
   style: 'currency',
@@ -151,6 +167,7 @@ export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
   useEffect(() => {
     if (!canvasRef.current) return
 
+    const pieColors = labels.map((_, index) => salesPieColors[index % salesPieColors.length])
     const config: ChartConfiguration = {
       type,
       data: {
@@ -161,7 +178,7 @@ export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
             data: values,
             borderColor: '#111513',
             backgroundColor: type === 'pie'
-              ? ['#111513', '#7A8B80', '#D6DED8']
+              ? pieColors
               : 'rgba(17, 21, 19, 0.12)',
             borderWidth: 3,
             borderRadius: type === 'bar' ? 4 : undefined,
@@ -182,7 +199,28 @@ export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
         maintainAspectRatio: false,
         responsive: true,
         plugins: {
-          legend: { display: false },
+          legend: {
+            display: type === 'pie',
+            position: 'bottom',
+            labels: {
+              boxHeight: 10,
+              boxWidth: 10,
+              color: '#4E5752',
+              padding: 16,
+              usePointStyle: true,
+            },
+            onHover: (_event, item, legend) => {
+              const dataset = legend.chart.data.datasets[0]
+              dataset.backgroundColor = pieColors.map((color, index) =>
+                index === item.index ? color : `${color}4D`
+              )
+              legend.chart.update('none')
+            },
+            onLeave: (_event, _item, legend) => {
+              legend.chart.data.datasets[0].backgroundColor = [...pieColors]
+              legend.chart.update('none')
+            },
+          },
           tooltip: {
             callbacks: {
               label: (context) => `Sales: ${pesoFormatter.format(getTooltipValue(context))}`,

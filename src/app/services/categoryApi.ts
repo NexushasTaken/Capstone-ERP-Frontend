@@ -1,5 +1,6 @@
 import type { CategoryListItem } from '@/app/types/category'
 import type {
+  CategoryListContent,
   InsertCategoryPayload,
   RawCategoryListItem,
   UpdateCategoryPayload,
@@ -25,13 +26,13 @@ export async function fetchCategories(): Promise<CategoryListItem[]> {
     throw new Error(`Failed to fetch categories: ${response.status}`)
   }
 
-  const data: ApiEnvelope<RawCategoryListItem[]> = await response.json()
+  const data: ApiEnvelope<CategoryListContent> = await response.json()
 
   if (!data.success) {
     throw new Error(data.message || 'Failed to fetch categories')
   }
 
-  return data.content.map(mapCategory)
+  return data.content.categories.map(mapCategory)
 }
 
 // INSERT
