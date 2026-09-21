@@ -1,5 +1,6 @@
 import type { StatusCount } from '@/app/utils/api/types/statusCount'
 import type { InventoryListItem, InventoryMovementItem, InventoryDamageItem } from '@/app/types/inventory'
+import type { ProductListItem } from '@/app/types/product'
 import { ApiEnvelope, ApiEnvelopeNoContent } from '@/app/utils/api/apiEnvelope'
 import type {
   FetchInventoriesParams,
@@ -11,6 +12,26 @@ import type {
   InventoryListContent,
   UpdateInventoryPayload,
 } from '@/app/utils/api/types/inventory'
+
+// GET
+export async function fetchInventoryProducts(): Promise<ProductListItem[]> {
+  const response = await fetch('/api/Inventory/insert/product/all', {
+    method: 'GET',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch inventory products: ${response.status}`)
+  }
+
+  const data: ApiEnvelope<ProductListItem[]> = await response.json()
+
+  if (!data.success) {
+    throw new Error(data.message || 'Failed to fetch inventory products')
+  }
+
+  return data.content
+}
 
 // GET
 export async function fetchInventoryVelocity(params: FetchInventoryVelocityParams) {

@@ -20,6 +20,7 @@ export const queryKeys = {
       ['dashboard', 'inventory', 'forecast', params] as const,
   },
   inventories: {
+    productsForInsert: ['inventories', 'productsForInsert'] as const,
     statusCounts: ['inventories', 'statusCounts'] as const,
     movements: (id: number | null) => ['inventories', 'movements', id] as const,
     damageRecords: (id: number | null) => ['inventories', 'damageRecords', id] as const,
