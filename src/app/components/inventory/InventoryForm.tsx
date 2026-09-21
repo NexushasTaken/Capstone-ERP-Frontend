@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import WarehouseCapacitySection from '@/app/components/inventory/WarehouseCapacitySection'
 import MovementVelocity from '@/app/components/inventory/MovementVelocity'
-import { deleteInventory, fetchInventoryStatusCounts, fetchInventoryMovements, fetchInventoryDamageRecords, fetchInventories, insertInventory, markInventoryAsDamage, restockInventory, updateInventory } from '@/app/services/inventoryApi'
+import { deleteInventory, fetchInventoryStatusCounts, fetchInventoryMovements, fetchInventoryDamageRecords, fetchInventories, fetchInventoryProducts, insertInventory, markInventoryAsDamage, restockInventory, updateInventory } from '@/app/services/inventoryApi'
 import {
   formatNumber,
   formatDate,
@@ -47,9 +47,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import AppModal from '@/app/components/modals/AppModal'
 import EntityDropdown from '@/app/components/EntityDropdown'
-import { fetchProducts } from '@/app/services/productApi'
 import { fetchInventoryForecast } from '@/app/services/dashboardApi'
-import { ProductListItem } from '@/app/types/product'
 import { WarehouseListItem } from '@/app/types/warehouseCapacity'
 import { fetchWarehouses } from '@/app/services/warehouseApi'
 import { queryKeys } from '@/app/utils/query/queryKeys'
@@ -110,8 +108,6 @@ export default function InventoryForm() {
   const [damageForm, setDamageForm] = useState<{ quantity: string; reason: string; damagedType: 1 | 2 }>({ quantity: '', reason: '', damagedType: 1 })
   const [isRestockModalOpen, setIsRestockModalOpen] = useState(false)
   const [restockForm, setRestockForm] = useState<{ quantity: string; restockType: 1 | 2 }>({ quantity: '', restockType: 1 })
-  const [productSearch, setProductSearch] = useState('')
-
   const [form, setForm] = useState({
     name: '',
     quantity: '',
@@ -149,14 +145,12 @@ export default function InventoryForm() {
   })
   const shouldLoadOptions = isAddModalOpen || isEditModalOpen
   const {
-    data: productResponse,
+    data: products = [],
     isLoading: isLoadingProducts,
-    isFetching: isSearchingProducts,
   } = useQuery({
-    queryKey: queryKeys.products.all(productSearch ? { name: productSearch } : {}),
-    queryFn: () => fetchProducts(productSearch ? { name: productSearch } : {}),
+    queryKey: queryKeys.inventories.productsForInsert,
+    queryFn: fetchInventoryProducts,
     enabled: shouldLoadOptions,
-    keepPreviousData: true,
   })
   const {
     data: warehouseItems = [],
@@ -243,7 +237,6 @@ export default function InventoryForm() {
 
   const inventories = inventoriesResponse?.items ?? []
   const inventoryRows = inventoriesResponse?.rows ?? 0
-  const products: ProductListItem[] = productResponse?.items ?? []
   const warehouses: WarehouseListItem[] = warehouseItems.filter(isSelectableWarehouse)
   const addInventoryMutation = useMutation({
     mutationFn: (payload: InsertInventoryPayload & { optimisticId: number }) =>
@@ -471,10 +464,6 @@ export default function InventoryForm() {
 
   const totalPages = Math.max(1, inventoriesResponse?.pageCount ?? 1)
   const paginatedInventories = inventories
-
-  function handleProductSearch(query: string) {
-    setProductSearch(query)
-  }
 
   const selectedStatusStyle = selectedItem ? getInventoryStatusStyleFromLabel(selectedItem.status) : null
 
@@ -1020,8 +1009,6 @@ export default function InventoryForm() {
               addHref="/dashboard/product"
               addLabel="Add product"
               isLoading={isLoadingProducts}
-              onSearch={handleProductSearch}
-              isSearching={isSearchingProducts}
               searchPlaceholder="Search products..."
               onSelect={(id) => updateFormField('productId', String(id))}
             />
@@ -1129,8 +1116,6 @@ export default function InventoryForm() {
               addHref="/dashboard/product"
               addLabel="Add product"
               isLoading={isLoadingProducts}
-              onSearch={handleProductSearch}
-              isSearching={isSearchingProducts}
               searchPlaceholder="Search products..."
               onSelect={(id) => updateFormField('productId', String(id))}
             />
