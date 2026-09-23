@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import WarehouseCapacitySection from '@/app/components/inventory/WarehouseCapacitySection'
 import MovementVelocity from '@/app/components/inventory/MovementVelocity'
-import { deleteInventory, fetchInventoryStatusCounts, fetchInventoryMovements, fetchInventoryDamageRecords, fetchInventories, fetchInventoryProducts, insertInventory, markInventoryAsDamage, restockInventory, updateInventory } from '@/app/services/inventoryApi'
+import { deleteInventory, fetchInventoryStatusCounts, fetchInventoryMovements, fetchInventoryDamageRecords, fetchInventories, insertInventory, markInventoryAsDamage, restockInventory, updateInventory } from '@/app/services/inventoryApi'
 import {
   formatNumber,
   formatDate,
@@ -47,6 +47,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import AppModal from '@/app/components/modals/AppModal'
 import EntityDropdown from '@/app/components/EntityDropdown'
+import { useInventoryProductSearch } from '@/app/hooks/useInventoryProductSearch'
 import { fetchInventoryForecast } from '@/app/services/dashboardApi'
 import { WarehouseListItem } from '@/app/types/warehouseCapacity'
 import { fetchWarehouses } from '@/app/services/warehouseApi'
@@ -145,13 +146,8 @@ export default function InventoryForm() {
   })
   const shouldLoadOptions = isAddModalOpen || isEditModalOpen
   const {
-    data: products = [],
-    isLoading: isLoadingProducts,
-  } = useQuery({
-    queryKey: queryKeys.inventories.productsForInsert,
-    queryFn: fetchInventoryProducts,
-    enabled: shouldLoadOptions,
-  })
+    products, isLoading: isLoadingProducts, error: productsError,
+  } = useInventoryProductSearch(shouldLoadOptions)
   const {
     data: warehouseItems = [],
     isLoading: isLoadingWarehouses,
@@ -1005,7 +1001,7 @@ export default function InventoryForm() {
               }))}
               value={selectedProductLabel}
               placeholder="Select a product"
-              emptyLabel="No products found."
+              emptyLabel={productsError ? "Failed to load products. Try searching again." : "No products found."}
               addHref="/dashboard/product"
               addLabel="Add product"
               isLoading={isLoadingProducts}
@@ -1112,7 +1108,7 @@ export default function InventoryForm() {
               }))}
               value={selectedProductLabel}
               placeholder="Select a product"
-              emptyLabel="No products found."
+              emptyLabel={productsError ? "Failed to load products. Try searching again." : "No products found."}
               addHref="/dashboard/product"
               addLabel="Add product"
               isLoading={isLoadingProducts}

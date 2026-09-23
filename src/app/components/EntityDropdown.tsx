@@ -35,7 +35,6 @@ export default function EntityDropdown({
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const skipNextRef = useRef(true)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const onSearchRef = useRef(onSearch)
@@ -45,11 +44,6 @@ export default function EntityDropdown({
 
   useEffect(() => {
     if (!onSearchRef.current || !open) return
-
-    if (skipNextRef.current) {
-      skipNextRef.current = false
-      return
-    }
 
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
@@ -62,15 +56,13 @@ export default function EntityDropdown({
   }, [searchQuery, open])
 
   const visibleOptions = useMemo(() => {
-    if (onSearch) return options
-
     const query = searchQuery.trim().toLowerCase()
     if (!query) return options
 
     return options.filter((option) =>
       `${option.label} ${option.sublabel ?? ''}`.toLowerCase().includes(query)
     )
-  }, [onSearch, options, searchQuery])
+  }, [options, searchQuery])
 
   return (
     <DropdownMenu
