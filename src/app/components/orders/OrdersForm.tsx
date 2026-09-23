@@ -20,7 +20,7 @@ import {
   insertOrder,
   updateOrderStatus,
 } from '@/app/services/orderApi'
-import { fetchProducts } from '@/app/services/productApi'
+import { useInventoryProductSearch } from '@/app/hooks/useInventoryProductSearch'
 import { queryKeys } from '@/app/utils/query/queryKeys'
 import { invalidateOrders } from '@/app/utils/query/queryInvalidation'
 import { exportToCSV } from '@/app/utils/exportToCsv'
@@ -35,13 +35,11 @@ import {
   normalizeOrderText,
   orderStatusClass,
   orderStatusDotClass,
-  productSelectPageSize,
   tableColumns,
 } from '@/app/utils/helpers/orderHelpers'
 import { formatPeso } from '@/app/utils/helpers/saleHelpers'
 import type { OrderGroup, OrderLineForm } from '@/app/types/order'
 import type { InsertOrderPayload } from '@/app/utils/api/types/order'
-import type { ProductListItem } from '@/app/types/product'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -135,12 +133,9 @@ export default function OrdersForm() {
     keepPreviousData: true,
   })
 
-  const { data: productsResponse, isLoading: productsLoading } = useQuery({
-    queryKey: queryKeys.products.all({ page: 1, pageSize: productSelectPageSize }),
-    queryFn: () => fetchProducts({ page: 1, pageSize: productSelectPageSize }),
-    enabled: isAddModalOpen,
-    keepPreviousData: true,
-  })
+  const {
+    products, isLoading: productsLoading, error: productsError,
+  } = useInventoryProductSearch(isAddModalOpen)
 
   const { data: orderTypes = [], isLoading: orderTypesLoading } = useQuery({
     queryKey: queryKeys.orders.types,
@@ -187,7 +182,6 @@ export default function OrdersForm() {
   const orderGroups = data?.items ?? []
   const rows = data?.rows ?? 0
   const pageCount = Math.max(1, data?.pageCount ?? 1)
-  const products: ProductListItem[] = productsResponse?.items ?? []
   const orderTypeOptions = orderTypes.map((orderType) => ({
     id: orderType.id,
     label: normalizeOrderText(orderType.type),
@@ -712,7 +706,7 @@ export default function OrdersForm() {
                       <TableCell>
                         <div className="flex flex-col gap-1">
                           <EntityDropdown
-                            emptyLabel="No products found"
+                            emptyLabel={productsError ? 'Failed to load products. Try searching again.' : 'No products found'}
                             isLoading={productsLoading}
                             onSelect={(productId) => updateOrderLine(index, 'productId', String(productId))}
                             options={productOptions.filter(

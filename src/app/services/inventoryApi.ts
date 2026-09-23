@@ -14,10 +14,12 @@ import type {
 } from '@/app/utils/api/types/inventory'
 
 // GET
-export async function fetchInventoryProducts(): Promise<ProductListItem[]> {
+export async function fetchInventoryProducts(signal?: AbortSignal): Promise<ProductListItem[]> {
   const response = await fetch('/api/Inventory/insert/product/all', {
     method: 'GET',
     credentials: 'include',
+    cache: 'no-store',
+    signal,
   })
 
   if (!response.ok) {
