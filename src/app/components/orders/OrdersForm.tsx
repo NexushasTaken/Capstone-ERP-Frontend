@@ -535,7 +535,6 @@ export default function OrdersForm() {
                           <div className="sticky top-0 grid grid-cols-[1fr_120px_120px_140px_140px] 
                           bg-[#F0F1F1] px-3 py-2 text-xs text-[#737A76]">
                             <span>Product</span>
-                            <span>Order ID</span>
                             <span>Quantity</span>
                             <span>Amount</span>
                             <span>Unit price</span>
@@ -544,7 +543,6 @@ export default function OrdersForm() {
                             <div className="grid grid-cols-[1fr_120px_120px_140px_140px] border-t 
                             border-[#E2E2E2] px-3 py-3 text-sm" key={`${group.orderId}-${index}`}>
                               <span className="truncate capitalize">{item.productName}</span>
-                              <span className="truncate capitalize font-medium">{formatOrderNumber(group.orderId)}</span>
                               <span className="font-medium">{item.quantity}</span>
                               <span className="font-medium">{formatPeso(item.totalAmount)}</span>
                               <span>{formatPeso(item.price)}</span>
