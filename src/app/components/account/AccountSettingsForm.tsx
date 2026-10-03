@@ -44,7 +44,12 @@ function AccountSettingsFormFields({
   const queryClient = useQueryClient()
 
   const [profileForm, setProfileForm] = useState({ firstName: currentUser.firstName, lastName: currentUser.lastName })
-  const [credentialsForm, setCredentialsForm] = useState({ email: credentials.email, password: '', confirmPassword: '' })
+  const [credentialsForm, setCredentialsForm] = useState({
+    currentPassword: '',
+    email: credentials.email,
+    password: '',
+    confirmPassword: '',
+  })
 
   const updateProfileMutation = useMutation({
     mutationFn: updateProfileInfo,
@@ -61,7 +66,7 @@ function AccountSettingsFormFields({
     mutationFn: updateAccountCredentials,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.profile.info })
-      setCredentialsForm((prev) => ({ ...prev, password: '', confirmPassword: '' }))
+      setCredentialsForm((prev) => ({ ...prev, currentPassword: '', password: '', confirmPassword: '' }))
       toast.success('Account settings updated successfully')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to update account settings'),
@@ -76,7 +81,11 @@ function AccountSettingsFormFields({
     !passwordProvided ||
     (credentialsForm.password.length >= MIN_PASSWORD_LENGTH && credentialsForm.password === credentialsForm.confirmPassword)
   const emailChanged = credentialsForm.email.trim() !== credentials.email
-  const credentialsCanSubmit = credentialsForm.email.trim() !== '' && passwordValid && (emailChanged || passwordProvided)
+  const credentialsCanSubmit =
+    credentialsForm.currentPassword !== '' &&
+    credentialsForm.email.trim() !== '' &&
+    passwordValid &&
+    (emailChanged || passwordProvided)
 
   function handleProfileSubmit(event: FormEvent) {
     event.preventDefault()
@@ -93,6 +102,7 @@ function AccountSettingsFormFields({
     if (!credentialsCanSubmit) return
 
     updateCredentialsMutation.mutate({
+      currentPassword: credentialsForm.currentPassword,
       email: credentialsForm.email.trim(),
       password: passwordProvided ? credentialsForm.password : undefined,
     })
@@ -158,6 +168,16 @@ function AccountSettingsFormFields({
               className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
               onChange={(event) => setCredentialsForm((prev) => ({ ...prev, email: event.target.value }))}
               value={credentialsForm.email}
+            />
+          </label>
+
+          <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-[#121514]`}>
+            <span className="text-[#68716C]">Current Password</span>
+            <Input
+              type="password"
+              className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+              onChange={(event) => setCredentialsForm((prev) => ({ ...prev, currentPassword: event.target.value }))}
+              value={credentialsForm.currentPassword}
             />
           </label>
 
