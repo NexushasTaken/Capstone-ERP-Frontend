@@ -17,5 +17,4 @@ export interface CurrentUser {
   firstName: string
   lastName: string
   role: string
-  token: string | null
 }
