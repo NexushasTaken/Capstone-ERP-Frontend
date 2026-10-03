@@ -98,17 +98,19 @@ function AccountSettingsFormFields({
     })
   }
 
+  const fieldLabelColumn = 'grid-cols-[150px_1fr]'
+
   return (
     <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-white">
-      <form onSubmit={handleProfileSubmit} className="grid grid-cols-1 gap-4 p-5 lg:grid-cols-[220px_1fr] lg:gap-6">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-medium text-[#121514]">Profile Information</h2>
-          <p className="text-sm text-[#737A76]">Update the name shown across the app.</p>
-        </div>
+      <div className="flex justify-center p-5">
+        <form onSubmit={handleProfileSubmit} className="flex w-full max-w-md flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-lg font-medium text-[#121514]">Profile Information</h2>
+            <p className="text-sm text-[#737A76]">Update the name shown across the app.</p>
+          </div>
 
-        <div className="flex max-w-md flex-col gap-4">
-          <label className="flex flex-col gap-1 text-sm text-[#121514]">
-            <span className="text-xs text-[#68716C]">First Name</span>
+          <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-[#121514]`}>
+            <span className="text-[#68716C]">First Name</span>
             <Input
               className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
               onChange={(event) => setProfileForm((prev) => ({ ...prev, firstName: event.target.value }))}
@@ -116,8 +118,8 @@ function AccountSettingsFormFields({
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-sm text-[#121514]">
-            <span className="text-xs text-[#68716C]">Last Name</span>
+          <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-[#121514]`}>
+            <span className="text-[#68716C]">Last Name</span>
             <Input
               className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
               onChange={(event) => setProfileForm((prev) => ({ ...prev, lastName: event.target.value }))}
@@ -125,29 +127,32 @@ function AccountSettingsFormFields({
             />
           </label>
 
-          <div className="flex justify-end">
-            <Button
-              className="rounded-xl px-3 py-2 text-sm"
-              disabled={!profileCanSubmit || updateProfileMutation.isPending}
-              type="submit"
-            >
-              Save changes
-            </Button>
+          <div className={`grid ${fieldLabelColumn} gap-3`}>
+            <span />
+            <div className="flex justify-end">
+              <Button
+                className="rounded-xl px-3 py-2 text-sm"
+                disabled={!profileCanSubmit || updateProfileMutation.isPending}
+                type="submit"
+              >
+                Save changes
+              </Button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
 
       <div className="border-t border-[#E2E2E2]" />
 
-      <form onSubmit={handleCredentialsSubmit} className="grid grid-cols-1 gap-4 p-5 lg:grid-cols-[220px_1fr] lg:gap-6">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-medium text-[#121514]">Account Settings</h2>
-          <p className="text-sm text-[#737A76]">Update your login email or password.</p>
-        </div>
+      <div className="flex justify-center p-5">
+        <form onSubmit={handleCredentialsSubmit} className="flex w-full max-w-md flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-lg font-medium text-[#121514]">Account Settings</h2>
+            <p className="text-sm text-[#737A76]">Update your login email or password.</p>
+          </div>
 
-        <div className="flex max-w-md flex-col gap-4">
-          <label className="flex flex-col gap-1 text-sm text-[#121514]">
-            <span className="text-xs text-[#68716C]">Email</span>
+          <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-[#121514]`}>
+            <span className="text-[#68716C]">Email</span>
             <Input
               type="email"
               className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
@@ -156,8 +161,8 @@ function AccountSettingsFormFields({
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-sm text-[#121514]">
-            <span className="text-xs text-[#68716C]">Password</span>
+          <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-[#121514]`}>
+            <span className="text-[#68716C]">Password</span>
             <Input
               type="password"
               placeholder="Leave blank to keep current password"
@@ -167,8 +172,8 @@ function AccountSettingsFormFields({
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-sm text-[#121514]">
-            <span className="text-xs text-[#68716C]">Confirm Password</span>
+          <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-[#121514]`}>
+            <span className="text-[#68716C]">Confirm Password</span>
             <Input
               type="password"
               placeholder="Leave blank to keep current password"
@@ -179,22 +184,28 @@ function AccountSettingsFormFields({
           </label>
 
           {passwordProvided && !passwordValid ? (
-            <span className="text-xs text-red-500">
-              Password must be at least {MIN_PASSWORD_LENGTH} characters and match the confirmation.
-            </span>
+            <div className={`grid ${fieldLabelColumn} gap-3`}>
+              <span />
+              <span className="text-xs text-red-500">
+                Password must be at least {MIN_PASSWORD_LENGTH} characters and match the confirmation.
+              </span>
+            </div>
           ) : null}
 
-          <div className="flex justify-end">
-            <Button
-              className="rounded-xl px-3 py-2 text-sm"
-              disabled={!credentialsCanSubmit || updateCredentialsMutation.isPending}
-              type="submit"
-            >
-              Save changes
-            </Button>
+          <div className={`grid ${fieldLabelColumn} gap-3`}>
+            <span />
+            <div className="flex justify-end">
+              <Button
+                className="rounded-xl px-3 py-2 text-sm"
+                disabled={!credentialsCanSubmit || updateCredentialsMutation.isPending}
+                type="submit"
+              >
+                Save changes
+              </Button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </section>
   )
 }
