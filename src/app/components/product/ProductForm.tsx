@@ -23,6 +23,8 @@ import { CategoryListItem } from '@/app/types/category'
 import { fetchCategories } from '@/app/services/categoryApi'
 import  Loading from "@/app/components/loaders/Loading"
 import StatusAction from '@/app/components/StatusAction'
+import { useCurrentUser } from '@/app/hooks/useCurrentUser'
+import { allowedActions, can } from '@/app/utils/permissions'
 import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
 import { queryKeys } from '@/app/utils/query/queryKeys'
 import { invalidateProducts } from '@/app/utils/query/queryInvalidation'
@@ -33,6 +35,9 @@ function hasCategory(product: ProductListItem) {
 }
 
 export default function ProductForm() {
+  const { data: currentUser } = useCurrentUser()
+  const role = currentUser?.role
+  const productActions = allowedActions(role, 'product', editDeleteActions)
   const [exportCooldown, setExportCooldown] = useState(0)
 
   useEffect(() => {
@@ -431,14 +436,16 @@ export default function ProductForm() {
               </>
             ) : 'Export to CSV'}
           </Button>
-          <Button
-            className="rounded-xl cursor-pointer px-3 py-2 text-sm"
-            onClick={() => setIsAddModalOpen(true)}
-            type="button"
-          >
-            <Plus className="h-4 w-4" />
-            Add product
-          </Button>
+          {can(role, 'product:add') && (
+            <Button
+              className="rounded-xl cursor-pointer px-3 py-2 text-sm"
+              onClick={() => setIsAddModalOpen(true)}
+              type="button"
+            >
+              <Plus className="h-4 w-4" />
+              Add product
+            </Button>
+          )}
           <SortPopover
             value={sortBy}
             order={sortOrder}
@@ -503,14 +510,16 @@ export default function ProductForm() {
                       >
                         See more
                       </button>
-                      <StatusAction
-                        actions={editDeleteActions}
-                        label={`More actions for product ${product.id}`}
-                        onAction={(action) => {
-                          if (action === 'edit') openEditModal(product)
-                          if (action === 'delete') openDeleteModal(product)
-                        }}
-                      />
+                      {productActions.length > 0 && (
+                        <StatusAction
+                          actions={productActions}
+                          label={`More actions for product ${product.id}`}
+                          onAction={(action) => {
+                            if (action === 'edit') openEditModal(product)
+                            if (action === 'delete') openDeleteModal(product)
+                          }}
+                        />
+                      )}
                     </div>
                   </td>
                 </tr>

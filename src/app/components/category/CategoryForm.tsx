@@ -10,6 +10,8 @@ import AppModal from '@/app/components/modals/AppModal'
 import { PaginationDemo } from '@/app/components/Pagination'
 import SortPopover from '@/app/components/SortPopover'
 import StatusAction from '@/app/components/StatusAction'
+import { useCurrentUser } from '@/app/hooks/useCurrentUser'
+import { allowedActions, can } from '@/app/utils/permissions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { CategoryListItem, CategorySortBy } from '@/app/types/category'
@@ -28,6 +30,9 @@ import { queryKeys } from '@/app/utils/query/queryKeys'
 import { invalidateCategories } from '@/app/utils/query/queryInvalidation'
 
 export default function CategoryForm() {
+  const { data: currentUser } = useCurrentUser()
+  const role = currentUser?.role
+  const categoryActions = allowedActions(role, 'category', editDeleteActions)
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [sortBy, setSortBy] = useState<CategorySortBy>('createdAt')
@@ -242,17 +247,19 @@ export default function CategoryForm() {
             )}
           </div>
 
-          <Button
-            className="rounded-xl cursor-pointer px-3 py-2 text-sm"
-            onClick={() => {
-              resetForm()
-              setIsAddModalOpen(true)
-            }}
-            type="button"
-          >
-            <Plus className="h-4 w-4" />
-            Add category
-          </Button>
+          {can(role, 'category:add') && (
+            <Button
+              className="rounded-xl cursor-pointer px-3 py-2 text-sm"
+              onClick={() => {
+                resetForm()
+                setIsAddModalOpen(true)
+              }}
+              type="button"
+            >
+              <Plus className="h-4 w-4" />
+              Add category
+            </Button>
+          )}
           <SortPopover
             value={sortBy}
             order={sortOrder}
@@ -308,14 +315,16 @@ export default function CategoryForm() {
                   <td className="px-3 py-5 whitespace-nowrap">{formatCategoryDate(category.created_At)}</td>
                   <td className="rounded-r-xl px-3 py-5">
                     <div className="flex items-center justify-end">
-                      <StatusAction
-                        actions={editDeleteActions}
-                        label={`More actions for category ${category.id}`}
-                        onAction={(action) => {
-                          if (action === 'edit') openEditModal(category)
-                          if (action === 'delete') openDeleteModal(category)
-                        }}
-                      />
+                      {categoryActions.length > 0 && (
+                        <StatusAction
+                          actions={categoryActions}
+                          label={`More actions for category ${category.id}`}
+                          onAction={(action) => {
+                            if (action === 'edit') openEditModal(category)
+                            if (action === 'delete') openDeleteModal(category)
+                          }}
+                        />
+                      )}
                     </div>
                   </td>
                 </tr>

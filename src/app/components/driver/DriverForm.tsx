@@ -10,6 +10,8 @@ import AppModal from '@/app/components/modals/AppModal'
 import { PaginationDemo } from '@/app/components/Pagination'
 import SortPopover from '@/app/components/SortPopover'
 import StatusAction from '@/app/components/StatusAction'
+import { useCurrentUser } from '@/app/hooks/useCurrentUser'
+import { allowedActions, can } from '@/app/utils/permissions'
 import Loading from '@/app/components/loaders/Loading'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,6 +31,9 @@ import { queryKeys } from '@/app/utils/query/queryKeys'
 import { invalidateDrivers } from '@/app/utils/query/queryInvalidation'
 
 export default function DriverForm() {
+  const { data: currentUser } = useCurrentUser()
+  const role = currentUser?.role
+  const driverActions = allowedActions(role, 'driver', driverActionOptions)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -193,17 +198,19 @@ export default function DriverForm() {
             )}
           </div>
 
-          <Button
-            className="rounded-xl cursor-pointer px-3 py-2 text-sm"
-            onClick={() => {
-              resetForm()
-              setIsAddModalOpen(true)
-            }}
-            type="button"
-          >
-            <Plus className="h-4 w-4" />
-            Add driver
-          </Button>
+          {can(role, 'driver:add') && (
+            <Button
+              className="rounded-xl cursor-pointer px-3 py-2 text-sm"
+              onClick={() => {
+                resetForm()
+                setIsAddModalOpen(true)
+              }}
+              type="button"
+            >
+              <Plus className="h-4 w-4" />
+              Add driver
+            </Button>
+          )}
           <SortPopover
             value={sortBy}
             order={sortOrder}
@@ -260,14 +267,16 @@ export default function DriverForm() {
                   <td className="px-3 py-5 whitespace-nowrap">{formatDriverDate(driver.created_At)}</td>
                   <td className="rounded-r-xl px-3 py-5">
                     <div className="flex items-center justify-end">
-                      <StatusAction
-                        actions={driverActionOptions}
-                        label={`More actions for driver ${driver.id}`}
-                        onAction={(action) => {
-                          if (action === 'update') openUpdateModal(driver)
-                          if (action === 'delete') openDeleteModal(driver)
-                        }}
-                      />
+                      {driverActions.length > 0 && (
+                        <StatusAction
+                          actions={driverActions}
+                          label={`More actions for driver ${driver.id}`}
+                          onAction={(action) => {
+                            if (action === 'update') openUpdateModal(driver)
+                            if (action === 'delete') openDeleteModal(driver)
+                          }}
+                        />
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -41,6 +41,8 @@ import CloseButton from '@/app/components/CloseButton'
 import SortPopover from '@/app/components/SortPopover'
 import { PaginationDemo } from '@/app/components/Pagination'
 import StatusAction from '@/app/components/StatusAction'
+import { useCurrentUser } from '@/app/hooks/useCurrentUser'
+import { allowedActions, can } from '@/app/utils/permissions'
 import { editDeleteActions } from '@/app/utils/helpers/statusActionHelpers'
 import Loading from '@/app/components/loaders/Loading'
 import { Button } from '@/components/ui/button'
@@ -76,6 +78,13 @@ const inventoryStatusIds: Record<string, number> = {
 }
 
 export default function InventoryForm() {
+  const { data: currentUser } = useCurrentUser()
+  const role = currentUser?.role
+  const inventoryActions = allowedActions(role, 'inventory', [
+    ...editDeleteActions,
+    { label: 'Restock', value: 'restock', icon: Plus },
+    { label: 'Mark as damage', value: 'damage', icon: AlertTriangle, variant: 'destructive' as const },
+  ])
   const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
   const [sortBy, setSortBy] = useState<InventorySortBy>('latest')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
@@ -624,14 +633,16 @@ export default function InventoryForm() {
                 }}
               />
 
-              <Button
-                className="rounded-xl cursor-pointer px-3 py-2 text-sm"
-                onClick={() => setIsAddModalOpen(true)}
-                type="button"
-              >
-                <Plus className="h-4 w-4" />
-                Add inventory
-              </Button>
+              {can(role, 'inventory:add') && (
+                <Button
+                  className="rounded-xl cursor-pointer px-3 py-2 text-sm"
+                  onClick={() => setIsAddModalOpen(true)}
+                  type="button"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add inventory
+                </Button>
+              )}
             </div>
           </div>
 
@@ -693,27 +704,26 @@ export default function InventoryForm() {
                             >
                               See more
                             </button>
-                            <StatusAction
-                              actions={[
-                                ...editDeleteActions, 
-                                { label: 'Restock', value: 'restock', icon: Plus }, 
-                                { label: 'Mark as damage', value: 'damage', icon: AlertTriangle, variant: 'destructive' }, ]}
-                              label={`More actions for inventory ${item.id}`}
-                              onAction={(action) => {
-                                if (action === 'damage' && item.id > 0 && !isSubmitting) {
-                                  setSelectedItem(item)
-                                  setDamageForm({ quantity: '', reason: '', damagedType: 1 })
-                                  setIsDamageModalOpen(true)
-                                }
-                                if (action === 'restock' && item.id > 0 && !isSubmitting) {
-                                  setSelectedItem(item)
-                                  setRestockForm({ quantity: '', restockType: 1 })
-                                  setIsRestockModalOpen(true)
-                                }
-                                if (action === 'edit' && !isSubmitting) openEditModal(item)
-                                if (action === 'delete' && !isSubmitting) openDeleteModal(item)
-                              }}
-                            />
+                            {inventoryActions.length > 0 && (
+                              <StatusAction
+                                actions={inventoryActions}
+                                label={`More actions for inventory ${item.id}`}
+                                onAction={(action) => {
+                                  if (action === 'damage' && item.id > 0 && !isSubmitting) {
+                                    setSelectedItem(item)
+                                    setDamageForm({ quantity: '', reason: '', damagedType: 1 })
+                                    setIsDamageModalOpen(true)
+                                  }
+                                  if (action === 'restock' && item.id > 0 && !isSubmitting) {
+                                    setSelectedItem(item)
+                                    setRestockForm({ quantity: '', restockType: 1 })
+                                    setIsRestockModalOpen(true)
+                                  }
+                                  if (action === 'edit' && !isSubmitting) openEditModal(item)
+                                  if (action === 'delete' && !isSubmitting) openDeleteModal(item)
+                                }}
+                              />
+                            )}
                           </div>
                         </td>
                       </tr>
