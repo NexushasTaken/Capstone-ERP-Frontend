@@ -86,6 +86,10 @@ export default function ProfileModal({
           <button
             aria-label="Settings"
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0c0d0d] px-4 py-3 font-medium text-white cursor-pointer transition-all hover:scale-105 duration-300"
+            onClick={() => {
+              onClose()
+              router.push('/dashboard/account-settings')
+            }}
             type="button"
           >
             <Settings className="h-5 w-5" />

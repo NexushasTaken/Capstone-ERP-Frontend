@@ -29,3 +29,7 @@ export function invalidateWarehouses(queryClient: QueryClient) {
 export function invalidateAuditLogs(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: ['auditLogs'] })
 }
+
+export function invalidateAccounts(queryClient: QueryClient) {
+  return queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all })
+}
