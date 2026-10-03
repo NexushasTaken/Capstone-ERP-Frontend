@@ -3,14 +3,12 @@ import type { ApiEnvelope } from '@/app/utils/api/apiEnvelope'
 
 const CURRENT_USER_STORAGE_KEY = 'erp.currentUser'
 
-// Shape the backend sends today: `type` is the role, `position` is ignored, `lastName` is missing.
+// Shape the backend sends: id, firstName, lastName, role (from both login and authorize endpoints)
 export interface RawCurrentUser {
   id: number
   firstName: string
-  lastName?: string
-  role?: string
-  type?: string
-  token: string | null
+  lastName: string
+  role: string
 }
 
 export function normalizeCurrentUser(raw: RawCurrentUser | null | undefined): CurrentUser | null {
@@ -19,9 +17,8 @@ export function normalizeCurrentUser(raw: RawCurrentUser | null | undefined): Cu
   return {
     id: raw.id,
     firstName: raw.firstName,
-    lastName: raw.lastName ?? 'LAST_NAME', // TODO: remove fallback when backend sends lastName
-    role: raw.role ?? raw.type ?? '', // TODO: remove `type` fallback when backend sends role
-    token: raw.token,
+    lastName: raw.lastName,
+    role: raw.role,
   }
 }
 
@@ -54,12 +51,12 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
     credentials: 'include',
   })
 
-  const data: ApiEnvelope<RawCurrentUser | null> = await response.json()
-
   if (response.status === 401) {
     storeCurrentUser(null)
     return null
   }
+
+  const data: ApiEnvelope<RawCurrentUser | null> = await response.json()
 
   if (!response.ok || !data.success) {
     throw new Error(data.message || 'Failed to fetch current user')
@@ -68,9 +65,6 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const user = normalizeCurrentUser(data.content)
 
   if (user) {
-    // TODO: remove when backend authorize returns role; keeps the role saved at login.
-    if (!user.role) user.role = readStoredCurrentUser()?.role ?? ''
-
     storeCurrentUser(user)
     return user
   }
