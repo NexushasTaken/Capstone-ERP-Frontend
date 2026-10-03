@@ -1,7 +1,7 @@
 'use client'
 
 import { Search, X, Plus } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { AccountListItem, AccountSortBy } from '@/app/types/account'
-import { createAccount, ensureAccountPresent, fetchAccounts, updateAccountRole } from '@/app/services/accountApi'
+import { createAccount, fetchAccounts, updateAccountRole } from '@/app/services/accountApi'
 import {
   ACCOUNT_ITEMS_PER_PAGE,
   accountSortOptions,
@@ -28,6 +28,8 @@ import {
 import Loading from '@/app/components/loaders/Loading'
 import { queryKeys } from '@/app/utils/query/queryKeys'
 import { invalidateAccounts } from '@/app/utils/query/queryInvalidation'
+
+const LOCKED_ACCOUNT_ID = 1
 
 const emptyCreateForm = {
   firstName: '',
@@ -52,16 +54,6 @@ export default function AccountsForm() {
   const [createForm, setCreateForm] = useState(emptyCreateForm)
   const [editRole, setEditRole] = useState<AccountListItem['role']>('secretary')
   const queryClient = useQueryClient()
-
-  useEffect(() => {
-    if (!currentUser) return
-    ensureAccountPresent({
-      id: currentUser.id,
-      firstName: currentUser.firstName,
-      lastName: currentUser.lastName,
-      role: (currentUser.role?.toLowerCase() === 'owner' ? 'owner' : 'secretary'),
-    })
-  }, [currentUser])
 
   const {
     data: accounts = [],
@@ -131,7 +123,8 @@ export default function AccountsForm() {
     createForm.password.length >= 8 &&
     createForm.password === createForm.confirmPassword
 
-  const editCanSubmit = !!selectedAccount && editRole !== selectedAccount.role
+  const editCanSubmit =
+    !!selectedAccount && selectedAccount.id !== LOCKED_ACCOUNT_ID && editRole !== selectedAccount.role
 
   function resetCreateForm() {
     setCreateForm(emptyCreateForm)
@@ -458,6 +451,7 @@ export default function AccountsForm() {
           <label className="flex flex-col gap-1 text-sm text-[#121514]">
             <span className="text-xs text-[#68716C]">Role</span>
             <Select
+              disabled={selectedAccount?.id === LOCKED_ACCOUNT_ID}
               items={roleOptions}
               value={editRole}
               onValueChange={(value) => {
@@ -475,6 +469,9 @@ export default function AccountsForm() {
                 ))}
               </SelectContent>
             </Select>
+            {selectedAccount?.id === LOCKED_ACCOUNT_ID && (
+              <span className="text-xs text-[#ACABAA]">This account&apos;s role cannot be changed.</span>
+            )}
           </label>
         </div>
 

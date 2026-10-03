@@ -34,6 +34,7 @@ export interface CredentialsInfo {
 }
 
 export interface UpdateCredentialsPayload {
+  currentPassword: string
   email: string
   password?: string
 }
