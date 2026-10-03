@@ -6,7 +6,5 @@ export const getLinkClasses = (isActive: boolean) =>
 export const profileFallback = {
   firstName: 'User',
   lastName: '',
-  position: 'Staff',
-  type: 'Account',
-  avatarSrc: '/defaultProfile.avif',
+  role: '',
 }
