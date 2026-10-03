@@ -25,3 +25,7 @@ export function invalidateDrivers(queryClient: QueryClient) {
 export function invalidateWarehouses(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: queryKeys.warehouses.all })
 }
+
+export function invalidateAuditLogs(queryClient: QueryClient) {
+  return queryClient.invalidateQueries({ queryKey: ['auditLogs'] })
+}

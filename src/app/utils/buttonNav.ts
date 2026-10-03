@@ -1,4 +1,4 @@
-import { ChartNoAxesCombined, Package, PackageOpen, Truck, Warehouse } from 'lucide-react'
+import { ChartNoAxesCombined, History, Package, PackageOpen, Truck, Warehouse } from 'lucide-react'
 
 export const buttonNav = [
     {
@@ -30,5 +30,10 @@ export const buttonNav = [
         name: 'Driver',
         icon: Truck,
         link: '/dashboard/driver'
+    },
+    {
+        name: 'Audit logs',
+        icon: History,
+        link: '/dashboard/audit-logs'
     },
 ]

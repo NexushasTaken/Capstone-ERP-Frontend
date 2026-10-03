@@ -16,6 +16,7 @@ const permissions: Record<Role, RolePermissions> = {
       '/dashboard/product',
       '/dashboard/category',
       '/dashboard/driver',
+      '/dashboard/audit-logs',
     ],
     // Keys are `<module>:<button value>`, matching the StatusAction values in each page.
     actions: [
@@ -46,6 +47,7 @@ const permissions: Record<Role, RolePermissions> = {
       '/dashboard/product',
       '/dashboard/category',
       '/dashboard/driver',
+      '/dashboard/audit-logs',
     ],
     actions: [],
   },

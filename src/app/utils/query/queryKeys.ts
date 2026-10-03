@@ -5,6 +5,7 @@ import type { FetchDriversParams } from '@/app/utils/api/types/driver'
 import type { FetchSalesParams } from '@/app/utils/api/types/sale'
 import type { FetchInventoryForecastParams } from '@/app/utils/api/types/dashboard'
 import type { FetchCategoriesParams } from '@/app/utils/api/types/category'
+import type { FetchAuditLogsParams } from '@/app/utils/api/types/auditLog'
 
 export const queryKeys = {
   categories: {
@@ -42,6 +43,12 @@ export const queryKeys = {
   },
   warehouses: {
     all: ['warehouses'] as const,
+  },
+  auditLogs: {
+    all: (params: FetchAuditLogsParams = {}) => ['auditLogs', params] as const,
+  },
+  users: {
+    all: ['users'] as const,
   },
 
   auth: {
