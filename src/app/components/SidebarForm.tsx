@@ -3,20 +3,22 @@
 import type { SidebarFormProps } from '@/app/types/sidebar'
 import ProfileModal from '@/app/components/modals/ProfileModal'
 import AuditLogSidebar from '@/app/components/audit-log/AuditLogSidebar'
-import { buttonNav } from '@/app/utils/buttonNav'
+import { navGroups } from '@/app/utils/buttonNav'
 import { formatProfileDetails, formatProfileName } from '@/app/utils/helpers/profileHelpers'
-import { Bell, LayoutDashboard, X } from 'lucide-react'
+import { Bell, ChevronDown, LayoutDashboard, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import cproLogo from "../../../public/cproLogo.png"
-import { getLinkClasses, profileFallback } from '@/app/utils/helpers/sidebarHelper'
+import { getNavItemClasses, profileFallback } from '@/app/utils/helpers/sidebarHelper'
 import { useCurrentUser } from '@/app/hooks/useCurrentUser'
 import { can } from '@/app/utils/permissions'
 
 export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  // Both groups start expanded; collapsing is a per-visit UI preference, not worth persisting.
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
   const pathname = usePathname()
   const { data: currentUser, isLoading: isLoadingCurrentUser } = useCurrentUser()
 
@@ -27,7 +29,16 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
     role: currentUser?.role ?? profileFallback.role,
   }
   // Use the real role, never the display fallback, so a missing user gets no links.
-  const allowedNav = buttonNav.filter(({ link }) => can(currentUser?.role, link))
+  const allowedGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(({ link }) => can(currentUser?.role, link)),
+    }))
+    .filter((group) => group.items.length > 0)
+
+  const isGroupOpen = (label: string) => openGroups[label] ?? true
+  const toggleGroup = (label: string) =>
+    setOpenGroups((prev) => ({ ...prev, [label]: !isGroupOpen(label) }))
 
   return (
     <>
@@ -52,24 +63,51 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
         {/* BUTTON NAV */}
         <div className="flex flex-1 flex-col gap-2 w-full">
 
-          <Link href="/dashboard" className={`flex items-center justify-center gap-3 rounded-2xl py-2 cursor-pointer group sm:gap-4 h-32
-            ${getLinkClasses(dashboardActive)}
-            `} onClick={onClose}>
-            <LayoutDashboard className={`h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 ${dashboardActive ? 'text-[#F2F0F0]' : 'text-[#0c0d0d]'} group-hover:rotate-90 transition-all duration-300`}/>
-            <span className={`${dashboardActive ? 'text-[#F2F0F0]' : 'text-[#0c0d0d]'} text-base font-medium group-hover:scale-105 transition-all duration-300 sm:text-lg`}>Dashboard</span>
+          <Link
+            href="/dashboard"
+            onClick={onClose}
+            className={`flex items-center gap-3 rounded-xl px-3 py-2 cursor-pointer group ${getNavItemClasses(dashboardActive)}`}
+          >
+            <LayoutDashboard className="h-5 w-5 shrink-0 group-hover:rotate-90 transition-all duration-300" />
+            <span className="text-sm font-medium sm:text-base">Dashboard</span>
           </Link>
 
-          <div className="grid w-full grid-cols-2 gap-1">
-            {allowedNav.map(({ icon: Icon, name, link }) => {
-              const isActive = pathname === link
+          <div className="flex flex-col gap-1 w-full">
+            {allowedGroups.map(({ label, items }) => {
+              const open = isGroupOpen(label)
 
               return (
-                <Link key={name} href={link} className={`flex flex-col items-center justify-center rounded-2xl cursor-pointer group h-32
-                ${getLinkClasses(isActive)}
-                `} onClick={onClose}>
-                  <Icon className={`h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 ${isActive ? 'text-[#F2F0F0]' : 'text-[#0c0d0d]'} group-hover:rotate-12 transition-all duration-300`} />
-                  <span className={`${isActive ? 'text-[#F2F0F0]' : 'text-[#0c0d0d]'} text-sm font-medium group-hover:scale-105 transition-all duration-300 cursor-pointer sm:text-base md:text-lg`}>{name}</span>
-                </Link>
+                <div key={label} className="flex flex-col">
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(label)}
+                    aria-expanded={open}
+                    className="flex items-center justify-between w-full rounded-xl px-3 py-2 cursor-pointer text-left text-[#737A76] hover:bg-[#F0F1F1] transition-all duration-300"
+                  >
+                    <span className="text-xs font-semibold uppercase tracking-wide">{label}</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {open && (
+                    <div className="flex flex-col gap-0.5 pl-2">
+                      {items.map(({ icon: Icon, name, link }) => {
+                        const isActive = pathname === link
+
+                        return (
+                          <Link
+                            key={name}
+                            href={link}
+                            onClick={onClose}
+                            className={`flex items-center gap-3 rounded-xl px-3 py-2 cursor-pointer group ${getNavItemClasses(isActive)}`}
+                          >
+                            <Icon className="h-5 w-5 shrink-0 group-hover:rotate-12 transition-all duration-300" />
+                            <span className="text-sm font-medium sm:text-base">{name}</span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               )
             })}
           </div>
