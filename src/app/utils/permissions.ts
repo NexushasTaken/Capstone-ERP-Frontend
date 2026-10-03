@@ -17,6 +17,8 @@ const permissions: Record<Role, RolePermissions> = {
       '/dashboard/category',
       '/dashboard/driver',
       '/dashboard/audit-logs',
+      '/dashboard/account-settings',
+      '/dashboard/accounts',
     ],
     // Keys are `<module>:<button value>`, matching the StatusAction values in each page.
     actions: [
@@ -37,6 +39,8 @@ const permissions: Record<Role, RolePermissions> = {
       'warehouse:add',
       'warehouse:edit',
       'warehouse:delete',
+      'account:create',
+      'account:edit',
     ],
   },
   secretary: {
@@ -48,6 +52,7 @@ const permissions: Record<Role, RolePermissions> = {
       '/dashboard/category',
       '/dashboard/driver',
       '/dashboard/audit-logs',
+      '/dashboard/account-settings',
     ],
     actions: [],
   },

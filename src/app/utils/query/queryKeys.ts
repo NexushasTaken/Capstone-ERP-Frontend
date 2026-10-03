@@ -50,6 +50,12 @@ export const queryKeys = {
   users: {
     all: ['users'] as const,
   },
+  accounts: {
+    all: ['accounts'] as const,
+  },
+  profile: {
+    info: ['profile', 'info'] as const,
+  },
 
   auth: {
     currentUser: ['auth', 'currentUser'] as const,

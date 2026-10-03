@@ -1,4 +1,4 @@
-import { ChartNoAxesCombined, History, LucideIcon, Package, PackageOpen, Truck, Warehouse } from 'lucide-react'
+import { ChartNoAxesCombined, History, LucideIcon, Package, PackageOpen, Truck, UserCog, Users, Warehouse } from 'lucide-react'
 
 export interface NavItem {
     name: string
@@ -54,6 +54,21 @@ export const navGroups: NavGroup[] = [
                 name: 'Sales',
                 icon: ChartNoAxesCombined,
                 link: '/dashboard/sales'
+            },
+        ],
+    },
+    {
+        label: 'Account Manager',
+        items: [
+            {
+                name: 'Account Settings',
+                icon: UserCog,
+                link: '/dashboard/account-settings'
+            },
+            {
+                name: 'Accounts',
+                icon: Users,
+                link: '/dashboard/accounts'
             },
         ],
     },
