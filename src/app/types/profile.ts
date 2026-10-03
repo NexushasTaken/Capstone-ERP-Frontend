@@ -1,8 +1,9 @@
+export type Role = 'owner' | 'secretary'
+
 export interface StaffProfile {
   firstName: string
-  type: string
-  position: string
-  avatarSrc: string
+  lastName: string
+  role: string
 }
 
 export interface ProfileModalProps {
@@ -15,7 +16,6 @@ export interface CurrentUser {
   id: number
   firstName: string
   lastName: string
-  position: string
-  type: string
+  role: string
   token: string | null
 }

@@ -5,10 +5,9 @@ import { toast } from 'sonner'
 import React, { ChangeEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
-import type { CurrentUser } from '@/app/types/profile'
 import type { ApiEnvelope } from '@/app/utils/api/apiEnvelope'
 import { queryKeys } from '@/app/utils/query/queryKeys'
-import { storeCurrentUser } from '@/app/services/profileApi'
+import { normalizeCurrentUser, storeCurrentUser, type RawCurrentUser } from '@/app/services/profileApi'
 
 export default function LoginForm() {
   const router = useRouter()
@@ -35,7 +34,7 @@ export default function LoginForm() {
         },
       )
 
-      const payload: ApiEnvelope<CurrentUser> | { message?: string; title?: string } | null =
+      const payload: ApiEnvelope<RawCurrentUser> | { message?: string; title?: string } | null =
         await response.json().catch(() => null)
 
       if (!response.ok || !payload || !('success' in payload) || !payload.success) {
@@ -46,7 +45,7 @@ export default function LoginForm() {
         throw new Error(message)
       }
 
-      const currentUser = payload.content ?? null
+      const currentUser = normalizeCurrentUser(payload.content)
       storeCurrentUser(currentUser)
       queryClient.setQueryData(queryKeys.auth.currentUser, currentUser)
       toast.success("You're logged in successfully!")

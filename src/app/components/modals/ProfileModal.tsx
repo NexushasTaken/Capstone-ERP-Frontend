@@ -1,10 +1,9 @@
 'use client'
 
 import { LogOut, Settings, X } from 'lucide-react'
-import Image from 'next/image'
 import { useEffect } from 'react'
 import type { ProfileModalProps } from '@/app/types/profile'
-import { formatProfileDetails } from '@/app/utils/helpers/profileHelpers'
+import { formatProfileDetails, formatProfileName } from '@/app/utils/helpers/profileHelpers'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
@@ -77,11 +76,8 @@ export default function ProfileModal({
         </div>
 
         <div className="mt-6 flex items-center gap-4">
-          <span className="relative block h-16 w-16 shrink-0 overflow-hidden rounded-full bg-[#F2F0F0]">
-            <Image alt={`${profile.firstName} profile`} className="object-cover" fill sizes="64px" src={profile.avatarSrc} />
-          </span>
           <div>
-            <p className="text-lg font-semibold text-[#0c0d0d]">{profile.firstName}</p>
+            <p className="text-lg font-semibold text-[#0c0d0d]">{formatProfileName(profile)}</p>
             <p className="text-sm text-[#747574] capitalize">{formatProfileDetails(profile)}</p>
           </div>
         </div>

@@ -4,7 +4,7 @@ import type { SidebarFormProps } from '@/app/types/sidebar'
 import ProfileModal from '@/app/components/modals/ProfileModal'
 import { auditLogs } from '@/app/utils/mock/auditLogMockData'
 import { buttonNav } from '@/app/utils/buttonNav'
-import { formatProfileDetails } from '@/app/utils/helpers/profileHelpers'
+import { formatProfileDetails, formatProfileName } from '@/app/utils/helpers/profileHelpers'
 import { Bell, LayoutDashboard, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -12,27 +12,22 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import cproLogo from "../../../public/cproLogo.png"
 import { getLinkClasses, profileFallback } from '@/app/utils/helpers/sidebarHelper'
-import { useQuery } from '@tanstack/react-query'
-import { queryKeys } from '@/app/utils/query/queryKeys'
-import { fetchCurrentUser, readStoredCurrentUser } from '@/app/services/profileApi'
+import { useCurrentUser } from '@/app/hooks/useCurrentUser'
+import { can } from '@/app/utils/permissions'
 
 export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const pathname = usePathname()
-  const { data: currentUser, isLoading: isLoadingCurrentUser } = useQuery({
-    queryKey: queryKeys.auth.currentUser,
-    queryFn: fetchCurrentUser,
-    initialData: readStoredCurrentUser,
-  })
+  const { data: currentUser, isLoading: isLoadingCurrentUser } = useCurrentUser()
 
   const dashboardActive = pathname === '/dashboard'
   const profile = {
-    ...profileFallback,
     firstName: currentUser?.firstName ?? profileFallback.firstName,
     lastName: currentUser?.lastName ?? profileFallback.lastName,
-    position: currentUser?.position ?? profileFallback.position,
-    type: currentUser?.type ?? profileFallback.type,
+    role: currentUser?.role ?? profileFallback.role,
   }
+  // Use the real role, never the display fallback, so a missing user gets no links.
+  const allowedNav = buttonNav.filter(({ link }) => can(currentUser?.role, link))
 
   return (
     <>
@@ -65,7 +60,7 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
           </Link>
 
           <div className="grid w-full grid-cols-2 gap-1">
-            {buttonNav.map(({ icon: Icon, name, link }) => {
+            {allowedNav.map(({ icon: Icon, name, link }) => {
               const isActive = pathname === link
 
               return (
@@ -113,19 +108,9 @@ export default function SidebarForm({ isOpen, onClose }: SidebarFormProps) {
 
         {/* PROFILE */}
         <button aria-label="Open profile" className="flex h-16 w-full gap-2 rounded-2xl border-2 border-gray-200 py-1 pl-1 pr-3 shrink-0 text-left transition hover:border-[#A7AEAA] hover:bg-[#FAFBFA] cursor-pointer sm:h-20 sm:pr-4" onClick={() => setIsProfileOpen(true)} type="button">
-          <span className="relative block h-full w-16 shrink-0 overflow-hidden rounded-xl bg-[#F2F0F0] sm:w-20">
-            <Image
-              alt="Profile"
-              className="object-cover"
-              fill
-              sizes="(min-width: 640px) 80px, 64px"
-              src={profile.avatarSrc}
-            />
-          </span>
-
           <div className="flex flex-col w-full h-full justify-center">
             <span className="text-[#0c0d0d] font-medium text-base sm:text-lg capitalize">
-              {isLoadingCurrentUser ? 'Loading...' : `${profile.firstName} ${profile.lastName}`}
+              {isLoadingCurrentUser ? 'Loading...' : formatProfileName(profile)}
             </span>
             <span className="text-[#ACABAA] text-sm sm:text-base capitalize">{formatProfileDetails(profile)}</span>
           </div>

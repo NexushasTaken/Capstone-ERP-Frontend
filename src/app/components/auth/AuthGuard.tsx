@@ -7,6 +7,8 @@ import SessionExpiredPage from "@/app/components/auth/SessionExpiredPage";
 import AccessDeniedPage from "@/app/components/auth/AccessDeniedPage";
 import ErrorPage from "@/app/components/auth/ErrorPage";
 import Loading from "@/app/components/loaders/Loading";
+import { useCurrentUser } from "@/app/hooks/useCurrentUser";
+import { can } from "@/app/utils/permissions";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -14,6 +16,8 @@ interface AuthGuardProps {
 
 export default function AuthGuard({ children }: AuthGuardProps) {
   const pathname = usePathname();
+  // Same source as the sidebar, so a visible link always opens its page.
+  const { data: currentUser } = useCurrentUser();
 
   const [status, setStatus] = useState<
     "loading" | "authorized" | "unauthorized" | "forbidden" | "error"
@@ -47,7 +51,6 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           return;
         }
 
-        setStatus("loading");
         setStatus("authorized");
       } catch {
         if (!cancelled) {
@@ -77,6 +80,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   if (status === "error") {
     return <ErrorPage />;
+  }
+
+  // Checked on every render (not in the effect) so a restricted page never flashes
+  // while the authorize request for the new pathname is still running.
+  if (!can(currentUser?.role, pathname)) {
+    return <AccessDeniedPage reason="role" />;
   }
 
   return <>{children}</>;
