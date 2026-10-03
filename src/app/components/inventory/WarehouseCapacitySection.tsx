@@ -8,6 +8,8 @@ import { toast } from 'sonner'
 import CloseButton from '@/app/components/CloseButton'
 import AppModal from '@/app/components/modals/AppModal'
 import StatusAction from '@/app/components/StatusAction'
+import { useCurrentUser } from '@/app/hooks/useCurrentUser'
+import { allowedActions, can } from '@/app/utils/permissions'
 import WarehouseCapacityChart from '@/app/components/inventory/WarehouseCapacityChart'
 import Loading from '@/app/components/loaders/Loading'
 import { formatNumber } from '@/app/utils/helpers/inventoryHelpers'
@@ -81,6 +83,9 @@ function isAllWarehouseRecord(warehouse: WarehouseCapacityRecord) {
 export default function WarehouseCapacitySection({
   initialCapacity,
 }: WarehouseCapacitySectionProps) {
+  const { data: currentUser } = useCurrentUser()
+  const role = currentUser?.role
+  const warehouseActions = allowedActions(role, 'warehouse', editDeleteActions)
   const [capacityState, setCapacityState] = useState<StoredWarehouseCapacityState>(
     () => createInitialWarehouseState(initialCapacity)
   )
@@ -416,14 +421,16 @@ export default function WarehouseCapacitySection({
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button
-              className="rounded-xl cursor-pointer px-3 py-2 text-sm"
-              onClick={() => setIsAddModalOpen(true)}
-              type="button"
-            >
-              <Plus className="h-4 w-4" />
-              Add warehouse
-            </Button>
+            {can(role, 'warehouse:add') && (
+              <Button
+                className="rounded-xl cursor-pointer px-3 py-2 text-sm"
+                onClick={() => setIsAddModalOpen(true)}
+                type="button"
+              >
+                <Plus className="h-4 w-4" />
+                Add warehouse
+              </Button>
+            )}
           </div>
         </div>
 
@@ -462,14 +469,16 @@ export default function WarehouseCapacitySection({
                         {warehouse.address}
                       </p>
                     </div>
-                    <StatusAction
-                      actions={editDeleteActions}
-                      label={`More actions for warehouse ${warehouse.warehouseName}`}
-                      onAction={(action) => {
-                        if (action === 'edit') openEditModal(warehouse)
-                        if (action === 'delete') openDeleteModal(warehouse)
-                      }}
-                    />
+                    {warehouseActions.length > 0 && (
+                      <StatusAction
+                        actions={warehouseActions}
+                        label={`More actions for warehouse ${warehouse.warehouseName}`}
+                        onAction={(action) => {
+                          if (action === 'edit') openEditModal(warehouse)
+                          if (action === 'delete') openDeleteModal(warehouse)
+                        }}
+                      />
+                    )}
                   </div>
                   <WarehouseCapacityChart
                     capacity={toWarehouseCapacity(warehouse)}

@@ -17,15 +17,24 @@ const permissions: Record<Role, RolePermissions> = {
       '/dashboard/category',
       '/dashboard/driver',
     ],
+    // Keys are `<module>:<button value>`, matching the StatusAction values in each page.
     actions: [
       'category:add',
+      'category:edit',
       'category:delete',
       'driver:add',
+      'driver:update',
       'driver:delete',
       'product:add',
+      'product:edit',
+      'product:delete',
       'inventory:add',
+      'inventory:edit',
+      'inventory:delete',
       'inventory:restock',
+      'inventory:damage',
       'warehouse:add',
+      'warehouse:edit',
       'warehouse:delete',
     ],
   },
@@ -62,4 +71,13 @@ export function can(role: string | null | undefined, permission: string): boolea
   }
 
   return rolePermissions.actions.includes(permission)
+}
+
+// Keeps only the row-menu actions (edit, delete, …) the role may use in `module`.
+export function allowedActions<T extends { value: string }>(
+  role: string | null | undefined,
+  module: string,
+  actions: T[],
+): T[] {
+  return actions.filter((action) => can(role, `${module}:${action.value}`))
 }
