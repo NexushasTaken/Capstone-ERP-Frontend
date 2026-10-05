@@ -148,17 +148,23 @@ Formatting: `formatDate` and `formatPeso` come only from `@/lib/format`. Never w
 ## 9. Styling
 
 - Tailwind classes only, and `cn()` from `@/lib/utils` for conditional classes.
-- **Planned:** hex colors will move to shadcn's default neutral theme classes. The user chose the stock theme, so don't invent custom tokens:
-
-  | Hex | Class |
-  |---|---|
-  | `#121514` | `text-foreground` |
-  | `#737A76` | `text-muted-foreground` |
-  | `#DFE2E0` | `border-border` |
-  | `#DCE4DF` | `hover:bg-accent` |
-
-  Until that pass happens, match the surrounding file.
-- Modals and tables are planned to move onto shadcn `Dialog`/`Table` behind the existing `AppModal`/`ModalHeader` API. Keep using that API so the swap stays in one place.
+- Colours come only from the stock shadcn neutral theme in `globals.css`. **Never write `[#hex]` classes or invent tokens.**
+  - Text uses `text-foreground` / `text-muted-foreground`.
+  - Lines use `border` / `border-border`.
+  - Surfaces use `bg-muted` (`bg-muted/50` for the lightest) and `bg-background`.
+  - Hover uses `hover:bg-accent`.
+  - Solid/selected elements use `bg-primary text-primary-foreground`.
+  - Errors use `text-destructive` / `bg-destructive/10`.
+  - Focus uses `ring-ring` / `border-ring`.
+- Status colours keep their meaning, using Tailwind's palette:
+  - success `text-green-700` / dot `bg-green-600`
+  - warning `text-amber-700` / dot `bg-amber-500`
+  - error `text-destructive` / dot `bg-destructive`
+  - unknown `text-muted-foreground`
+- Charts: Chart.js can't read oklch, so get colours with `themeColor('--chart-5')` from `@/lib/cssColor` inside the effect. The sales pie's fixed multi-colour list is the one allowed exception.
+- `Button`, `Input`, `SelectTrigger`, `Textarea`, `Toggle` and `Badge` already have the app's rounded shape in `components/ui`. Only pass layout classes (`w-full`, `h-9`, `ml-auto`) to them. Never re-add `rounded-xl px-3 py-2 text-sm border-border`. Use `<Button variant="outline" size="sm">` for row buttons (“See more”, “View”) instead of a styled `<button>`.
+- Modals use `AppModal` (shadcn Dialog). For a custom header, use `ModalTitle` for the title so the dialog stays labelled. List pages render their table through `DataTable` (`@/components/DataTable`), with `TableRow`/`TableCell` children. Use `rowGroups` when each row is its own `<tbody>` (expandable rows).
+- The font is Host Grotesk via `--font-sans` / `--font-heading`. Don't use `font-mono` for UI text.
 
 ## 10. Before finishing a change
 
