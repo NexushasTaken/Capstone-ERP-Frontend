@@ -175,7 +175,7 @@ Format first, then check, then commit:
 npm run format && npx tsc --noEmit && npm run lint && npm run build
 ```
 
-`npm run format` is Prettier (`.prettierrc`: single quotes, no semicolons, 2 spaces, width 120). It skips `src/components/ui` (shadcn-generated) and the agent docs. Keep pure reformatting out of feature commits.
+`npm run format` is Prettier (`.prettierrc`: double quotes, no semicolons, 2 spaces, width 120). It skips `src/components/ui` (shadcn-generated) and the agent docs. Keep pure reformatting out of feature commits.
 
 If `tsc` complains about missing `route.js`/`layout.js` under `.next/`, those are stale generated types. Run `npx next typegen` (and remove `.next/dev/types`), then rerun.
 
