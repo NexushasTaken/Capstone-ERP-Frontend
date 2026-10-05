@@ -26,7 +26,7 @@ needs no new route file. Add a function in the matching service instead.
 src/
   app/                      routes (URL = folder path)
     api/[...path]/          the backend proxy
-    auth/login, auth/signup
+    auth/login
     dashboard/
       layout.tsx            sidebar + auth check around every dashboard page
       _components/          layout pieces and the dashboard home page
