@@ -8,8 +8,10 @@ import ExportCsvButton from "@/components/ExportCsvButton"
 import ListHeader from "@/components/ListHeader"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
+import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
+import { usePageSize } from "@/hooks/usePageSize"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { exportToCSV } from "@/lib/exportToCsv"
@@ -43,11 +45,13 @@ export default function ProductsView() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [modal, setModal] = useState<ModalState>(null)
   const debouncedSearch = useDebouncedValue(search)
+  const [pageSize, setPageSize] = usePageSize("product")
 
   const { list, listQueryKey, countByFilter } = useProducts({
     filter: selectedFilter,
     search: debouncedSearch,
     page: currentPage,
+    pageSize,
     sort: getProductFilter(sortBy, sortOrder),
   })
   const mutations = useProductMutations(listQueryKey, selectedFilter)
@@ -132,7 +136,7 @@ export default function ProductsView() {
         }
       />
 
-      <div className="mt-5 min-h-0 overflow-auto scrollbar-none flex-1">
+      <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <ProductsTable
           products={products}
           isLoading={list.isLoading}
@@ -145,9 +149,18 @@ export default function ProductsView() {
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
-        <span className="text-sm text-muted-foreground">
-          Showing {products.length} of {rows} products
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">
+            Showing {products.length} of {rows} products
+          </span>
+          <PageSizeSelect
+            value={pageSize}
+            onChange={(size) => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
+          />
+        </div>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
         </div>

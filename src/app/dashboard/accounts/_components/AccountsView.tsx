@@ -6,20 +6,16 @@ import DeleteConfirmModal from "@/components/DeleteConfirmModal"
 import ListHeader from "@/components/ListHeader"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
+import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
+import { usePageSize } from "@/hooks/usePageSize"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { allowedActions, can } from "@/lib/permissions"
 import type { AccountListItem, AccountSortBy } from "@/types/account"
 import { useAccountMutations, useAccounts } from "../_hooks/useAccounts"
-import {
-  ACCOUNT_ITEMS_PER_PAGE,
-  accountActionOptions,
-  accountSortOptions,
-  formatAccountId,
-  getAccountFilter,
-} from "../_lib/accountHelpers"
+import { accountActionOptions, accountSortOptions, formatAccountId, getAccountFilter } from "../_lib/accountHelpers"
 import AccountsTable from "./AccountsTable"
 import CreateAccountModal, { type NewAccount } from "./CreateAccountModal"
 import EditAccountRoleModal from "./EditAccountRoleModal"
@@ -40,10 +36,11 @@ export default function AccountsView() {
   const [modal, setModal] = useState<ModalState>(null)
 
   const debouncedSearch = useDebouncedValue(search.trim())
+  const [pageSize, setPageSize] = usePageSize("accounts")
 
   const { data, isLoading, error } = useAccounts({
     page: currentPage,
-    pageSize: ACCOUNT_ITEMS_PER_PAGE,
+    pageSize,
     name: debouncedSearch || undefined,
     filter: getAccountFilter(sortBy, sortOrder),
   })
@@ -76,7 +73,7 @@ export default function AccountsView() {
   }
 
   return (
-    <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
+    <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Accounts"
         count={rows}
@@ -112,7 +109,7 @@ export default function AccountsView() {
         }
       />
 
-      <div className="mt-5 min-h-0 overflow-auto scrollbar-none">
+      <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <AccountsTable
           accounts={accounts}
           isLoading={isLoading}
@@ -125,9 +122,18 @@ export default function AccountsView() {
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
-        <span className="text-sm text-muted-foreground">
-          Showing {accounts.length} of {rows} accounts
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">
+            Showing {accounts.length} of {rows} accounts
+          </span>
+          <PageSizeSelect
+            value={pageSize}
+            onChange={(size) => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
+          />
+        </div>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
         </div>

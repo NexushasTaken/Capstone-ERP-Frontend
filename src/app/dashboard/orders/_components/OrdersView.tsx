@@ -6,8 +6,10 @@ import ExportCsvButton from "@/components/ExportCsvButton"
 import ListHeader from "@/components/ListHeader"
 import OrderTypeFilterSelect from "@/components/OrderTypeFilterSelect"
 import SearchInput from "@/components/SearchInput"
+import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
+import { usePageSize } from "@/hooks/usePageSize"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { exportToCSV } from "@/lib/exportToCsv"
 import { formatDate } from "@/lib/format"
@@ -18,8 +20,6 @@ import CreateOrderModal from "./CreateOrderModal"
 import OrdersList from "./OrdersList"
 import OrderStatusFilterSelect from "./OrderStatusFilterSelect"
 
-const PAGE_SIZE = 10
-
 export default function OrdersView() {
   const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
@@ -28,10 +28,11 @@ export default function OrdersView() {
   const [expandedOrderKey, setExpandedOrderKey] = useState<string | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const debouncedSearch = useDebouncedValue(search.trim())
+  const [pageSize, setPageSize] = usePageSize("orders")
 
   const { data, isLoading, isFetching, error } = useOrders({
     page: currentPage,
-    pageSize: PAGE_SIZE,
+    pageSize,
     name: debouncedSearch || undefined,
     orderTypeId: selectedOrderTypeFilter ? Number(selectedOrderTypeFilter) : 0,
     statusId: selectedOrderStatusFilter ? Number(selectedOrderStatusFilter) : 0,
@@ -106,7 +107,7 @@ export default function OrdersView() {
         }
       />
 
-      <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-none">
+      <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <OrdersList
           orders={orders}
           isLoading={isLoading}
@@ -119,10 +120,19 @@ export default function OrdersView() {
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
-        <span className="text-sm text-muted-foreground">
-          Showing {orders.length} orders of {rows}
-          {isFetching ? " - Updating..." : ""}
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">
+            Showing {orders.length} orders of {rows}
+            {isFetching ? " - Updating..." : ""}
+          </span>
+          <PageSizeSelect
+            value={pageSize}
+            onChange={(size) => {
+              setPageSize(size)
+              goToPage(1)
+            }}
+          />
+        </div>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={goToPage} />
         </div>

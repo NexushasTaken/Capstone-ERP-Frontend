@@ -44,8 +44,9 @@ export default function DataTable({
   ) : null
 
   return (
-    <Table className={cn("text-left", className)}>
-      <TableHeader>
+    // The page's own wrapper does the scrolling (both ways), so the header can stick to its top.
+    <Table className={cn("text-left", className)} containerClassName="overflow-visible">
+      <TableHeader className="sticky top-0 z-10 bg-background shadow-[inset_0_-1px_0_var(--color-border)]">
         <TableRow className="hover:bg-transparent">
           {columns.map((column) => {
             const {

@@ -5,7 +5,7 @@ import { deleteProduct, fetchProducts, insertProduct, updateProduct } from "@/se
 import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
 import { queryKeys } from "@/lib/query/queryKeys"
 import type { FetchProductsParams, ProductCategoryFilter, ProductListItem } from "@/types/product"
-import { categoryPresentByFilter, ITEMS_PER_PAGE } from "../_lib/productHelpers"
+import { categoryPresentByFilter } from "../_lib/productHelpers"
 
 type ProductsResponse = Awaited<ReturnType<typeof fetchProducts>>
 
@@ -21,6 +21,7 @@ interface UseProductsParams {
   filter: ProductCategoryFilter
   search: string
   page: number
+  pageSize: number
   /** Sort code, see getProductFilter. */
   sort: number
 }
@@ -29,10 +30,10 @@ interface UseProductsParams {
  * One sorted page of products for the selected filter, plus the counts shown on the two filter buttons.
  * Search only applies to categorized products.
  */
-export function useProducts({ filter, search, page, sort }: UseProductsParams) {
+export function useProducts({ filter, search, page, pageSize, sort }: UseProductsParams) {
   const listParams: FetchProductsParams = {
     page,
-    pageSize: ITEMS_PER_PAGE,
+    pageSize,
     name: filter === "Uncategorized" ? undefined : search || undefined,
     categoryPresent: categoryPresentByFilter[filter],
     filter: sort,

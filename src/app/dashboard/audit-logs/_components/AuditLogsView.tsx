@@ -6,11 +6,12 @@ import { X } from "lucide-react"
 import AuditFilterDropdown from "./AuditFilterDropdown"
 import AuditLogsTable from "./AuditLogsTable"
 import ListHeader from "@/components/ListHeader"
+import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
+import { usePageSize } from "@/hooks/usePageSize"
 import { useAuditLogs, useUsers } from "@/hooks/useAuditLogs"
 import { Button } from "@/components/ui/button"
 import {
-  AUDIT_LOG_ITEMS_PER_PAGE,
   auditActionFilterOptions,
   auditModuleFilterOptions,
   auditRoleFilterOptions,
@@ -24,9 +25,10 @@ export default function AuditLogsView() {
   const [module, setModule] = useState<number | null>(null)
   const [action, setAction] = useState<number | null>(null)
   const { data: users = [] } = useUsers()
+  const [pageSize, setPageSize] = usePageSize("audit-logs")
   const queryParams = {
     page: currentPage,
-    pageSize: AUDIT_LOG_ITEMS_PER_PAGE,
+    pageSize,
     userId: userId ?? undefined,
     role: role ?? undefined,
     module: module ?? undefined,
@@ -56,7 +58,7 @@ export default function AuditLogsView() {
   }
 
   return (
-    <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
+    <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Audit logs"
         count={rows}
@@ -101,15 +103,24 @@ export default function AuditLogsView() {
         }
       />
 
-      <div className="mt-5 min-h-0 overflow-auto scrollbar-none">
+      <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <AuditLogsTable logs={logs} isLoading={isLoading} error={error} hasFilters={hasFilters} />
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
-        <span className="text-sm text-muted-foreground">
-          Showing {logs.length} of {rows} audit logs
-          {isFetching ? " - Updating..." : ""}
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">
+            Showing {logs.length} of {rows} audit logs
+            {isFetching ? " - Updating..." : ""}
+          </span>
+          <PageSizeSelect
+            value={pageSize}
+            onChange={(size) => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
+          />
+        </div>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
         </div>

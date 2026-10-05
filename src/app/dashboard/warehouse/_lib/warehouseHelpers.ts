@@ -1,7 +1,5 @@
 import type { WarehouseSortBy, WarehouseSortOption } from "@/types/warehouse"
 
-export const ITEMS_PER_PAGE = 10
-
 export const warehouseSortOptions: WarehouseSortOption[] = [
   { label: "Latest added", value: "createdAt", order: "desc" },
   { label: "Id", value: "id", order: "asc" },
