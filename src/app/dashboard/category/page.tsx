@@ -1,5 +1,5 @@
-import CategoryForm from '@/app/components/category/CategoryForm'
+import CategoriesView from '@/app/dashboard/category/_components/CategoriesView'
 
 export default function Category() {
-  return <CategoryForm />
+  return <CategoriesView />
 }

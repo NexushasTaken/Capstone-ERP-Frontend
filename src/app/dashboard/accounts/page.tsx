@@ -1,5 +1,5 @@
-import AccountsForm from '@/app/components/account/AccountsForm'
+import AccountsView from '@/app/dashboard/accounts/_components/AccountsView'
 
 export default function Accounts() {
-  return <AccountsForm />
+  return <AccountsView />
 }

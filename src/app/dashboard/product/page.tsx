@@ -1,8 +1,8 @@
-import ProductForm from '@/app/components/product/ProductForm'
+import ProductsView from '@/app/dashboard/product/_components/ProductsView'
 import React from 'react'
 
 export default function Product() {
   return (
-    <ProductForm />
+    <ProductsView />
   )
 }

@@ -1,5 +1,5 @@
-import AuditLogForm from '@/app/components/audit-log/AuditLogForm'
+import AuditLogsView from '@/app/dashboard/audit-logs/_components/AuditLogsView'
 
 export default function AuditLogs() {
-  return <AuditLogForm />
+  return <AuditLogsView />
 }

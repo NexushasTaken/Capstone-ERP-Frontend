@@ -1,7 +1,7 @@
 'use client'
 
 import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { invalidateAuditLogs } from '@/app/utils/query/queryInvalidation';
+import { invalidateAuditLogs } from '@/lib/query/queryInvalidation';
 import React, { useState } from 'react'
 
 export default function Providers({ 

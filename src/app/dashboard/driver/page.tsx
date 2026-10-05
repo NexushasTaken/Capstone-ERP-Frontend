@@ -1,5 +1,5 @@
-import DriverForm from '@/app/components/driver/DriverForm'
+import DriversView from '@/app/dashboard/driver/_components/DriversView'
 
 export default function Driver() {
-  return <DriverForm />
+  return <DriversView />
 }

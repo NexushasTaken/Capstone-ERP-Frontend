@@ -3,7 +3,7 @@ import { Host_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Providers from "@/app/providers";
-import { ResponsiveToaster } from "@/app/components/toast/ResponsiveToaster";
+import { ResponsiveToaster } from "@/components/ResponsiveToaster";
 
 const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
 

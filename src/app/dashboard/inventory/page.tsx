@@ -1,5 +1,5 @@
-import InventoryForm from '@/app/components/inventory/InventoryForm'
+import InventoryView from '@/app/dashboard/inventory/_components/InventoryView'
 
 export default function Inventory() {
-  return <InventoryForm />
+  return <InventoryView />
 }

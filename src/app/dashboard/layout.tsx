@@ -1,5 +1,5 @@
-import AuthGuard from "@/app/components/auth/AuthGuard";
-import DashboardShell from "@/app/components/DashboardShell";
+import AuthGuard from "@/app/dashboard/_components/AuthGuard";
+import DashboardShell from "@/app/dashboard/_components/DashboardShell";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
