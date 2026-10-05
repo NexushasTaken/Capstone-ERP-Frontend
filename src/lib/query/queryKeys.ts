@@ -7,6 +7,7 @@ import type { FetchInventoryForecastParams } from "@/types/dashboard"
 import type { FetchCategoriesParams } from "@/types/category"
 import type { FetchAuditLogsParams } from "@/types/auditLog"
 import type { FetchAccountsParams } from "@/types/account"
+import type { FetchWarehousesParams } from "@/types/warehouse"
 
 export const queryKeys = {
   categories: {
@@ -43,7 +44,7 @@ export const queryKeys = {
     all: (params: FetchSalesParams = {}) => ["sales", params] as const,
   },
   warehouses: {
-    all: ["warehouses"] as const,
+    all: (params: FetchWarehousesParams = {}) => ["warehouses", params] as const,
   },
   auditLogs: {
     all: (params: FetchAuditLogsParams = {}) => ["auditLogs", params] as const,

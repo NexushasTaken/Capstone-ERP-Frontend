@@ -1,7 +1,6 @@
 import ForecastRiskCard from "./ForecastRiskCard"
 import InventoryItemsSection from "./InventoryItemsSection"
 import MovementVelocity from "./MovementVelocity"
-import WarehouseCapacitySection from "./WarehouseCapacitySection"
 
 export default function InventoryView() {
   return (
@@ -18,8 +17,6 @@ export default function InventoryView() {
         </section>
 
         <InventoryItemsSection />
-
-        <WarehouseCapacitySection />
       </div>
     </main>
   )

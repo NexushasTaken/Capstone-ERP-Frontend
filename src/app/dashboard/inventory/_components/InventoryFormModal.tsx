@@ -131,7 +131,7 @@ export default function InventoryFormModal({ open, item, disabled, onClose, onSu
             value={selectedWarehouse?.name ?? ""}
             placeholder="Select a warehouse"
             emptyLabel="No warehouses found."
-            addHref="/dashboard/inventory#WarehouseCapacity"
+            addHref="/dashboard/warehouse"
             addLabel="Add warehouse"
             isLoading={warehousesLoading}
             onSelect={(id) => updateField("warehouseId", String(id))}

@@ -1,13 +1,7 @@
-import type { InventorySortBy, WarehouseCapacity } from "@/types/inventory"
-import { WarehouseListItem } from "@/types/warehouseCapacity"
+import type { InventorySortBy } from "@/types/inventory"
 
 export function formatInventoryId(inventoryId: string) {
   return `INV-${inventoryId}`
-}
-
-export function getCapacityPercentage({ used, total }: WarehouseCapacity) {
-  if (!Number.isFinite(used) || !Number.isFinite(total) || total <= 0) return 0
-  return Math.round((used / total) * 100)
 }
 
 export function formatNumber(value: number) {
@@ -94,8 +88,4 @@ export function getInventoryFilter(value: { value: InventorySortBy; order: "asc"
   if (value.value === "warehouseId") return 6
 
   return 0
-}
-
-export function isSelectableWarehouse(warehouse: WarehouseListItem) {
-  return warehouse.name.toLowerCase() !== "all warehouse record"
 }

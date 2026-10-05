@@ -15,7 +15,6 @@ import {
 } from "@/services/inventoryApi"
 import { fetchInventoryForecast } from "@/services/dashboardApi"
 import { fetchWarehouses } from "@/services/warehouseApi"
-import { isSelectableWarehouse } from "@/lib/helpers/inventoryHelpers"
 import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
 import { invalidateInventories } from "@/lib/query/queryInvalidation"
 import { queryKeys } from "@/lib/query/queryKeys"
@@ -55,15 +54,17 @@ export function useForecastRiskCount() {
   return data?.rows ?? 0
 }
 
+const ALL_WAREHOUSES = { page: 1, pageSize: 1000 }
+
 /** Warehouses an inventory item can be assigned to. */
 export function useSelectableWarehouses(enabled: boolean) {
   const query = useQuery({
-    queryKey: queryKeys.warehouses.all,
-    queryFn: () => fetchWarehouses(),
+    queryKey: queryKeys.warehouses.all(ALL_WAREHOUSES),
+    queryFn: () => fetchWarehouses(ALL_WAREHOUSES),
     enabled,
   })
   return {
-    warehouses: (query.data ?? []).filter(isSelectableWarehouse),
+    warehouses: query.data?.items ?? [],
     isLoading: query.isLoading,
   }
 }

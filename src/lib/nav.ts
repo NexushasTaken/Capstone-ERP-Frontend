@@ -51,6 +51,11 @@ export const navGroups: NavGroup[] = [
         link: "/dashboard/category",
       },
       {
+        name: "Warehouse",
+        icon: Warehouse,
+        link: "/dashboard/warehouse",
+      },
+      {
         name: "Driver",
         icon: Truck,
         link: "/dashboard/driver",

@@ -20,7 +20,7 @@ export interface DashboardInventoryStatusItem {
 }
 
 export interface DashboardInventoryContent {
-  totalWareHouseCapacity: number
+  totalStock: number
   risk: number
   inventoryStatus: DashboardInventoryStatusItem[]
 }

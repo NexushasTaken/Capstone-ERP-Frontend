@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Plus } from "lucide-react"
 import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
 import { FormField, FormInput } from "@/components/FormField"
-import type { InsertWarehousePayload, WarehouseListItem } from "@/types/warehouseCapacity"
+import type { InsertWarehousePayload, WarehouseListItem } from "@/types/warehouse"
 
 interface WarehouseFormModalProps {
   /** The warehouse being edited, or `null` to add a new one. */
@@ -19,10 +19,9 @@ export default function WarehouseFormModal({ warehouse, disabled, onClose, onSub
   const [form, setForm] = useState({
     name: warehouse?.name ?? "",
     address: warehouse?.address ?? "",
-    capacity: warehouse ? String(warehouse.capacity) : "",
   })
   const isEdit = warehouse !== null
-  const canSubmit = !disabled && form.name.trim() !== "" && form.address.trim() !== "" && Number(form.capacity) > 0
+  const canSubmit = !disabled && form.name.trim() !== "" && form.address.trim() !== ""
 
   function updateField(field: keyof typeof form, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -30,11 +29,7 @@ export default function WarehouseFormModal({ warehouse, disabled, onClose, onSub
 
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open>
-      <ModalHeader
-        subtitle="Warehouse capacity"
-        title={isEdit ? "Edit warehouse" : "Add warehouse"}
-        onClose={onClose}
-      />
+      <ModalHeader subtitle="Warehouse" title={isEdit ? "Edit warehouse" : "Add warehouse"} onClose={onClose} />
       <ModalBody>
         <FormField label="Warehouse name">
           <FormInput
@@ -50,14 +45,6 @@ export default function WarehouseFormModal({ warehouse, disabled, onClose, onSub
             value={form.address}
           />
         </FormField>
-        <FormField label="Maximum capacity">
-          <FormInput
-            min={1}
-            onChange={(event) => updateField("capacity", event.target.value)}
-            type="number"
-            value={form.capacity}
-          />
-        </FormField>
       </ModalBody>
       <ModalActions
         onCancel={onClose}
@@ -66,7 +53,6 @@ export default function WarehouseFormModal({ warehouse, disabled, onClose, onSub
           onSubmit({
             name: form.name.trim(),
             address: form.address.trim(),
-            capicity: Number(form.capacity),
           })
         }
         confirmLabel={isEdit ? "Save changes" : "Add warehouse"}
