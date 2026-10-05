@@ -26,16 +26,6 @@ export function formatDriverId(driverId: string | number) {
   return `DRV-${driverId}`
 }
 
-export function formatDriverDate(dateString: string | null) {
-  if (!dateString) return '-'
-
-  return new Date(dateString).toLocaleDateString('en-PH', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
 export function getDriverFullName(driver: { firstName: string; lastName: string }) {
   return `${driver.firstName} ${driver.lastName}`.trim()
 }
