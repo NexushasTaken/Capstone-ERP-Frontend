@@ -1,6 +1,6 @@
 ---
 name: frontend-conventions
-description: Project conventions for the Cpro Next.js 16 frontend (folder layout, naming, data fetching, modals, backend proxy). Use before adding or changing any page, component, hook, service, type or API call in this repo, and when reviewing frontend code here.
+description: Project conventions for the Cpro Next.js 16 frontend (folder layout, naming, data fetching, modals, forms and validation, backend proxy). Use before adding or changing any page, component, hook, service, type or API call in this repo, and when reviewing frontend code here.
 ---
 
 # Cpro frontend conventions
@@ -130,7 +130,22 @@ const [modal, setModal] = useState<ModalState>(null)
 - Build modals from `AppModal` plus `ModalHeader` / `ModalBody` / `ModalActions` (`@/components/AppModal`). Deletes use `DeleteConfirmModal`, and read-only "See more" views use `SeeMoreModal`.
 - Labelled inputs inside modals use `FormField` + `FormInput` (`@/components/FormField`).
 
-## 7. Shared building blocks (use them, don't re-copy markup)
+## 7. Forms and validation (zod + react-hook-form)
+
+Every form uses a zod schema with `useForm({ resolver: zodResolver(schema), mode: "onTouched", defaultValues })`. Don't hand-roll `useState` + `canSubmit` checks.
+
+- **Schema location:** in the route's `_lib/<entity>Schema.ts`, exporting the schema and `type XxxFormValues = z.infer<typeof xxxSchema>`. Rules that match the backend (email regex, password length, required string, positive int, required id) come from `@/lib/validation`. Reuse them, and keep their messages in line with the backend's FluentValidation messages.
+- **Inputs:**
+  - plain inputs: `<FormInput {...register("name")} />`
+  - number inputs: `register("price", { valueAsNumber: true })`. An empty input becomes NaN, which `requiredNumber`/`positiveInt` reject.
+  - custom inputs (`EntityDropdown`, `RoleSelect`, shadcn `Select`, `DatePickerSimple`): wrap in `<Controller>`.
+  - dynamic rows: `useFieldArray` (see `OrderLinesEditor`, which reads the form through `useFormContext` inside a `<FormProvider>`).
+- **Errors:** `<FormField label="…" error={errors.x?.message}>` plus `aria-invalid={!!errors.x}` on the input. `SettingsField` and `DatePickerSimple` take an `error` prop too.
+- **Submit button:** `confirmDisabled={!isValid || disabled}`, and submit with `handleSubmit(onSubmit)`, which only runs when the schema passes and gives parsed values. Read live values with `useWatch`, not `watch()`, because the React Compiler can't memoize `watch`.
+- **Conditional rules:** if a rule depends on other data (walk-in orders, add vs. edit, available stock), build the schema with a function (`orderSchema(isWalkin)`, `inventorySchema(isEdit)`, `damageSchema(available)`). Cross-field checks use `.refine(..., { path: ["field"] })` plus `deps` on the field that triggers them.
+- **Server errors:** a 400 from the backend has `errors: { "camelCase.path": [messages] }`. Services throw `ApiError` (`@/lib/apiError`), which carries them as `fieldErrors`. Forms that wait for the server (create account, settings, login) call `applyServerErrors(err, setError)` in `onError`/`catch`. It puts each message under its field (or in `errors.root.server`) and returns true so you skip the toast. Optimistic modals close on submit, so their server failures stay as toasts. That's why their schemas must cover every backend rule.
+
+## 8. Shared building blocks (use them, don't re-copy markup)
 
 `PageTitle` (title + count badge, `as="h2"` inside a page with its own h1), `SearchInput`, `ExportCsvButton` (has its own cooldown), `SortPopover`, `TablePagination`, `StatusAction` (row "…" menu), `EntityDropdown` (searchable picker), `OrderTypeFilterSelect`, `Loading`, `DatePickerSimple`.
 
@@ -138,7 +153,7 @@ Hooks: `useCurrentUser`, `useDebouncedValue`, `useCooldown`, `useOrderTypes`, `u
 
 Formatting: `formatDate` and `formatPeso` come only from `@/lib/format`. Never write another copy.
 
-## 8. Permissions
+## 9. Permissions
 
 `src/lib/permissions.ts` is UI-only role gating; the backend enforces the real rules.
 - Hide buttons with `can(role, '<module>:<action>')`.
@@ -146,7 +161,7 @@ Formatting: `formatDate` and `formatPeso` come only from `@/lib/format`. Never w
 - `role` comes from `useCurrentUser().data?.role`.
 - Roles are lowercase (`owner`, `secretary`).
 
-## 9. Styling
+## 10. Styling
 
 - Tailwind classes only, and `cn()` from `@/lib/utils` for conditional classes.
 - Colours come only from the stock shadcn neutral theme in `globals.css`. **Never write `[#hex]` classes or invent tokens.**
@@ -167,7 +182,7 @@ Formatting: `formatDate` and `formatPeso` come only from `@/lib/format`. Never w
 - Modals use `AppModal` (shadcn Dialog). For a custom header, use `ModalTitle` for the title so the dialog stays labelled. List pages render their table through `DataTable` (`@/components/DataTable`), with `TableRow`/`TableCell` children. Use `rowGroups` when each row is its own `<tbody>` (expandable rows).
 - The font is Host Grotesk via `--font-sans` / `--font-heading`. Don't use `font-mono` for UI text.
 
-## 10. Before finishing a change
+## 11. Before finishing a change
 
 Format first, then check, then commit:
 
