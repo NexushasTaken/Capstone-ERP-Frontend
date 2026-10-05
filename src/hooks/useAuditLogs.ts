@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { fetchAuditLogs, fetchUsers } from '@/services/auditLogApi'
 import type { FetchAuditLogsParams } from '@/types/auditLog'
 import { queryKeys } from '@/lib/query/queryKeys'
@@ -11,7 +11,7 @@ export function useAuditLogs(params: FetchAuditLogsParams, options: { refetchInt
   return useQuery({
     queryKey: queryKeys.auditLogs.all(params),
     queryFn: ({ signal }) => fetchAuditLogs(params, signal),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     refetchInterval: options.refetchInterval,
   })
 }

@@ -75,7 +75,7 @@ The browser → `/api/<Controller>/<action>` (Next) → `BACKEND_API_URL/api/<Co
 - Endpoints callable without a login go in `PUBLIC_PATHS` in `backendProxy.ts`.
 - To add a call, write a function in `src/services/<area>Api.ts`. Copy the existing style: `fetch('/api/...', { credentials: 'include' })`, parse `ApiEnvelope<T>` from `@/types/api`, and throw `Error(data.message || '...')` when it isn't `ok`/`success`.
 
-## 5. Data fetching (TanStack Query **v4**, a v5 upgrade is planned)
+## 5. Data fetching (TanStack Query **v5**)
 
 - Components never call `useQuery` with a service directly. Wrap it in a hook in the page's `_hooks/` (or `src/hooks/` if shared):
 
@@ -84,11 +84,12 @@ export function useDrivers(params: FetchDriversParams) {
   return useQuery({
     queryKey: queryKeys.drivers.all(params),
     queryFn: ({ signal }) => fetchDrivers(params, signal),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,   // import { keepPreviousData } from '@tanstack/react-query'
   })
 }
 ```
 
+- Loading flags: a query's `isLoading` (first fetch in flight) drives spinners. Don't use `isPending` for that, because it stays true while a query is disabled. Mutations use `isPending`. `@tanstack/eslint-plugin-query` recommended rules are on.
 - Query keys come only from `src/lib/query/queryKeys.ts`. Add new keys there, prefixed by the entity (`['products', params]`), so `invalidateQueries({ queryKey: ['products'] })` hits them all.
 - Mutations live in `useXxxMutations()`, which returns `{ addX, updateX, deleteX, isSubmitting }`.
 - For list pages that update instantly, spread `optimisticUpdate()` from `src/lib/query/optimisticUpdate.ts`:

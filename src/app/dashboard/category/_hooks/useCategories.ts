@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { deleteCategory, fetchCategories, insertCategory, updateCategory } from '@/services/categoryApi'
 import { optimisticUpdate } from '@/lib/query/optimisticUpdate'
 import { queryKeys } from '@/lib/query/queryKeys'
@@ -18,7 +18,7 @@ export function useCategories(page: number) {
   return useQuery({
     queryKey: queryKeys.categories.all(params),
     queryFn: () => fetchCategories(params),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
 }
 

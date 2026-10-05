@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { deleteDriver, fetchDrivers, insertDriver, updateDriver } from '@/services/driverApi'
 import { invalidateDrivers } from '@/lib/query/queryInvalidation'
@@ -11,7 +11,7 @@ export function useDrivers(params: FetchDriversParams) {
   return useQuery({
     queryKey: queryKeys.drivers.all(params),
     queryFn: ({ signal }) => fetchDrivers(params, signal),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
 }
 
