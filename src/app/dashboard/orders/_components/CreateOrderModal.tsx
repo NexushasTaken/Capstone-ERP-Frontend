@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
-import AppModal from '@/components/AppModal'
+import AppModal, { ModalTitle } from '@/components/AppModal'
 import CloseButton from '@/components/CloseButton'
 import EntityDropdown from '@/components/EntityDropdown'
 import { FormField, FormInput } from '@/components/FormField'
@@ -126,126 +126,125 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
   ]
 
   return (
-    <>
-      <AppModal
-        className="flex max-h-[92vh] w-[calc(100vw-2rem)] max-w-6xl flex-col overflow-hidden lg:max-w-6xl"
-        onClose={onClose}
-        open={open}
-      >
-        <div className="flex w-full items-center justify-between gap-4 border-b border-[#E2E2E2] p-5">
-          <div className="flex min-w-0 flex-col">
-            <span className="text-xs text-[#737A76]">New order</span>
-            <span className="text-2xl font-medium tracking-tight text-[#0c0d0d]">Create order</span>
-          </div>
-          <CloseButton onClick={onClose} />
+    <AppModal
+      className="flex max-h-[92vh] w-[calc(100vw-2rem)] max-w-6xl flex-col overflow-hidden lg:max-w-6xl"
+      onClose={onClose}
+      open={open}
+    >
+      <div className="flex w-full items-center justify-between gap-4 border-b border-[#E2E2E2] p-5">
+        <div className="flex min-w-0 flex-col">
+          <span className="text-xs text-[#737A76]">New order</span>
+          <ModalTitle className="text-2xl font-medium tracking-tight text-[#0c0d0d]">Create order</ModalTitle>
         </div>
+        <CloseButton onClick={onClose} />
+      </div>
 
-        <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
-          <div className="flex flex-col bg-white">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <FormField label="Order type">
-                <Select
-                  disabled={orderTypesLoading}
-                  items={orderTypeSelectItems}
-                  onValueChange={(value) => updateField('orderTypeId', value ?? '')}
-                  value={form.orderTypeId}
-                >
-                  <SelectTrigger className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm focus-visible:border-[#121514] focus-visible:ring-[#121514]/20">
-                    <SelectValue placeholder="Select order type" />
-                  </SelectTrigger>
-                  <SelectContent className="capitalize">
-                    {orderTypeOptions.map((orderType) => (
-                      <SelectItem key={orderType.id} value={String(orderType.id)} className="capitalize">
-                        {orderType.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
-
-              {!isWalkin && (
-                <FormField label="Delivery rider">
-                  <EntityDropdown
-                    emptyLabel="No riders found."
-                    isLoading={ridersLoading}
-                    onSelect={(riderId) => updateField('deliveryRiderId', String(riderId))}
-                    options={riderOptions}
-                    placeholder="Select delivery rider"
-                    searchPlaceholder="Search riders..."
-                    value={selectedRiderLabel}
-                  />
-                </FormField>
-              )}
-
-              <FormField label="Customer name">
-                <FormInput
-                  className="capitalize"
-                  onChange={(event) => updateField('customerName', event.target.value)}
-                  value={form.customerName}
-                />
-              </FormField>
-
-              <FormField label="Quantity (total items)">
-                <Input
-                  className="h-10 rounded-xl border border-[#DFE2E0] bg-[#F7F8F8] px-3 text-sm text-[#121514] outline-none"
-                  readOnly
-                  disabled
-                  value={totalQuantity}
-                />
-                <span className="text-xs text-[#737A76]">Calculated from items below</span>
-              </FormField>
-            </div>
+      <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
+        <div className="flex flex-col bg-white">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <FormField label="Order type">
+              <Select
+                disabled={orderTypesLoading}
+                items={orderTypeSelectItems}
+                onValueChange={(value) => updateField('orderTypeId', value ?? '')}
+                value={form.orderTypeId}
+              >
+                <SelectTrigger className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm focus-visible:border-[#121514] focus-visible:ring-[#121514]/20">
+                  <SelectValue placeholder="Select order type" />
+                </SelectTrigger>
+                <SelectContent className="capitalize">
+                  {orderTypeOptions.map((orderType) => (
+                    <SelectItem key={orderType.id} value={String(orderType.id)} className="capitalize">
+                      {orderType.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
 
             {!isWalkin && (
-              <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <FormField label="Pick up address">
-                  <FormInput
-                    onChange={(event) => updateField('pickUpAddress', event.target.value)}
-                    value={form.pickUpAddress}
-                  />
-                </FormField>
-                <FormField label="Delivery address">
-                  <FormInput
-                    onChange={(event) => updateField('deliveryAddress', event.target.value)}
-                    value={form.deliveryAddress}
-                  />
-                </FormField>
-              </div>
+              <FormField label="Delivery rider">
+                <EntityDropdown
+                  emptyLabel="No riders found."
+                  isLoading={ridersLoading}
+                  onSelect={(riderId) => updateField('deliveryRiderId', String(riderId))}
+                  options={riderOptions}
+                  placeholder="Select delivery rider"
+                  searchPlaceholder="Search riders..."
+                  value={selectedRiderLabel}
+                />
+              </FormField>
             )}
+
+            <FormField label="Customer name">
+              <FormInput
+                className="capitalize"
+                onChange={(event) => updateField('customerName', event.target.value)}
+                value={form.customerName}
+              />
+            </FormField>
+
+            <FormField label="Quantity (total items)">
+              <Input
+                className="h-10 rounded-xl border border-[#DFE2E0] bg-[#F7F8F8] px-3 text-sm text-[#121514] outline-none"
+                readOnly
+                disabled
+                value={totalQuantity}
+              />
+              <span className="text-xs text-[#737A76]">Calculated from items below</span>
+            </FormField>
           </div>
 
-          <OrderLinesEditor
-            lines={lines}
-            lineRows={lineRows}
-            totalAmount={totalAmount}
-            products={products}
-            productsLoading={productsLoading}
-            productsError={productsError}
-            onChange={setLines}
-          />
+          {!isWalkin && (
+            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <FormField label="Pick up address">
+                <FormInput
+                  onChange={(event) => updateField('pickUpAddress', event.target.value)}
+                  value={form.pickUpAddress}
+                />
+              </FormField>
+              <FormField label="Delivery address">
+                <FormInput
+                  onChange={(event) => updateField('deliveryAddress', event.target.value)}
+                  value={form.deliveryAddress}
+                />
+              </FormField>
+            </div>
+          )}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-5">
-          <Button
-            className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
-            onClick={onClose}
-            type="button"
-            variant="outline"
-          >
-            Cancel
-          </Button>
-          <Button
-            className="rounded-xl px-3 py-2 text-sm"
-            disabled={!canSubmit}
-            onClick={() => setIsReviewing(true)}
-            type="button"
-          >
-            <Plus className="h-4 w-4" />
-            Add order
-          </Button>
-        </div>
-      </AppModal>
+        <OrderLinesEditor
+          lines={lines}
+          lineRows={lineRows}
+          totalAmount={totalAmount}
+          products={products}
+          productsLoading={productsLoading}
+          productsError={productsError}
+          onChange={setLines}
+        />
+      </div>
 
+      <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-5">
+        <Button
+          className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
+          onClick={onClose}
+          type="button"
+          variant="outline"
+        >
+          Cancel
+        </Button>
+        <Button
+          className="rounded-xl px-3 py-2 text-sm"
+          disabled={!canSubmit}
+          onClick={() => setIsReviewing(true)}
+          type="button"
+        >
+          <Plus className="h-4 w-4" />
+          Add order
+        </Button>
+      </div>
+
+      {/* Nested inside the create dialog so closing the review doesn't close this one too. */}
       <ConfirmOrderModal
         open={isReviewing}
         details={reviewDetails}
@@ -255,6 +254,6 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
         onBack={() => setIsReviewing(false)}
         onConfirm={handleConfirm}
       />
-    </>
+    </AppModal>
   )
 }

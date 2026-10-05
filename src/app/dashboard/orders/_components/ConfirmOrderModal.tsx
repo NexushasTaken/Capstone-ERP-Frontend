@@ -1,4 +1,4 @@
-import AppModal from '@/components/AppModal'
+import AppModal, { ModalTitle } from '@/components/AppModal'
 import CloseButton from '@/components/CloseButton'
 import { Button } from '@/components/ui/button'
 import {
@@ -43,7 +43,7 @@ export default function ConfirmOrderModal({
       <div className="flex w-full items-center justify-between gap-4 border-b border-[#E2E2E2] p-5">
         <div className="flex flex-col">
           <span className="text-xs text-[#737A76]">Confirm order</span>
-          <span className="text-2xl font-medium tracking-tight text-[#0c0d0d]">Review order details</span>
+          <ModalTitle className="text-2xl font-medium tracking-tight text-[#0c0d0d]">Review order details</ModalTitle>
         </div>
         <CloseButton onClick={onBack} />
       </div>

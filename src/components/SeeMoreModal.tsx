@@ -1,27 +1,19 @@
-import React from 'react'
+import type { ReactNode } from 'react'
+import AppModal from '@/components/AppModal'
+import { cn } from '@/lib/utils'
 
 export interface SeeMoreModalProps {
-  open: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-  className?: string;
+  open: boolean
+  onClose: () => void
+  children: ReactNode
+  className?: string
 }
 
-export default function SeeMoreModal({
-open,
-onClose,
-children,
-className = ""
-}: SeeMoreModalProps) {
-    if (!open) return null;
+// Read-only "See more" view: an AppModal that is never taller than its content.
+export default function SeeMoreModal({ open, onClose, children, className }: SeeMoreModalProps) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50" onClick={onClose}>
-      <div
-        className={`w-full lg:max-w-lg rounded-none lg:rounded-lg bg-white ${className}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>
+    <AppModal open={open} onClose={onClose} className={cn('h-auto xl:h-auto lg:max-w-lg', className)}>
+      {children}
+    </AppModal>
   )
 }

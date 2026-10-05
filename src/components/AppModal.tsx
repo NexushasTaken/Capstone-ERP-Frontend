@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import CloseButton from '@/components/CloseButton'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 
 interface AppModalProps {
   open: boolean
@@ -10,29 +12,30 @@ interface AppModalProps {
   className?: string
 }
 
-// Full-screen on mobile, centered dialog on desktop. Clicking the backdrop closes it.
+// shadcn Dialog: full-screen on mobile, centered on desktop. Escape or a backdrop click calls onClose.
 export default function AppModal({
   open,
   onClose,
   children,
-  className = '',
+  className,
 }: AppModalProps) {
-  if (!open) return null
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className={`h-full xl:h-auto w-full rounded-none bg-white lg:rounded-lg ${className}`}
-        onClick={(event) => event.stopPropagation()}
+    <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose() }}>
+      <DialogContent
+        showCloseButton={false}
+        className={cn(
+          'h-full w-full max-w-none gap-0 rounded-none bg-white p-0 text-base sm:max-w-none lg:rounded-lg xl:h-auto',
+          className
+        )}
       >
         {children}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
+
+// Use for a custom header, so the dialog is labelled by its title.
+export const ModalTitle = DialogTitle
 
 // Small caption (e.g. an ID) above the title, close button on the right.
 export function ModalHeader({ subtitle, title, onClose }: { subtitle?: ReactNode; title: ReactNode; onClose: () => void }) {
@@ -40,7 +43,7 @@ export function ModalHeader({ subtitle, title, onClose }: { subtitle?: ReactNode
     <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
       <div className="flex flex-col">
         <span className="text-xs text-[#737A76]">{subtitle}</span>
-        <span className="text-xl font-medium text-[#0c0d0d]">{title}</span>
+        <DialogTitle className="text-xl font-medium text-[#0c0d0d]">{title}</DialogTitle>
       </div>
       <CloseButton onClick={onClose} />
     </div>
