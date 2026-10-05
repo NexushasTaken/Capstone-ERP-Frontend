@@ -2,7 +2,7 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { createAccount, fetchAccounts, updateAccountRole } from "@/services/accountApi"
+import { createAccount, deleteAccount, fetchAccounts, updateAccountRole } from "@/services/accountApi"
 import { isValidationError } from "@/lib/apiError"
 import { invalidateAccounts } from "@/lib/query/queryInvalidation"
 import { queryKeys } from "@/lib/query/queryKeys"
@@ -37,9 +37,17 @@ export function useAccountMutations() {
     onSettled: () => invalidateAccounts(queryClient),
   })
 
+  const deleteAccountMutation = useMutation({
+    mutationFn: deleteAccount,
+    onSuccess: () => toast.success("Account deleted successfully"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to delete account"),
+    onSettled: () => invalidateAccounts(queryClient),
+  })
+
   return {
     createAccount: createAccountMutation,
     updateRole,
-    isSubmitting: createAccountMutation.isPending || updateRole.isPending,
+    deleteAccount: deleteAccountMutation,
+    isSubmitting: createAccountMutation.isPending || updateRole.isPending || deleteAccountMutation.isPending,
   }
 }
