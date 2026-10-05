@@ -20,10 +20,6 @@ export function getDefaultCurrentYearDashboardRange(referenceDate = new Date()):
   }
 }
 
-export function isDateInCurrentYear(date: Date, referenceDate = new Date()) {
-  return date.getFullYear() === referenceDate.getFullYear()
-}
-
 export function clampDateToCurrentYear(date: Date, referenceDate = new Date()) {
   const currentYearRange = getCurrentYearDateRange(referenceDate)
   const from = currentYearRange.from!
