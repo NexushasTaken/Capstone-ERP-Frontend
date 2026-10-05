@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate, formatPeso } from '@/lib/format'
 import { Spinner } from '@/components/ui/spinner'
 
 import { ChevronDown, Plus, Search, Trash2, X } from 'lucide-react'
@@ -25,7 +26,6 @@ import { queryKeys } from '@/lib/query/queryKeys'
 import { invalidateOrders } from '@/lib/query/queryInvalidation'
 import { exportToCSV } from '@/lib/exportToCsv'
 import {
-  formatDate,
   formatOrderNumber,
   getOrderGroupKey,
   getOrderGroupProductSummary,
@@ -37,7 +37,6 @@ import {
   orderStatusDotClass,
   tableColumns,
 } from '@/lib/helpers/orderHelpers'
-import { formatPeso } from '@/lib/helpers/saleHelpers'
 import type { OrderGroup, OrderLineForm } from '@/types/order'
 import type { InsertOrderPayload } from '@/types/order'
 import { Button } from '@/components/ui/button'

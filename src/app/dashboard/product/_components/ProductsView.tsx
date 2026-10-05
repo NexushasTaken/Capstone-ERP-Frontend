@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate, formatPeso } from '@/lib/format'
 import { Spinner } from '@/components/ui/spinner'
 
 import { Search, X, Tag, Layers, Plus } from 'lucide-react'
@@ -12,8 +13,7 @@ import CloseButton from '@/components/CloseButton'
 import EntityDropdown from '@/components/EntityDropdown'
 import { TablePagination } from '@/components/TablePagination'
 import SortPopover from '@/components/SortPopover'
-import { formatPeso } from '@/lib/helpers/saleHelpers'
-import { formatProductId, formatDate, PRODUCT_LOAD_PAGE_SIZE, categoryPresentByFilter, ITEMS_PER_PAGE, tableColumns, productSortOptions } from '@/app/dashboard/product/_lib/productHelpers'
+import { formatProductId, PRODUCT_LOAD_PAGE_SIZE, categoryPresentByFilter, ITEMS_PER_PAGE, tableColumns, productSortOptions } from '@/app/dashboard/product/_lib/productHelpers'
 import type { ProductCategoryFilter, ProductListItem, ProductSortBy } from '@/types/product'
 import type { InsertProductPayload } from '@/types/product'
 import { Button } from '@/components/ui/button'

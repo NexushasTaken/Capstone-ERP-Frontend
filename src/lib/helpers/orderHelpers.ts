@@ -17,15 +17,6 @@ export const tableColumns = [
 
 export const productSelectPageSize = 100
 
-export function formatDate(dateString: string | null) {
-  if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('en-PH', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
 export function getOrderGroupKey(group: OrderGroup) {
   return String(group.orderId)
 }

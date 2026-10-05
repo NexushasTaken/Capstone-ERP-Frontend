@@ -25,19 +25,6 @@ export function formatNumber(value: number) {
   return new Intl.NumberFormat('en-US').format(value)
 }
 
-export function formatPeso(value: number) {
-  return new Intl.NumberFormat('en-PH', {
-    style: 'currency',
-    currency: 'PHP',
-    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
-  }).format(value)
-}
-
-export function formatDate(dateString: string | null) {
-  if (!dateString) return '—'
-  return new Date(dateString).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
-}
-
 export function capitalize(value: string) {
   if (!value) return value
   return value.charAt(0).toUpperCase() + value.slice(1)

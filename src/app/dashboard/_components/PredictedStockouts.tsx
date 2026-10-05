@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate } from '@/lib/format'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { TablePagination } from '@/components/TablePagination'
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { fetchInventoryForecast } from '@/services/dashboardApi'
 import { queryKeys } from '@/lib/query/queryKeys'
-import { formatDate, formatInventoryId } from '@/lib/helpers/inventoryHelpers'
+import { formatInventoryId } from '@/lib/helpers/inventoryHelpers'
 
 export default function PredictedStockouts() {
   const [stockoutCurrentPage, setStockoutCurrentPage] = useState(1)

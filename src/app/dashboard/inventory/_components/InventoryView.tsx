@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate, formatPeso } from '@/lib/format'
 import { Spinner } from '@/components/ui/spinner'
 
 import { useEffect, useState } from 'react'
@@ -9,12 +10,10 @@ import MovementVelocity from '@/app/dashboard/inventory/_components/MovementVelo
 import { deleteInventory, fetchInventoryStatusCounts, fetchInventoryMovements, fetchInventoryDamageRecords, fetchInventories, insertInventory, markInventoryAsDamage, restockInventory, updateInventory } from '@/services/inventoryApi'
 import {
   formatNumber,
-  formatDate,
   formatInventoryId,
   capitalize,
   getInventoryStatusStyleFromLabel,
   formatDateForApi,
-  formatPeso,
   isSelectableWarehouse,
   inventorySortOptions,
   inventoryColumns,
