@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import ExportCsvButton from "@/components/ExportCsvButton"
+import ListHeader from "@/components/ListHeader"
 import OrderTypeFilterSelect from "@/components/OrderTypeFilterSelect"
-import PageTitle from "@/components/PageTitle"
 import SearchInput from "@/components/SearchInput"
 import { TablePagination } from "@/components/TablePagination"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
@@ -48,10 +48,13 @@ export default function SalesView() {
 
   return (
     <section className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-background">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <PageTitle title="Sales" count={rows} />
-
-        <div className="flex flex-wrap items-center gap-2">
+      <ListHeader
+        title="Sales"
+        count={rows}
+        actions={
+          <ExportCsvButton disabled={isFetching || !!error || sales.length === 0} onExport={() => exportSales(sales)} />
+        }
+        search={
           <SearchInput
             value={search}
             onChange={(value) => {
@@ -60,7 +63,8 @@ export default function SalesView() {
             }}
             placeholder="Search by product, customer, type or ID"
           />
-
+        }
+        filters={
           <OrderTypeFilterSelect
             value={selectedOrderTypeFilter}
             onChange={(orderTypeId) => {
@@ -68,10 +72,8 @@ export default function SalesView() {
               setCurrentPage(1)
             }}
           />
-
-          <ExportCsvButton disabled={isFetching || !!error || sales.length === 0} onExport={() => exportSales(sales)} />
-        </div>
-      </div>
+        }
+      />
 
       <div className="mt-5 min-h-0 flex-1 overflow-auto">
         <SalesTable

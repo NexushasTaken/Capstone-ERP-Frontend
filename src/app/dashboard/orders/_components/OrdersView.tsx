@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import ExportCsvButton from "@/components/ExportCsvButton"
+import ListHeader from "@/components/ListHeader"
 import OrderTypeFilterSelect from "@/components/OrderTypeFilterSelect"
-import PageTitle from "@/components/PageTitle"
 import SearchInput from "@/components/SearchInput"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
@@ -59,10 +59,22 @@ export default function OrdersView() {
 
   return (
     <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <PageTitle title="Orders" count={rows} />
-
-        <div className="flex flex-wrap items-center gap-2">
+      <ListHeader
+        title="Orders"
+        count={rows}
+        actions={
+          <>
+            <ExportCsvButton
+              disabled={isFetching || !!error || orders.length === 0}
+              onExport={() => exportOrders(orders)}
+            />
+            <Button onClick={() => setIsCreateModalOpen(true)} type="button">
+              <Plus className="h-4 w-4" />
+              Add order
+            </Button>
+          </>
+        }
+        search={
           <SearchInput
             value={search}
             onChange={(value) => {
@@ -71,35 +83,28 @@ export default function OrdersView() {
             }}
             placeholder="Search by product, customer, type, status or ID"
           />
-
-          <OrderTypeFilterSelect
-            value={selectedOrderTypeFilter}
-            onChange={(orderTypeId) => {
-              setSelectedOrderTypeFilter(orderTypeId)
-              setCurrentPage(1)
-            }}
-          />
-
-          <OrderStatusFilterSelect
-            value={selectedOrderStatusFilter}
-            statusOptions={statusOptions}
-            disabled={orderStatusesLoading}
-            onChange={(statusId) => {
-              setSelectedOrderStatusFilter(statusId)
-              goToPage(1)
-            }}
-          />
-
-          <ExportCsvButton
-            disabled={isFetching || !!error || orders.length === 0}
-            onExport={() => exportOrders(orders)}
-          />
-          <Button onClick={() => setIsCreateModalOpen(true)} type="button">
-            <Plus className="h-4 w-4" />
-            Add order
-          </Button>
-        </div>
-      </div>
+        }
+        filters={
+          <>
+            <OrderTypeFilterSelect
+              value={selectedOrderTypeFilter}
+              onChange={(orderTypeId) => {
+                setSelectedOrderTypeFilter(orderTypeId)
+                setCurrentPage(1)
+              }}
+            />
+            <OrderStatusFilterSelect
+              value={selectedOrderStatusFilter}
+              statusOptions={statusOptions}
+              disabled={orderStatusesLoading}
+              onChange={(statusId) => {
+                setSelectedOrderStatusFilter(statusId)
+                goToPage(1)
+              }}
+            />
+          </>
+        }
+      />
 
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-none">
         <OrdersList
