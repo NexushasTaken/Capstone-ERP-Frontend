@@ -35,7 +35,7 @@ export default function OrderTypeFilterSelect({ value, onChange }: OrderTypeFilt
         onValueChange={(next) => onChange(next === 'all' ? '' : String(next ?? ''))}
         value={value || 'all'}
       >
-        <SelectTrigger className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm focus-visible:border-[#121514] focus-visible:ring-[#121514]/20">
+        <SelectTrigger className="h-10 w-full rounded-xl border-border bg-background px-3 text-sm focus-visible:border-ring focus-visible:ring-ring/50">
           <SelectValue placeholder="All types" />
         </SelectTrigger>
         <SelectContent>

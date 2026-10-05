@@ -53,7 +53,7 @@ export default function OrderRow({ order, columnCount, statusOptions, isExpanded
         <TableCell className="px-3 py-4">
           <div className="flex items-center justify-end gap-2">
             <CollapsibleTrigger
-              className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#DFE2E0] bg-white px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
+              className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-accent"
               type="button"
             >
               View
@@ -85,7 +85,7 @@ export default function OrderRow({ order, columnCount, statusOptions, isExpanded
 
 function OrderDetails({ order }: { order: OrderGroup }) {
   return (
-    <div className="border-t border-[#E2E2E2] bg-white p-4">
+    <div className="border-t border-border bg-background p-4">
       <div className="grid gap-4 grid-cols-4">
         <DetailItem label="Driver" value={order.driverName || 'Unassigned'} />
         <DetailItem label="Total" value={formatPeso(order.total)} />
@@ -94,8 +94,8 @@ function OrderDetails({ order }: { order: OrderGroup }) {
         <DetailItem label="Delivery address" value={order.deliveryAddress ?? '-'} />
       </div>
 
-      <div className="mt-5 rounded-lg border border-[#E2E2E2] overflow-auto max-h-80 scrollbar-none">
-        <div className="sticky top-0 grid grid-cols-[1fr_120px_120px_140px_140px] bg-[#F0F1F1] px-3 py-2 text-xs text-[#737A76]">
+      <div className="mt-5 rounded-lg border border-border overflow-auto max-h-80 scrollbar-none">
+        <div className="sticky top-0 grid grid-cols-[1fr_120px_120px_140px_140px] bg-muted px-3 py-2 text-xs text-muted-foreground">
           <span>Product</span>
           <span>Quantity</span>
           <span>Amount</span>
@@ -103,7 +103,7 @@ function OrderDetails({ order }: { order: OrderGroup }) {
         </div>
         {order.orders.map((item, index) => (
           <div
-            className="grid grid-cols-[1fr_120px_120px_140px_140px] border-t border-[#E2E2E2] px-3 py-3 text-sm"
+            className="grid grid-cols-[1fr_120px_120px_140px_140px] border-t border-border px-3 py-3 text-sm"
             key={`${order.orderId}-${index}`}
           >
             <span className="truncate capitalize">{item.productName}</span>

@@ -51,12 +51,12 @@ export default function WarehouseCapacityChart({ capacity }: WarehouseCapacityCh
       <div className="relative h-52 w-52">
         <canvas ref={canvasRef} />
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-semibold text-[#0c0d0d]">{percentage}%</span>
-          <span className="mt-1 text-xs text-[#68716C]">space used</span>
+          <span className="text-3xl font-semibold text-foreground">{percentage}%</span>
+          <span className="mt-1 text-xs text-muted-foreground">space used</span>
         </div>
       </div>
-      <p className="my-4 text-sm text-[#68716C]">
-        <span className="font-medium text-[#0c0d0d]">{formatNumber(capacity.used)}</span> of {formatNumber(capacity.total)} units
+      <p className="my-4 text-sm text-muted-foreground">
+        <span className="font-medium text-foreground">{formatNumber(capacity.used)}</span> of {formatNumber(capacity.total)} units
       </p>
     </div>
   )

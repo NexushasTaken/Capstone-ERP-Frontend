@@ -17,7 +17,7 @@ export default function AccountSettingsView() {
 
   if (isLoadingCurrentUser || isLoadingCredentials || !currentUser || !credentials) {
     return (
-      <section className="flex w-full items-center justify-center rounded-2xl bg-white p-10">
+      <section className="flex w-full items-center justify-center rounded-2xl bg-background p-10">
         <Loading />
       </section>
     )
@@ -25,12 +25,12 @@ export default function AccountSettingsView() {
 
   // Keyed so a different logged-in user (unlikely mid-session, but safe) remounts the forms with fresh values.
   return (
-    <section key={currentUser.id} className="flex w-full flex-col overflow-hidden rounded-2xl bg-white">
+    <section key={currentUser.id} className="flex w-full flex-col overflow-hidden rounded-2xl bg-background">
       <div className="flex justify-center p-5">
         <ProfileInfoForm currentUser={currentUser} />
       </div>
 
-      <div className="border-t border-[#E2E2E2]" />
+      <div className="border-t border-border" />
 
       <div className="flex justify-center p-5">
         <CredentialsForm credentials={credentials} />

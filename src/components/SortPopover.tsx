@@ -35,7 +35,7 @@ export default function SortPopover<TSortBy extends string | number>({
 }: SortPopoverProps<TSortBy>) {
   return (
     <Popover>
-      <PopoverTrigger className="cursor-pointer rounded-xl border border-[#E1E4E2] p-2 text-[#121514] transition-colors hover:bg-[#DCE4DF]">
+      <PopoverTrigger className="cursor-pointer rounded-xl border border-border p-2 text-foreground transition-colors hover:bg-accent">
         {trigger ?? <ArrowDownUp size={18} />}
       </PopoverTrigger>
 
@@ -57,9 +57,9 @@ export default function SortPopover<TSortBy extends string | number>({
                 onClick={() =>
                   onChange(option.value, option.order)
                 }
-                className={`flex w-full items-center justify-between px-4 py-2 text-sm transition-colors hover:bg-[#F7F9F7] ${
+                className={`flex w-full items-center justify-between px-4 py-2 text-sm transition-colors hover:bg-accent ${
                   selected
-                    ? 'bg-[#F7F9F7] font-medium'
+                    ? 'bg-muted/50 font-medium'
                     : ''
                 }`}
               >
@@ -68,7 +68,7 @@ export default function SortPopover<TSortBy extends string | number>({
                 {selected && (
                   <Check
                     size={16}
-                    className="text-[#121514]"
+                    className="text-foreground"
                   />
                 )}
               </button>

@@ -26,7 +26,7 @@ export default function StatusAction({
         render={
           <button
             aria-label={label}
-            className="cursor-pointer rounded-xl border border-[#DFE2E0] p-1.5 transition-colors hover:bg-[#DCE4DF]"
+            className="cursor-pointer rounded-xl border border-border p-1.5 transition-colors hover:bg-accent"
             type="button"
           />
         }

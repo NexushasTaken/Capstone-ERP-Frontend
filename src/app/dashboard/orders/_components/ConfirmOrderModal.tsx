@@ -40,54 +40,54 @@ export default function ConfirmOrderModal({
       onClose={onBack}
       open={open}
     >
-      <div className="flex w-full items-center justify-between gap-4 border-b border-[#E2E2E2] p-5">
+      <div className="flex w-full items-center justify-between gap-4 border-b border-border p-5">
         <div className="flex flex-col">
-          <span className="text-xs text-[#737A76]">Confirm order</span>
-          <ModalTitle className="text-2xl font-medium tracking-tight text-[#0c0d0d]">Review order details</ModalTitle>
+          <span className="text-xs text-muted-foreground">Confirm order</span>
+          <ModalTitle className="text-2xl font-medium tracking-tight text-foreground">Review order details</ModalTitle>
         </div>
         <CloseButton onClick={onBack} />
       </div>
 
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
-        <div className="grid grid-cols-1 gap-4 rounded-xl border border-[#DFE2E0] p-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 rounded-xl border border-border p-4 md:grid-cols-2 xl:grid-cols-3">
           {details.map((detail) => (
             <DetailItem key={detail.label} label={detail.label} value={detail.value} />
           ))}
         </div>
 
-        <div className="overflow-auto rounded-xl border border-[#DFE2E0]">
+        <div className="overflow-auto rounded-xl border border-border">
           <Table>
-            <TableHeader className="bg-[#F7F8F8]">
+            <TableHeader className="bg-muted/50">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-14 text-center text-[#121514]">#</TableHead>
-                <TableHead className="min-w-72 text-[#121514]">Product</TableHead>
-                <TableHead className="w-36 text-center text-[#121514]">Unit price</TableHead>
-                <TableHead className="w-36 text-center text-[#121514]">Quantity</TableHead>
-                <TableHead className="w-36 text-center text-[#121514]">Subtotal</TableHead>
+                <TableHead className="w-14 text-center text-foreground">#</TableHead>
+                <TableHead className="min-w-72 text-foreground">Product</TableHead>
+                <TableHead className="w-36 text-center text-foreground">Unit price</TableHead>
+                <TableHead className="w-36 text-center text-foreground">Quantity</TableHead>
+                <TableHead className="w-36 text-center text-foreground">Subtotal</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {lineRows.map((line, index) => (
-                <TableRow className="hover:bg-[#F7F8F8]" key={`${line.productId}-${index}`}>
-                  <TableCell className="text-center font-medium text-[#121514]">{index + 1}</TableCell>
+                <TableRow className="hover:bg-accent" key={`${line.productId}-${index}`}>
+                  <TableCell className="text-center font-medium text-foreground">{index + 1}</TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium capitalize text-[#121514]">{line.product?.name ?? '-'}</span>
-                      <span className="text-xs text-[#737A76]">ID: {line.product?.id ?? '-'}</span>
+                      <span className="font-medium capitalize text-foreground">{line.product?.name ?? '-'}</span>
+                      <span className="text-xs text-muted-foreground">ID: {line.product?.id ?? '-'}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-center text-[#121514]">{formatPeso(line.unitPrice)}</TableCell>
-                  <TableCell className="text-center font-medium text-[#121514]">{line.quantity}</TableCell>
-                  <TableCell className="text-center font-medium text-[#121514]">{formatPeso(line.subtotal)}</TableCell>
+                  <TableCell className="text-center text-foreground">{formatPeso(line.unitPrice)}</TableCell>
+                  <TableCell className="text-center font-medium text-foreground">{line.quantity}</TableCell>
+                  <TableCell className="text-center font-medium text-foreground">{formatPeso(line.subtotal)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
-            <TableFooter className="border-t border-[#DFE2E0] bg-white">
+            <TableFooter className="border-t border-border bg-background">
               <TableRow className="hover:bg-transparent">
-                <TableCell className="text-right text-sm font-semibold uppercase text-[#121514]" colSpan={4}>
+                <TableCell className="text-right text-sm font-semibold uppercase text-foreground" colSpan={4}>
                   Total
                 </TableCell>
-                <TableCell className="text-center text-base font-medium text-[#159947]">
+                <TableCell className="text-center text-base font-medium text-green-700">
                   {formatPeso(totalAmount)}
                 </TableCell>
               </TableRow>
@@ -96,9 +96,9 @@ export default function ConfirmOrderModal({
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-5">
+      <div className="flex justify-end gap-2 border-t border-border p-5">
         <Button
-          className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
+          className="rounded-xl border-border px-3 py-2 text-sm"
           onClick={onBack}
           type="button"
           variant="outline"

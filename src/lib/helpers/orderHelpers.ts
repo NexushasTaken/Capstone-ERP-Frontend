@@ -24,21 +24,21 @@ export function normalizeOrderText(value: string | null | undefined) {
 export function orderStatusClass(status: string | null | undefined) {
   const normalized = (status ?? '').toLowerCase()
 
-  if (normalized.includes('ship') || normalized.includes('complete')) return 'text-[#1F7A1F]'
-  if (normalized.includes('cancel')) return 'text-[#B42318]'
-  if (normalized.includes('pending') || normalized.includes('process')) return 'text-[#9A5B00]'
+  if (normalized.includes('ship') || normalized.includes('complete')) return 'text-green-700'
+  if (normalized.includes('cancel')) return 'text-destructive'
+  if (normalized.includes('pending') || normalized.includes('process')) return 'text-amber-700'
 
-  return 'text-[#737A76]'
+  return 'text-muted-foreground'
 }
 
 export function orderStatusDotClass(status: string | null | undefined) {
   const normalized = (status ?? '').toLowerCase()
 
-  if (normalized.includes('ship') || normalized.includes('complete')) return 'bg-[#39B82C]'
-  if (normalized.includes('cancel')) return 'bg-[#D92D20]'
-  if (normalized.includes('pending') || normalized.includes('process')) return 'bg-[#FFB020]'
+  if (normalized.includes('ship') || normalized.includes('complete')) return 'bg-green-600'
+  if (normalized.includes('cancel')) return 'bg-destructive'
+  if (normalized.includes('pending') || normalized.includes('process')) return 'bg-amber-500'
 
-  return 'bg-[#737A76]'
+  return 'bg-muted-foreground'
 }
 
 export function getOrderLineRows(

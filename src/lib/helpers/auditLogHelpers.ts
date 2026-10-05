@@ -21,14 +21,14 @@ export const AUDIT_LOG_SIDEBAR_LIMIT = 10
 
 // Values match the backend enums (AuditActionEnum / AuditModuleEnum).
 export const auditActionOptions: AuditActionOption[] = [
-  { value: 1, key: 'Create', label: 'Created', Icon: Plus, className: 'bg-[#E7F6EC] text-[#187B49]' },
-  { value: 2, key: 'Update', label: 'Updated', Icon: Pencil, className: 'bg-[#E8F1FB] text-[#1769C2]' },
-  { value: 3, key: 'Delete', label: 'Deleted', Icon: Trash2, className: 'bg-[#FDECEA] text-[#B42318]' },
-  { value: 4, key: 'StatusChange', label: 'Status changed', Icon: RefreshCw, className: 'bg-[#F1ECFB] text-[#6941C6]' },
-  { value: 5, key: 'IncreaseStock', label: 'Stock added', Icon: PackagePlus, className: 'bg-[#E7F6EC] text-[#187B49]' },
-  { value: 6, key: 'ReturnStock', label: 'Stock returned', Icon: Undo2, className: 'bg-[#FFF4E0] text-[#9A5B00]' },
-  { value: 7, key: 'CurrentItemDamage', label: 'Damaged (current)', Icon: PackageX, className: 'bg-[#FDECEA] text-[#B42318]' },
-  { value: 8, key: 'ReturnItemDamage', label: 'Damaged (return)', Icon: PackageMinus, className: 'bg-[#FFF4E0] text-[#9A5B00]' },
+  { value: 1, key: 'Create', label: 'Created', Icon: Plus, className: 'bg-green-50 text-green-700' },
+  { value: 2, key: 'Update', label: 'Updated', Icon: Pencil, className: 'bg-blue-50 text-blue-700' },
+  { value: 3, key: 'Delete', label: 'Deleted', Icon: Trash2, className: 'bg-destructive/10 text-destructive' },
+  { value: 4, key: 'StatusChange', label: 'Status changed', Icon: RefreshCw, className: 'bg-violet-50 text-violet-700' },
+  { value: 5, key: 'IncreaseStock', label: 'Stock added', Icon: PackagePlus, className: 'bg-green-50 text-green-700' },
+  { value: 6, key: 'ReturnStock', label: 'Stock returned', Icon: Undo2, className: 'bg-amber-50 text-amber-700' },
+  { value: 7, key: 'CurrentItemDamage', label: 'Damaged (current)', Icon: PackageX, className: 'bg-destructive/10 text-destructive' },
+  { value: 8, key: 'ReturnItemDamage', label: 'Damaged (return)', Icon: PackageMinus, className: 'bg-amber-50 text-amber-700' },
 ]
 
 export const auditModuleOptions: AuditModuleOption[] = [
@@ -64,7 +64,7 @@ export function toUserFilterOptions(users: UserOption[]): AuditFilterOption<numb
 
 const fallbackAction: Omit<AuditActionOption, 'value' | 'key' | 'label'> = {
   Icon: CircleDot,
-  className: 'bg-[#F0F1F1] text-[#737A76]',
+  className: 'bg-muted text-muted-foreground',
 }
 
 export function getAuditAction(key: string) {

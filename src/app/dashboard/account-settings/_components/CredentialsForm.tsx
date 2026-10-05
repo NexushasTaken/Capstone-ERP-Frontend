@@ -82,7 +82,7 @@ export default function CredentialsForm({ credentials }: { credentials: Credenti
 
       {passwordProvided && !passwordValid ? (
         <SettingsRow>
-          <span className="text-xs text-red-500">
+          <span className="text-xs text-destructive">
             Password must be at least {MIN_PASSWORD_LENGTH} characters and match the confirmation.
           </span>
         </SettingsRow>

@@ -131,16 +131,16 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
       onClose={onClose}
       open={open}
     >
-      <div className="flex w-full items-center justify-between gap-4 border-b border-[#E2E2E2] p-5">
+      <div className="flex w-full items-center justify-between gap-4 border-b border-border p-5">
         <div className="flex min-w-0 flex-col">
-          <span className="text-xs text-[#737A76]">New order</span>
-          <ModalTitle className="text-2xl font-medium tracking-tight text-[#0c0d0d]">Create order</ModalTitle>
+          <span className="text-xs text-muted-foreground">New order</span>
+          <ModalTitle className="text-2xl font-medium tracking-tight text-foreground">Create order</ModalTitle>
         </div>
         <CloseButton onClick={onClose} />
       </div>
 
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
-        <div className="flex flex-col bg-white">
+        <div className="flex flex-col bg-background">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             <FormField label="Order type">
               <Select
@@ -149,7 +149,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
                 onValueChange={(value) => updateField('orderTypeId', value ?? '')}
                 value={form.orderTypeId}
               >
-                <SelectTrigger className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm focus-visible:border-[#121514] focus-visible:ring-[#121514]/20">
+                <SelectTrigger className="h-10 w-full rounded-xl border-border bg-background px-3 text-sm focus-visible:border-ring focus-visible:ring-ring/50">
                   <SelectValue placeholder="Select order type" />
                 </SelectTrigger>
                 <SelectContent className="capitalize">
@@ -186,12 +186,12 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
 
             <FormField label="Quantity (total items)">
               <Input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-[#F7F8F8] px-3 text-sm text-[#121514] outline-none"
+                className="h-10 rounded-xl border border-border bg-muted/50 px-3 text-sm text-foreground outline-none"
                 readOnly
                 disabled
                 value={totalQuantity}
               />
-              <span className="text-xs text-[#737A76]">Calculated from items below</span>
+              <span className="text-xs text-muted-foreground">Calculated from items below</span>
             </FormField>
           </div>
 
@@ -224,9 +224,9 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
         />
       </div>
 
-      <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-5">
+      <div className="flex justify-end gap-2 border-t border-border p-5">
         <Button
-          className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
+          className="rounded-xl border-border px-3 py-2 text-sm"
           onClick={onClose}
           type="button"
           variant="outline"

@@ -27,10 +27,10 @@ export default function DeleteConfirmModal({
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open={open}>
       <ModalHeader subtitle={subtitle} title={`Delete ${entityName}`} onClose={onClose} />
       <ModalBody className="gap-2">
-        <span className="text-sm text-[#121514]">
+        <span className="text-sm text-foreground">
           Are you sure you want to delete this {entityName}?
         </span>
-        <span className="text-sm font-medium text-[#0c0d0d] capitalize">{itemLabel}</span>
+        <span className="text-sm font-medium text-foreground capitalize">{itemLabel}</span>
       </ModalBody>
       <ModalActions
         onCancel={onClose}

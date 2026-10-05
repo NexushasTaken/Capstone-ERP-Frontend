@@ -83,7 +83,7 @@ export default function ProductsView() {
   }
 
   return (
-    <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-white p-4 lg:p-5">
+    <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <PageTitle title="Products" count={products.length} />
 
@@ -103,8 +103,8 @@ export default function ProductsView() {
             <button
               className={`cursor-pointer rounded-xl border px-3 py-2 text-sm whitespace-nowrap transition-colors ${
                 selectedFilter === filter
-                  ? 'border-[#121514] bg-[#121514] text-white'
-                  : 'border-[#E1E4E2] bg-white text-[#121514] hover:bg-[#DCE4DF]'
+                  ? 'border-foreground bg-primary text-primary-foreground'
+                  : 'border-border bg-background text-foreground hover:bg-accent'
               }`}
               key={filter}
               type="button"
@@ -154,7 +154,7 @@ export default function ProductsView() {
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
-        <span className="text-sm text-[#737A76]">
+        <span className="text-sm text-muted-foreground">
           Showing {paginatedProducts.length} of {products.length} products
         </span>
         <div className="flex">

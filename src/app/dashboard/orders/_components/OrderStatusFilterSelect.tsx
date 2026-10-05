@@ -41,7 +41,7 @@ export default function OrderStatusFilterSelect({ value, onChange, statusOptions
         onValueChange={(next) => onChange(next === 'all' ? '' : String(next ?? ''))}
         value={value || 'all'}
       >
-        <SelectTrigger aria-label="Filter orders by status" className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm focus-visible:border-[#121514] focus-visible:ring-[#121514]/20">
+        <SelectTrigger aria-label="Filter orders by status" className="h-10 w-full rounded-xl border-border bg-background px-3 text-sm focus-visible:border-ring focus-visible:ring-ring/50">
           <SelectValue placeholder="All statuses" />
         </SelectTrigger>
         <SelectContent>
@@ -50,7 +50,7 @@ export default function OrderStatusFilterSelect({ value, onChange, statusOptions
               <span className="flex items-center gap-3 w-full justify-between">
                 <span>{status.label}</span>
                 {status.value !== 'all' && (
-                  <span className="shrink-0 text-right text-xs tabular-nums text-[#737A76]">
+                  <span className="shrink-0 text-right text-xs tabular-nums text-muted-foreground">
                     {countFor(status.label)}
                   </span>
                 )}

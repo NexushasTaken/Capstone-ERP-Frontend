@@ -97,23 +97,23 @@ export default function EntityDropdown({
       <DropdownMenuTrigger
         type="button"
         className="flex h-10 w-full items-center justify-between rounded-xl 
-        border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+        border border-border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
       >
-        <span className={value ? 'text-[#121514] capitalize' : 'text-[#737A76]'}>
+        <span className={value ? 'text-foreground capitalize' : 'text-muted-foreground'}>
           {isLoading ? 'Loading...' : value || placeholder}
         </span>
-        <ChevronDown className="h-4 w-4 shrink-0 text-[#737A76]" />
+        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="flex h-72 max-h-(--available-height) w-(--anchor-width) flex-col overflow-hidden p-0">
         <div
-          className="flex items-center gap-2 border-b border-[#E7ECE8] px-2.5 py-2"
+          className="flex items-center gap-2 border-b border-border px-2.5 py-2"
           onKeyDown={stopDropdownKeyboardNavigation}
           onKeyDownCapture={stopDropdownKeyboardNavigation}
           onKeyUp={stopDropdownKeyboardNavigation}
           onKeyUpCapture={stopDropdownKeyboardNavigation}
         >
-          <Search className="h-4 w-4 shrink-0 text-[#737A76]" />
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
           <Input
             autoFocus
             type="text"
@@ -125,24 +125,24 @@ export default function EntityDropdown({
             onKeyUp={stopDropdownKeyboardNavigation}
             onKeyUpCapture={stopDropdownKeyboardNavigation}
             className="h-8 border-0 bg-transparent px-0 text-sm outline-none 
-            placeholder:text-[#737A76] focus-visible:border-0 focus-visible:ring-0"
+            placeholder:text-muted-foreground focus-visible:border-0 focus-visible:ring-0"
           />
         </div>
 
         <div className="flex flex-1 flex-col overflow-y-auto p-1">
           {isLoading || isSearching ? (
-            <div className="flex h-full items-center justify-center p-3 text-center text-xs text-[#737A76]">
+            <div className="flex h-full items-center justify-center p-3 text-center text-xs text-muted-foreground">
               <Loading />
             </div>
           ) : visibleOptions.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-2 p-3 text-center">
-              <span className="text-xs text-[#737A76]">{emptyLabel}</span>
+              <span className="text-xs text-muted-foreground">{emptyLabel}</span>
               {addHref && addLabel ? (
                 <button
                   type="button"
                   onClick={() => router.push(addHref)}
                   className="flex items-center gap-1 rounded-lg border 
-                  border-[#DFE2E0] px-2.5 py-1.5 text-xs font-medium text-[#121514] hover:bg-[#DCE4DF]"
+                  border-border px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   {addLabel}
@@ -155,7 +155,7 @@ export default function EntityDropdown({
                 <div className="flex flex-col">
                   <span className="capitalize">{option.label}</span>
                   {option.sublabel && (
-                    <span className="text-xs text-[#737A76]">{option.sublabel}</span>
+                    <span className="text-xs text-muted-foreground">{option.sublabel}</span>
                   )}
                 </div>
               </DropdownMenuItem>
