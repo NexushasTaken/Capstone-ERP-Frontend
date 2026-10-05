@@ -24,6 +24,8 @@ export interface FetchProductsParams {
   pageSize?: number
   name?: string
   categoryPresent?: 0 | 1
+  /** Sort code, see getProductFilter. */
+  filter?: number
 }
 
 export interface ProductListContent {

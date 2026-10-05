@@ -4,17 +4,24 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { deleteCategory, fetchCategories, insertCategory, updateCategory } from "@/services/categoryApi"
 import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
 import { queryKeys } from "@/lib/query/queryKeys"
-import type { CategoryListItem } from "@/types/category"
+import type { CategoryListItem, FetchCategoriesParams } from "@/types/category"
 import { ITEMS_PER_PAGE } from "../_lib/categoryHelpers"
 
 type CategoriesResponse = Awaited<ReturnType<typeof fetchCategories>>
 
-function categoriesParams(page: number) {
-  return { page, pageSize: ITEMS_PER_PAGE }
+export interface CategoriesQuery {
+  page: number
+  search: string
+  /** Sort code, see getCategoryFilter. */
+  sort: number
 }
 
-export function useCategories(page: number) {
-  const params = categoriesParams(page)
+function categoriesParams({ page, search, sort }: CategoriesQuery): FetchCategoriesParams {
+  return { page, pageSize: ITEMS_PER_PAGE, name: search || undefined, filter: sort }
+}
+
+export function useCategories(query: CategoriesQuery) {
+  const params = categoriesParams(query)
   return useQuery({
     queryKey: queryKeys.categories.all(params),
     queryFn: () => fetchCategories(params),
@@ -22,12 +29,12 @@ export function useCategories(page: number) {
   })
 }
 
-// Add/edit/delete for the categories page. Each one updates `page` in the cache straight away.
-export function useCategoryMutations(page: number) {
+// Add/edit/delete for the categories page. Each one updates the visible page in the cache straight away.
+export function useCategoryMutations(query: CategoriesQuery) {
   const queryClient = useQueryClient()
   const shared = {
     queryClient,
-    queryKey: queryKeys.categories.all(categoriesParams(page)),
+    queryKey: queryKeys.categories.all(categoriesParams(query)),
     scopeKey: ["categories"],
   }
 

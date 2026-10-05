@@ -32,6 +32,9 @@ export interface CategoryListContent {
 export interface FetchCategoriesParams {
   page?: number
   pageSize?: number
+  name?: string
+  /** Sort code, see getCategoryFilter. */
+  filter?: number
 }
 
 export interface InsertCategoryPayload {
