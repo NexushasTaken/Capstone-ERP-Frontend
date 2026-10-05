@@ -1,5 +1,8 @@
-import DriversView from '@/app/dashboard/driver/_components/DriversView'
+import type { Metadata } from 'next'
+import DriversView from './_components/DriversView'
 
-export default function Driver() {
+export const metadata: Metadata = { title: 'Drivers' }
+
+export default function DriversPage() {
   return <DriversView />
 }

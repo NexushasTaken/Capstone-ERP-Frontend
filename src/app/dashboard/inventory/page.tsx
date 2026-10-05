@@ -1,5 +1,8 @@
-import InventoryView from '@/app/dashboard/inventory/_components/InventoryView'
+import type { Metadata } from 'next'
+import InventoryView from './_components/InventoryView'
 
-export default function Inventory() {
+export const metadata: Metadata = { title: 'Inventory' }
+
+export default function InventoryPage() {
   return <InventoryView />
 }

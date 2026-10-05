@@ -1,8 +1,8 @@
-import OrdersView from '@/app/dashboard/orders/_components/OrdersView'
-import React from 'react'
+import type { Metadata } from 'next'
+import OrdersView from './_components/OrdersView'
 
-export default function Orders() {
-  return (
-    <OrdersView />
-  )
+export const metadata: Metadata = { title: 'Orders' }
+
+export default function OrdersPage() {
+  return <OrdersView />
 }

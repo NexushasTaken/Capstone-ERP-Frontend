@@ -1,7 +1,8 @@
-import RegisterForm from "@/app/auth/signup/_components/RegisterForm";
+import type { Metadata } from 'next'
+import RegisterForm from './_components/RegisterForm'
 
-export default function Signup() {
-  return (
-    <RegisterForm />
-  )
+export const metadata: Metadata = { title: 'Sign Up' }
+
+export default function SignupPage() {
+  return <RegisterForm />
 }
