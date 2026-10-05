@@ -8,6 +8,7 @@ import { z } from "zod"
 import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import type { ApiEnvelope } from "@/types/api"
+import PasswordInput from "@/components/PasswordInput"
 import { ApiError } from "@/lib/apiError"
 import { applyServerErrors } from "@/lib/applyServerErrors"
 import { emailSchema } from "@/lib/validation"
@@ -94,18 +95,16 @@ export default function LoginForm() {
             <label htmlFor="password" className="text-sm text-foreground">
               Password
             </label>
-            <div className="relative">
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                aria-invalid={!!errors.password}
-                {...register("password")}
-                className="pl-12 pr-4 py-4 outline-none border rounded-lg border-border w-full text-foreground aria-invalid:border-destructive"
-                placeholder="Password"
-              />
-              <LockKeyhole className="text-foreground w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2" />
-            </div>
+            <PasswordInput
+              id="password"
+              autoComplete="current-password"
+              aria-invalid={!!errors.password}
+              {...register("password")}
+              leading={<LockKeyhole className="text-foreground size-5" />}
+              groupClassName="h-auto rounded-lg border-border"
+              className="h-auto py-4 text-foreground"
+              placeholder="Password"
+            />
             {errors.password && <span className="text-xs text-destructive">{errors.password.message}</span>}
           </div>
 

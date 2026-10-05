@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
 import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
 import { FormField, FormInput } from "@/components/FormField"
+import PasswordInput from "@/components/PasswordInput"
 import { applyServerErrors } from "@/lib/applyServerErrors"
 import type { AccountListItem } from "@/types/account"
 import { createAccountSchema, type CreateAccountFormValues } from "../_lib/accountSchema"
@@ -76,14 +77,10 @@ export default function CreateAccountModal({ open, disabled, onClose, onSubmit }
           <FormInput aria-invalid={!!errors.email} type="email" {...register("email")} />
         </FormField>
         <FormField label="Password" error={errors.password?.message}>
-          <FormInput
-            aria-invalid={!!errors.password}
-            type="password"
-            {...register("password", { deps: ["confirmPassword"] })}
-          />
+          <PasswordInput aria-invalid={!!errors.password} {...register("password", { deps: ["confirmPassword"] })} />
         </FormField>
         <FormField label="Confirm Password" error={errors.confirmPassword?.message}>
-          <FormInput aria-invalid={!!errors.confirmPassword} type="password" {...register("confirmPassword")} />
+          <PasswordInput aria-invalid={!!errors.confirmPassword} {...register("confirmPassword")} />
         </FormField>
         <FormField label="Role" error={errors.role?.message}>
           <Controller
