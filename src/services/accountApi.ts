@@ -5,6 +5,7 @@ import type {
   ProfileInfo,
   UpdateCredentialsPayload,
 } from '@/types/account'
+import { ApiError } from '@/lib/apiError'
 import type { ApiEnvelope, ApiEnvelopeNoContent } from '@/types/api'
 
 interface RawAccountListItem {
@@ -51,7 +52,7 @@ export async function createAccount(payload: CreateAccountPayload): Promise<void
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || 'Failed to create account')
+    throw new ApiError(data.message || 'Failed to create account', response.status)
   }
 }
 

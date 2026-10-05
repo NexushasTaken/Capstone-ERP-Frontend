@@ -1,12 +1,13 @@
 import type { ComponentProps, ReactNode } from 'react'
 import { Input } from '@/components/ui/input'
 
-// A label stacked above its input, as used in the add/edit modals.
-export function FormField({ label, children }: { label: string; children: ReactNode }) {
+// A label stacked above its input, as used in the add/edit modals. `error` shows under the input.
+export function FormField({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
   return (
     <label className="flex flex-col gap-1 text-sm text-[#121514]">
       <span className="text-xs text-[#68716C]">{label}</span>
       {children}
+      {error && <span className="text-xs text-destructive">{error}</span>}
     </label>
   )
 }
