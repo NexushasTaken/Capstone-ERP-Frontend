@@ -92,6 +92,19 @@ export async function updateAccountRole(id: number, role: AccountListItem["role"
   }
 }
 
+export async function deleteAccount(id: number): Promise<void> {
+  const response = await fetch(`/api/User/accounts/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  })
+
+  const data: ApiEnvelopeNoContent = await response.json()
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Failed to delete account")
+  }
+}
+
 export async function updateProfileInfo(payload: ProfileInfo): Promise<void> {
   const response = await fetch("/api/User/me/profile", {
     method: "PATCH",

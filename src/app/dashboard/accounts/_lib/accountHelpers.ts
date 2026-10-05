@@ -1,4 +1,4 @@
-import { Pencil } from "lucide-react"
+import { Pencil, Trash2 } from "lucide-react"
 import type { AccountSortBy, AccountSortOption } from "@/types/account"
 import type { StatusActionItem } from "@/types/statusAction"
 
@@ -9,11 +9,17 @@ export const accountSortOptions: AccountSortOption[] = [
   { label: "First name (Z to A)", value: "firstName", order: "desc" },
 ]
 
-export const editAccountActions: StatusActionItem[] = [
+export const accountActionOptions: StatusActionItem[] = [
   {
     label: "Edit",
     value: "edit",
     icon: Pencil,
+  },
+  {
+    label: "Delete",
+    value: "delete",
+    icon: Trash2,
+    variant: "destructive",
   },
 ]
 
@@ -31,7 +37,7 @@ export const roleOptions: Array<{
   { label: "Secretary", value: "secretary" },
 ]
 
-// The first (owner) account's role can't be changed.
+// The first (owner) account's role can't be changed, and it can't be deleted.
 export const LOCKED_ACCOUNT_ID = 1
 
 // The backend's `filter` sort code for GET /api/User/accounts.

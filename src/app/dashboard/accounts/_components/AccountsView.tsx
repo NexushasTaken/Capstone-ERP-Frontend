@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Plus } from "lucide-react"
+import DeleteConfirmModal from "@/components/DeleteConfirmModal"
 import PageTitle from "@/components/PageTitle"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
@@ -14,8 +15,9 @@ import type { AccountListItem, AccountSortBy } from "@/types/account"
 import { useAccountMutations, useAccounts } from "../_hooks/useAccounts"
 import {
   ACCOUNT_ITEMS_PER_PAGE,
+  accountActionOptions,
   accountSortOptions,
-  editAccountActions,
+  formatAccountId,
   getAccountFilter,
 } from "../_lib/accountHelpers"
 import AccountsTable from "./AccountsTable"
@@ -23,12 +25,13 @@ import CreateAccountModal, { type NewAccount } from "./CreateAccountModal"
 import EditAccountRoleModal from "./EditAccountRoleModal"
 
 // Which modal is open, and for which account.
-type ModalState = { type: "create" } | { type: "edit"; account: AccountListItem } | null
+type ModalState =
+  { type: "create" } | { type: "edit"; account: AccountListItem } | { type: "delete"; account: AccountListItem } | null
 
 export default function AccountsView() {
   const { data: currentUser } = useCurrentUser()
   const role = currentUser?.role
-  const accountActions = allowedActions(role, "account", editAccountActions)
+  const accountActions = allowedActions(role, "account", accountActionOptions)
 
   const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
@@ -61,6 +64,14 @@ export default function AccountsView() {
   function handleUpdateRole(newRole: AccountListItem["role"]) {
     if (modal?.type !== "edit") return
     mutations.updateRole.mutate({ id: modal.account.id, role: newRole })
+    closeModal()
+  }
+
+  function handleDeleteAccount() {
+    if (modal?.type !== "delete") return
+    mutations.deleteAccount.mutate(modal.account.id)
+    // Deleting the last row on a page would leave it empty, so step back one.
+    if (accounts.length === 1 && currentPage > 1) setCurrentPage(currentPage - 1)
     closeModal()
   }
 
@@ -104,7 +115,9 @@ export default function AccountsView() {
           isLoading={isLoading}
           error={error}
           actions={accountActions}
+          currentUserId={currentUser?.id}
           onEdit={(account) => setModal({ type: "edit", account })}
+          onDelete={(account) => setModal({ type: "delete", account })}
         />
       </div>
 
@@ -131,6 +144,15 @@ export default function AccountsView() {
           onSubmit={handleUpdateRole}
         />
       )}
+      <DeleteConfirmModal
+        open={modal?.type === "delete"}
+        onClose={closeModal}
+        onConfirm={handleDeleteAccount}
+        entityName="account"
+        subtitle={modal?.type === "delete" ? formatAccountId(modal.account.id) : ""}
+        itemLabel={modal?.type === "delete" ? `${modal.account.lastName}, ${modal.account.firstName}` : ""}
+        disabled={mutations.isSubmitting}
+      />
     </section>
   )
 }

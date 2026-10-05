@@ -41,6 +41,7 @@ const permissions: Record<Role, RolePermissions> = {
       "warehouse:delete",
       "account:create",
       "account:edit",
+      "account:delete",
     ],
   },
   secretary: {
