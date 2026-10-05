@@ -1,10 +1,25 @@
-import type { WarehouseListItem } from "@/types/warehouseCapacity"
+import type {
+  FetchWarehousesParams,
+  InsertWarehousePayload,
+  UpdateWarehousePayload,
+  WarehouseListContent,
+  WarehouseListItem,
+} from "@/types/warehouse"
 import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
-import { InsertWarehousePayload, RawWarehouse, UpdateWarehousePayload } from "@/types/warehouseCapacity"
 
 // GET
-export async function fetchWarehouses(): Promise<WarehouseListItem[]> {
-  const response = await fetch(`/api/Inventory/warehouse/all`, {
+export async function fetchWarehouses(params: FetchWarehousesParams = {}): Promise<{
+  items: WarehouseListItem[]
+  pageCount: number
+  rows: number
+}> {
+  const query = new URLSearchParams()
+  if (params.page !== undefined) query.set("page", String(params.page))
+  if (params.pageSize !== undefined) query.set("pageSize", String(params.pageSize))
+  if (params.name) query.set("name", params.name)
+  if (params.filter !== undefined) query.set("filter", String(params.filter))
+
+  const response = await fetch(`/api/Inventory/warehouse/all?${query.toString()}`, {
     method: "GET",
     credentials: "include",
   })
@@ -13,19 +28,23 @@ export async function fetchWarehouses(): Promise<WarehouseListItem[]> {
     throw new Error(`Failed to fetch warehouses: ${response.status}`)
   }
 
-  const data: ApiEnvelope<RawWarehouse[]> = await response.json()
+  const data: ApiEnvelope<WarehouseListContent> = await response.json()
 
   if (!data.success) {
     throw new Error(data.message || "Failed to fetch warehouses")
   }
 
-  return data.content.map((w) => ({
-    id: w.id,
-    name: w.name,
-    address: w.address,
-    stocks: w.stocks,
-    capacity: w.capacity ?? w.capicity,
-  }))
+  return {
+    items: data.content.warehouses.map((w) => ({
+      id: w.id,
+      name: w.name,
+      address: w.address,
+      stocks: w.stocks,
+      created_At: w.created_At,
+    })),
+    pageCount: data.content.pageCount,
+    rows: data.content.rows,
+  }
 }
 
 // INSERT

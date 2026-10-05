@@ -39,7 +39,7 @@ Don't create new `types` files for component props. Props interfaces live in the
 | Kind | Name | Example |
 |---|---|---|
 | Page's top client component | `XxxView` | `ProductsView`, `OrdersView` |
-| Big page region | `XxxSection` / `XxxCard` | `WarehouseCapacitySection`, `SalesOverviewCard` |
+| Big page region | `XxxSection` / `XxxCard` | `InventoryItemsSection`, `SalesOverviewCard` |
 | Table / list | `XxxTable` / `XxxList` / `XxxRow` | `ProductsTable`, `OrderRow` |
 | Add + edit in one modal | `XxxFormModal` | `CategoryFormModal` |
 | Other modals | `XxxModal` | `RestockModal`, `ProductDetailsModal` |

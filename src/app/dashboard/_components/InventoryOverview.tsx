@@ -39,7 +39,7 @@ export default function InventoryOverview() {
     queryKey: queryKeys.dashboard.inventory,
     queryFn: ({ signal }) => fetchDashboardInventory(signal),
   })
-  const totalCapacity = dashboardInventory?.totalWareHouseCapacity ?? 0
+  const totalStock = dashboardInventory?.totalStock ?? 0
 
   const statusCounts = {
     available: dashboardInventory?.inventoryStatus.find((item) => item.status === "available")?.total ?? 0,
@@ -72,14 +72,14 @@ export default function InventoryOverview() {
         <div className="min-w-0 flex-1 rounded-xl bg-background p-4">
           <div className="flex items-center gap-2">
             <WarehouseIcon size={18} className="text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Total warehouse capacity</span>
+            <span className="text-sm text-muted-foreground">Total stock</span>
           </div>
           <p className="mt-3 text-4xl font-semibold text-foreground">
-            {isDashboardInventoryLoading || isDashboardInventoryError ? "-" : `${formatNumber(totalCapacity)} units`}
+            {isDashboardInventoryLoading || isDashboardInventoryError ? "-" : `${formatNumber(totalStock)} units`}
           </p>
           {isDashboardInventoryError && (
             <p role="alert" className="mt-1 text-xs text-destructive">
-              Unable to load warehouse capacity.
+              Unable to load total stock.
             </p>
           )}
         </div>

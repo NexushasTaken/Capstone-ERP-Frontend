@@ -1,9 +1,3 @@
-export interface WarehouseCapacity {
-  warehouse: string
-  used: number
-  total: number
-}
-
 export interface InventoryListItem {
   id: number
   productId: number
