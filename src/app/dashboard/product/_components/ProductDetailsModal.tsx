@@ -1,5 +1,6 @@
 import { Layers, Tag } from 'lucide-react'
 import CloseButton from '@/components/CloseButton'
+import { ModalTitle } from '@/components/AppModal'
 import SeeMoreModal from '@/components/SeeMoreModal'
 import { formatDate, formatPeso } from '@/lib/format'
 import type { ProductListItem } from '@/types/product'
@@ -19,7 +20,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
           <div className="flex items-center gap-2">
             <span className="text-xs">{product ? formatProductId(product.id) : ''}</span>
           </div>
-          <span className="text-xl font-medium text-[#0c0d0d] capitalize">{product?.name}</span>
+          <ModalTitle className="text-xl font-medium text-[#0c0d0d] capitalize">{product?.name}</ModalTitle>
         </div>
         <CloseButton onClick={onClose} />
       </div>

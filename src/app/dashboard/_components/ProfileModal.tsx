@@ -1,7 +1,7 @@
 'use client'
 
 import { LogOut, Settings, X } from 'lucide-react'
-import { useEffect } from 'react'
+import AppModal, { ModalTitle } from '@/components/AppModal'
 import type { StaffProfile } from '@/types/profile'
 import { formatProfileDetails, formatProfileName } from '@/app/dashboard/_lib/profileHelpers'
 import { useRouter } from 'next/navigation'
@@ -49,70 +49,50 @@ export default function ProfileModal({
     }
   }
 
-  useEffect(() => {
-    if (!isOpen) return
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
-
-  if (!isOpen) return null
-
   return (
-    <div
-      aria-labelledby="profile-modal-title"
-      aria-modal="true"
-      className="fixed inset-0 z-60 flex items-center justify-center bg-black/45 p-4"
-      onMouseDown={onClose}
-      role="dialog"
+    <AppModal
+      className="block h-auto max-w-[calc(100%-2rem)] rounded-2xl p-6 shadow-2xl sm:max-w-sm lg:rounded-2xl xl:h-auto"
+      onClose={onClose}
+      open={isOpen}
     >
-      <div
-        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-center justify-between">
-          <h2 id="profile-modal-title" className="text-xl font-semibold text-[#0c0d0d]">Profile</h2>
-          <button aria-label="Close profile" className="rounded-lg p-2 text-[#0c0d0d] hover:bg-[#F0F1F1]" onClick={onClose} type="button">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+      <div className="flex items-center justify-between">
+        <ModalTitle className="text-xl font-semibold text-[#0c0d0d]">Profile</ModalTitle>
+        <button aria-label="Close profile" className="rounded-lg p-2 text-[#0c0d0d] hover:bg-[#F0F1F1]" onClick={onClose} type="button">
+          <X className="h-5 w-5" />
+        </button>
+      </div>
 
-        <div className="mt-6 flex items-center gap-4">
-          <div>
-            <p className="text-lg font-semibold text-[#0c0d0d]">{formatProfileName(profile)}</p>
-            <p className="text-sm text-[#747574] capitalize">{formatProfileDetails(profile)}</p>
-          </div>
-        </div>
-
-        <div className='flex mt-8 gap-2'>
-          {/* <button */}
-          {/*   aria-label="Settings" */}
-          {/*   className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0c0d0d] px-4 py-3 font-medium text-white cursor-pointer transition-all hover:scale-105 duration-300" */}
-          {/*   onClick={() => { */}
-          {/*     onClose() */}
-          {/*     router.push('/dashboard/account-settings') */}
-          {/*   }} */}
-          {/*   type="button" */}
-          {/* > */}
-          {/*   <Settings className="h-5 w-5" /> */}
-          {/*   Settings */}
-          {/* </button> */}
-
-          <button
-            aria-label="Log out"
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0c0d0d] px-4 py-3 font-medium text-white cursor-pointer transition-all hover:scale-105 duration-300"
-            onClick={handleLogout}
-            type="button"
-          >
-            <LogOut className="h-5 w-5" />
-            Log out
-          </button>
+      <div className="mt-6 flex items-center gap-4">
+        <div>
+          <p className="text-lg font-semibold text-[#0c0d0d]">{formatProfileName(profile)}</p>
+          <p className="text-sm text-[#747574] capitalize">{formatProfileDetails(profile)}</p>
         </div>
       </div>
-    </div>
+
+      <div className='flex mt-8 gap-2'>
+        {/* <button */}
+        {/*   aria-label="Settings" */}
+        {/*   className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0c0d0d] px-4 py-3 font-medium text-white cursor-pointer transition-all hover:scale-105 duration-300" */}
+        {/*   onClick={() => { */}
+        {/*     onClose() */}
+        {/*     router.push('/dashboard/account-settings') */}
+        {/*   }} */}
+        {/*   type="button" */}
+        {/* > */}
+        {/*   <Settings className="h-5 w-5" /> */}
+        {/*   Settings */}
+        {/* </button> */}
+
+        <button
+          aria-label="Log out"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0c0d0d] px-4 py-3 font-medium text-white cursor-pointer transition-all hover:scale-105 duration-300"
+          onClick={handleLogout}
+          type="button"
+        >
+          <LogOut className="h-5 w-5" />
+          Log out
+        </button>
+      </div>
+    </AppModal>
   )
 }

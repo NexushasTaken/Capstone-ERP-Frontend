@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import { Truck, Warehouse as WarehouseIcon } from 'lucide-react'
 import CloseButton from '@/components/CloseButton'
+import { ModalTitle } from '@/components/AppModal'
 import SeeMoreModal from '@/components/SeeMoreModal'
 import { formatDate } from '@/lib/format'
 import {
@@ -37,7 +38,7 @@ export default function InventoryDetailsModal({ item, onClose }: InventoryDetail
               </span>
             )}
           </div>
-          <span className="text-xl font-medium text-[#0c0d0d] capitalize">{item?.name}</span>
+          <ModalTitle className="text-xl font-medium text-[#0c0d0d] capitalize">{item?.name}</ModalTitle>
         </div>
         <CloseButton onClick={onClose} />
       </div>
