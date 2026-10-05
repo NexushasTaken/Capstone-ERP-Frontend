@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { AlertTriangle, Plus } from "lucide-react"
+import { useEffect, useState } from "react"
+import { AlertTriangle, Plus, X } from "lucide-react"
 import CountFilterSelect from "@/components/CountFilterSelect"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
 import ExportCsvButton from "@/components/ExportCsvButton"
@@ -10,20 +10,28 @@ import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
+import { DatePickerSimple } from "@/components/DatePicker"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { exportToCSV } from "@/lib/exportToCsv"
 import { formatDate } from "@/lib/format"
-import { capitalize, formatInventoryId, getInventoryFilter, inventorySortOptions } from "@/lib/helpers/inventoryHelpers"
+import { formatInventoryId, getInventoryFilter, inventorySortOptions, titleCase } from "@/lib/helpers/inventoryHelpers"
 import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
 import { allowedActions, can } from "@/lib/permissions"
 import { queryKeys } from "@/lib/query/queryKeys"
-import type { InventoryFilter, InventoryListItem, InventorySortBy } from "@/types/inventory"
-import { useInventories, useInventoryMutations, useInventoryStatusCounts } from "../_hooks/useInventory"
+import type { InventoryListItem } from "@/types/inventory"
+import {
+  useInventories,
+  useInventoryMutations,
+  useInventoryStatusCounts,
+  useSelectableCategories,
+  useSelectableWarehouses,
+} from "../_hooks/useInventory"
+import { useInventoryFilters } from "../_hooks/useInventoryFilters"
 import InventoryDetailsModal from "./InventoryDetailsModal"
 import InventoryFormModal, { type InventoryFormValues } from "./InventoryFormModal"
 import InventoryTable from "./InventoryTable"
 import MarkDamageModal from "./MarkDamageModal"
+import QuantityRangeFilter from "./QuantityRangeFilter"
 import RestockModal from "./RestockModal"
 
 const ITEMS_PER_PAGE = 10
@@ -55,23 +63,40 @@ export default function InventoryItemsSection() {
     },
   ])
 
-  const [search, setSearch] = useState("")
-  const [selectedFilter, setSelectedFilter] = useState<InventoryFilter>("All")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<InventorySortBy>("latest")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  const { filters, update, hasFilters, clearFilters } = useInventoryFilters()
+  const { search: urlSearch, status: selectedFilter, page: currentPage, sortBy, sortOrder } = filters
+  // The box updates per keystroke; the URL (and so the request) follows once typing pauses.
+  const [search, setSearch] = useState(urlSearch)
+  const [syncedUrlSearch, setSyncedUrlSearch] = useState(urlSearch)
+  if (syncedUrlSearch !== urlSearch) {
+    setSyncedUrlSearch(urlSearch)
+    setSearch(urlSearch)
+  }
   const [modal, setModal] = useState<ModalState>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   // Bumped after a successful add to clear the add form.
   const [addFormKey, setAddFormKey] = useState(0)
-  const debouncedSearch = useDebouncedValue(search.trim())
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (search.trim() !== urlSearch) update({ search: search.trim() })
+    }, 400)
+    return () => clearTimeout(timeout)
+  }, [search, urlSearch, update])
+  const warehouses = useSelectableWarehouses(true).warehouses
+  const categories = useSelectableCategories()
 
   const listParams = {
     page: currentPage,
     pageSize: ITEMS_PER_PAGE,
-    name: debouncedSearch || undefined,
+    name: urlSearch || undefined,
     statusId: inventoryStatusIds[selectedFilter] ?? 0,
     filter: getInventoryFilter({ value: sortBy, order: sortOrder }),
+    warehouseId: Number(filters.warehouse) || undefined,
+    categoryId: Number(filters.category) || undefined,
+    minQuantity: filters.minQuantity === "" ? undefined : Number(filters.minQuantity),
+    maxQuantity: filters.maxQuantity === "" ? undefined : Number(filters.maxQuantity),
+    dateFrom: filters.dateFrom || undefined,
+    dateTo: filters.dateTo || undefined,
   }
   const { data: inventoriesResponse, isLoading, error } = useInventories(listParams)
   const { data: statusCounts, isError: statusCountsError } = useInventoryStatusCounts()
@@ -153,14 +178,7 @@ export default function InventoryItemsSection() {
           </>
         }
         search={
-          <SearchInput
-            value={search}
-            onChange={(value) => {
-              setSearch(value)
-              setCurrentPage(1)
-            }}
-            placeholder="Search by name, warehouse, status or ID"
-          />
+          <SearchInput value={search} onChange={setSearch} placeholder="Search by name, warehouse, status or ID" />
         }
         filters={
           <>
@@ -168,25 +186,67 @@ export default function InventoryItemsSection() {
               aria-label="Filter inventory by status"
               options={statusFilters.map((filter) => ({
                 value: filter.label,
-                label: filter.label === "All" ? "All" : capitalize(filter.label),
+                label: titleCase(filter.label),
                 count: countsAvailable ? filter.count : undefined,
               }))}
               value={selectedFilter}
-              onChange={(filter) => {
-                setSelectedFilter(filter as InventoryFilter)
-                setCurrentPage(1)
-              }}
+              onChange={(status) => update({ status })}
             />
+            <CountFilterSelect
+              aria-label="Filter inventory by warehouse"
+              options={[
+                { value: "", label: "All Warehouses" },
+                ...warehouses.map((warehouse) => ({
+                  value: String(warehouse.id),
+                  label: titleCase(warehouse.name),
+                  count: warehouse.stocks,
+                })),
+              ]}
+              value={filters.warehouse}
+              onChange={(warehouse) => update({ warehouse })}
+            />
+            <CountFilterSelect
+              aria-label="Filter inventory by category"
+              options={[
+                { value: "", label: "All Categories" },
+                ...categories.map((category) => ({ value: String(category.id), label: titleCase(category.type) })),
+              ]}
+              value={filters.category}
+              onChange={(category) => update({ category })}
+            />
+            <QuantityRangeFilter
+              min={filters.minQuantity}
+              max={filters.maxQuantity}
+              onChange={({ min, max }) => update({ minQuantity: min, maxQuantity: max })}
+            />
+            <div className="w-44">
+              <DatePickerSimple
+                label="Arrived from"
+                value={filters.dateFrom}
+                maxDate={filters.dateTo ? new Date(`${filters.dateTo}T00:00:00`) : undefined}
+                onChange={(dateFrom) => update({ dateFrom })}
+              />
+            </div>
+            <div className="w-44">
+              <DatePickerSimple
+                label="Arrived to"
+                value={filters.dateTo}
+                minDate={filters.dateFrom ? new Date(`${filters.dateFrom}T00:00:00`) : undefined}
+                onChange={(dateTo) => update({ dateTo })}
+              />
+            </div>
             <SortPopover
               value={sortBy}
               order={sortOrder}
               options={inventorySortOptions}
-              onChange={(value, order) => {
-                setSortBy(value)
-                setSortOrder(order)
-                setCurrentPage(1)
-              }}
+              onChange={(value, order) => update({ sortBy: value, sortOrder: order })}
             />
+            {hasFilters && (
+              <Button className="text-muted-foreground" onClick={clearFilters} type="button" variant="ghost">
+                <X className="h-4 w-4" />
+                Clear filters
+              </Button>
+            )}
           </>
         }
       />
@@ -207,7 +267,11 @@ export default function InventoryItemsSection() {
           Showing {inventories.length} of {rows} inventory items
         </span>
         <div className="flex">
-          <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => update({ page })}
+          />
         </div>
       </div>
 
@@ -277,6 +341,7 @@ function exportInventory(items: InventoryListItem[]) {
       { header: "Product", value: (item) => item.name },
       { header: "Available", value: (item) => item.quantity },
       { header: "Reorder point", value: (item) => item.reorderPoint },
+      { header: "Category", value: (item) => item.categoryName },
       { header: "Warehouse", value: (item) => item.warehouseName },
       { header: "Status", value: (item) => item.status },
       { header: "Date arrived", value: (item) => formatDate(item.dateArrived) },

@@ -14,6 +14,11 @@ export function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
+/** "low stock" -> "Low Stock". */
+export function titleCase(value: string) {
+  return value.replace(/(^|\s)(\S)/g, (_, space: string, letter: string) => space + letter.toUpperCase())
+}
+
 export const statusDotColors: Record<string, string> = {
   critical: "bg-destructive",
   available: "bg-green-600",

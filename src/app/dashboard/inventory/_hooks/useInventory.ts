@@ -14,6 +14,7 @@ import {
   updateInventory,
 } from "@/services/inventoryApi"
 import { fetchInventoryForecast } from "@/services/dashboardApi"
+import { fetchCategories } from "@/services/categoryApi"
 import { fetchWarehouses } from "@/services/warehouseApi"
 import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
 import { invalidateInventories } from "@/lib/query/queryInvalidation"
@@ -67,6 +68,17 @@ export function useSelectableWarehouses(enabled: boolean) {
     warehouses: query.data?.items ?? [],
     isLoading: query.isLoading,
   }
+}
+
+const ALL_CATEGORIES = { page: 1, pageSize: 1000 }
+
+/** Categories the list can be filtered by. Shares its cache entry with the product form. */
+export function useSelectableCategories() {
+  const query = useQuery({
+    queryKey: queryKeys.categories.all(ALL_CATEGORIES),
+    queryFn: () => fetchCategories(ALL_CATEGORIES),
+  })
+  return query.data?.items ?? []
 }
 
 /** Stock movements and damage reports for one item, loaded only while its details are open. */
@@ -125,6 +137,7 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
           warehouseId: payload.warehouseId,
           warehouseName: payload.warehouseName ?? "Pending...",
           status: "pending",
+          categoryName: "Pending...",
           dateArrived: payload.dateArrived,
         }
         return {

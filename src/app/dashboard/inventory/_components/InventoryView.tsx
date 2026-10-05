@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import ForecastRiskCard from "./ForecastRiskCard"
 import InventoryItemsSection from "./InventoryItemsSection"
 import MovementVelocity from "./MovementVelocity"
@@ -16,7 +17,10 @@ export default function InventoryView() {
           <MovementVelocity />
         </section>
 
-        <InventoryItemsSection />
+        {/* useSearchParams in the section needs a Suspense boundary */}
+        <Suspense>
+          <InventoryItemsSection />
+        </Suspense>
       </div>
     </main>
   )

@@ -7,6 +7,7 @@ export interface InventoryListItem {
   warehouseId: number
   warehouseName: string
   status: string
+  categoryName: string
   dateArrived: string
 }
 
@@ -59,6 +60,15 @@ export interface FetchInventoriesParams {
   pageSize?: number
   name?: string
   filter?: number
+  /** 0 or undefined: any warehouse. */
+  warehouseId?: number
+  /** 0 or undefined: any category. */
+  categoryId?: number
+  minQuantity?: number
+  maxQuantity?: number
+  /** Date arrived range, yyyy-MM-dd, both ends inclusive. */
+  dateFrom?: string
+  dateTo?: string
 }
 
 export interface InsertInventoryPayload {
