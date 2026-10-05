@@ -23,7 +23,14 @@ interface OrderRowProps {
   onChangeStatus: (orderStatusId: number) => void
 }
 
-export default function OrderRow({ order, columnCount, statusOptions, isExpanded, onExpandedChange, onChangeStatus }: OrderRowProps) {
+export default function OrderRow({
+  order,
+  columnCount,
+  statusOptions,
+  isExpanded,
+  onExpandedChange,
+  onChangeStatus,
+}: OrderRowProps) {
   const statusLabel = normalizeOrderText(order.orderStatus)
   const isWalkinOrder = normalizeOrderText(order.orderType).toLowerCase() === 'walkin'
   const isShippedOrder = statusLabel.toLowerCase() === 'shipped'
@@ -31,10 +38,7 @@ export default function OrderRow({ order, columnCount, statusOptions, isExpanded
   const statusActions = statusOptions
     .filter((status) => {
       const actionStatus = status.label.toLowerCase()
-      return !(
-        (isWalkinOrder && actionStatus === 'shipped') ||
-        (isShippedOrder && actionStatus === 'processing')
-      )
+      return !((isWalkinOrder && actionStatus === 'shipped') || (isShippedOrder && actionStatus === 'processing'))
     })
     .map((status) => ({ label: status.label, value: String(status.id) }))
 

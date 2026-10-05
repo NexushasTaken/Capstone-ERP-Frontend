@@ -15,22 +15,29 @@ export default function PredictedStockouts() {
   const [stockoutCurrentPage, setStockoutCurrentPage] = useState(1)
   const [isShowingForcedForecast, setIsShowingForcedForecast] = useState(false)
   const stockoutItemsPerPage = 10
-  const forecastParams = { page: stockoutCurrentPage, pageSize: stockoutItemsPerPage }
+  const forecastParams = {
+    page: stockoutCurrentPage,
+    pageSize: stockoutItemsPerPage,
+  }
   const queryClient = useQueryClient()
   const forecastQuery = useQuery({
     queryKey: queryKeys.dashboard.inventoryForecast(forecastParams),
     queryFn: ({ signal }) => fetchInventoryForecast(forecastParams, signal),
   })
   const forceForecastMutation = useMutation({
-    mutationFn: () => fetchInventoryForecast({
-      forceForecast: true,
-      page: 1,
-      pageSize: stockoutItemsPerPage,
-    }),
+    mutationFn: () =>
+      fetchInventoryForecast({
+        forceForecast: true,
+        page: 1,
+        pageSize: stockoutItemsPerPage,
+      }),
     onSuccess: (forecast) => {
       queryClient.setQueryData(
-        queryKeys.dashboard.inventoryForecast({ page: 1, pageSize: stockoutItemsPerPage }),
-        forecast
+        queryKeys.dashboard.inventoryForecast({
+          page: 1,
+          pageSize: stockoutItemsPerPage,
+        }),
+        forecast,
       )
       setStockoutCurrentPage(1)
       setIsShowingForcedForecast(true)
@@ -105,9 +112,7 @@ export default function PredictedStockouts() {
                 <tr className="text-foreground" key={item.inventoryId}>
                   <td className="px-5 py-4 font-medium capitalize">{item.name}</td>
                   <td className="px-4 py-4">{formatInventoryId(String(item.inventoryId))}</td>
-                  <td className="px-5 py-4 text-right text-muted-foreground">
-                    {formatDate(item.earliestStockOutDay)}
-                  </td>
+                  <td className="px-5 py-4 text-right text-muted-foreground">{formatDate(item.earliestStockOutDay)}</td>
                 </tr>
               ))
             )}
@@ -120,12 +125,12 @@ export default function PredictedStockouts() {
           Showing {forecastQuery.isLoading || loadError ? 0 : predictedStockouts.length} of{' '}
           {forecastQuery.isLoading || loadError ? 0 : forecastWarningCount} predicted stockouts
         </span>
-        <div className='flex'>
-        <TablePagination
-          currentPage={effectivePage}
-          totalPages={stockoutTotalPages}
-          onPageChange={setStockoutCurrentPage}
-        />
+        <div className="flex">
+          <TablePagination
+            currentPage={effectivePage}
+            totalPages={stockoutTotalPages}
+            onPageChange={setStockoutCurrentPage}
+          />
         </div>
       </div>
     </article>

@@ -16,12 +16,7 @@ interface ProfileModalProps {
   onClose: () => void
 }
 
-export default function ProfileModal({
-  isOpen,
-  profile,
-  onClose,
-}: ProfileModalProps) {
-
+export default function ProfileModal({ isOpen, profile, onClose }: ProfileModalProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
   async function handleLogout() {
@@ -57,7 +52,12 @@ export default function ProfileModal({
     >
       <div className="flex items-center justify-between">
         <ModalTitle className="text-xl font-semibold text-foreground">Profile</ModalTitle>
-        <button aria-label="Close profile" className="rounded-lg p-2 text-foreground hover:bg-accent" onClick={onClose} type="button">
+        <button
+          aria-label="Close profile"
+          className="rounded-lg p-2 text-foreground hover:bg-accent"
+          onClick={onClose}
+          type="button"
+        >
           <X className="h-5 w-5" />
         </button>
       </div>
@@ -69,7 +69,7 @@ export default function ProfileModal({
         </div>
       </div>
 
-      <div className='flex mt-8 gap-2'>
+      <div className="flex mt-8 gap-2">
         {/* <button */}
         {/*   aria-label="Settings" */}
         {/*   className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-medium text-primary-foreground cursor-pointer transition-all hover:scale-105 duration-300" */}

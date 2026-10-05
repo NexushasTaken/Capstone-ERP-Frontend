@@ -19,9 +19,11 @@ const sidebarParams = { page: 1, pageSize: AUDIT_LOG_SIDEBAR_LIMIT }
 
 export default function AuditLogSidebar({ onNavigate }: { onNavigate: () => void }) {
   // Polling picks up logs created by other users; our own changes refresh via the MutationCache.
-  const { data, isLoading, error } = useAuditLogs(sidebarParams, { refetchInterval: 30_000 })
+  const { data, isLoading, error } = useAuditLogs(sidebarParams, {
+    refetchInterval: 30_000,
+  })
   const [now, setNow] = useState(() => Date.now())
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   // Keeps "5m"-style times current even when the data itself hasn't changed.
   useEffect(() => {
@@ -32,10 +34,12 @@ export default function AuditLogSidebar({ onNavigate }: { onNavigate: () => void
   const logs = data?.items ?? []
 
   return (
-    <section className={cn(
-      "flex w-full min-h-96 flex-col overflow-hidden rounded-2xl border border-border bg-muted/50 p-3",
-      pathname === "/dashboard/audit-logs" && "hidden"
-    )}>
+    <section
+      className={cn(
+        'flex w-full min-h-96 flex-col overflow-hidden rounded-2xl border border-border bg-muted/50 p-3',
+        pathname === '/dashboard/audit-logs' && 'hidden',
+      )}
+    >
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
           <span className="text-sm font-medium text-foreground">Audit logs</span>

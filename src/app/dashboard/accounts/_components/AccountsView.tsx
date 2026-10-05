@@ -42,7 +42,7 @@ export default function AccountsView() {
   const pageCount = Math.max(1, Math.ceil(filteredAccounts.length / ACCOUNT_ITEMS_PER_PAGE))
   const paginatedAccounts = filteredAccounts.slice(
     (currentPage - 1) * ACCOUNT_ITEMS_PER_PAGE,
-    currentPage * ACCOUNT_ITEMS_PER_PAGE
+    currentPage * ACCOUNT_ITEMS_PER_PAGE,
   )
   const closeModal = () => setModal(null)
 
@@ -75,10 +75,7 @@ export default function AccountsView() {
           />
 
           {can(role, 'account:create') && (
-            <Button
-              onClick={() => setModal({ type: 'create' })}
-              type="button"
-            >
+            <Button onClick={() => setModal({ type: 'create' })} type="button">
               <Plus className="h-4 w-4" />
               Create account
             </Button>

@@ -23,7 +23,12 @@ export default function CredentialsForm({ credentials }: { credentials: Credenti
     mutationFn: updateAccountCredentials,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.profile.info })
-      setForm((prev) => ({ ...prev, currentPassword: '', password: '', confirmPassword: '' }))
+      setForm((prev) => ({
+        ...prev,
+        currentPassword: '',
+        password: '',
+        confirmPassword: '',
+      }))
       toast.success('Account settings updated successfully')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to update account settings'),
@@ -31,14 +36,10 @@ export default function CredentialsForm({ credentials }: { credentials: Credenti
 
   const passwordProvided = form.password !== '' || form.confirmPassword !== ''
   const passwordValid =
-    !passwordProvided ||
-    (form.password.length >= MIN_PASSWORD_LENGTH && form.password === form.confirmPassword)
+    !passwordProvided || (form.password.length >= MIN_PASSWORD_LENGTH && form.password === form.confirmPassword)
   const emailChanged = form.email.trim() !== credentials.email
   const canSubmit =
-    form.currentPassword !== '' &&
-    form.email.trim() !== '' &&
-    passwordValid &&
-    (emailChanged || passwordProvided)
+    form.currentPassword !== '' && form.email.trim() !== '' && passwordValid && (emailChanged || passwordProvided)
 
   function updateField(field: keyof typeof form) {
     return (value: string) => setForm((prev) => ({ ...prev, [field]: value }))

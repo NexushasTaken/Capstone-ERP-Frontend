@@ -33,7 +33,9 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
             </span>
             <div className="flex min-w-0 flex-col">
               <span className="text-xs">Category</span>
-              <span className="truncate text-base font-semibold capitalize">{product?.categoryName ?? 'Uncategorized'}</span>
+              <span className="truncate text-base font-semibold capitalize">
+                {product?.categoryName ?? 'Uncategorized'}
+              </span>
             </div>
           </div>
 
@@ -43,9 +45,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
             </span>
             <div className="flex min-w-0 flex-col">
               <span className="text-xs">Price</span>
-              <span className="truncate text-base font-semibold">
-                {product ? formatPeso(product.price) : ''}
-              </span>
+              <span className="truncate text-base font-semibold">{product ? formatPeso(product.price) : ''}</span>
             </div>
           </div>
         </div>
@@ -59,9 +59,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="block text-xs text-muted-foreground">Created at</span>
-              <span className="font-semibold text-foreground">
-                {product ? formatDate(product.created_At) : ''}
-              </span>
+              <span className="font-semibold text-foreground">{product ? formatDate(product.created_At) : ''}</span>
             </div>
             {/* createdBy / updatedBy / updatedAt dto */}
           </div>

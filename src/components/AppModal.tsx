@@ -13,19 +13,19 @@ interface AppModalProps {
 }
 
 // shadcn Dialog: full-screen on mobile, centered on desktop. Escape or a backdrop click calls onClose.
-export default function AppModal({
-  open,
-  onClose,
-  children,
-  className,
-}: AppModalProps) {
+export default function AppModal({ open, onClose, children, className }: AppModalProps) {
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose() }}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onClose()
+      }}
+    >
       <DialogContent
         showCloseButton={false}
         className={cn(
           'h-full w-full max-w-none gap-0 rounded-none bg-background p-0 text-base sm:max-w-none lg:rounded-lg xl:h-auto',
-          className
+          className,
         )}
       >
         {children}
@@ -38,7 +38,15 @@ export default function AppModal({
 export const ModalTitle = DialogTitle
 
 // Small caption (e.g. an ID) above the title, close button on the right.
-export function ModalHeader({ subtitle, title, onClose }: { subtitle?: ReactNode; title: ReactNode; onClose: () => void }) {
+export function ModalHeader({
+  subtitle,
+  title,
+  onClose,
+}: {
+  subtitle?: ReactNode
+  title: ReactNode
+  onClose: () => void
+}) {
   return (
     <div className="flex w-full items-center justify-between gap-2 border-b border-border p-4">
       <div className="flex flex-col">
@@ -74,11 +82,7 @@ export function ModalActions({
 }: ModalActionsProps) {
   return (
     <div className="flex justify-end gap-2 border-t border-border p-4">
-      <Button
-        onClick={onCancel}
-        type="button"
-        variant="outline"
-      >
+      <Button onClick={onCancel} type="button" variant="outline">
         Cancel
       </Button>
       <Button

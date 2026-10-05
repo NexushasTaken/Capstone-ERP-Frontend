@@ -8,7 +8,10 @@ interface SaleEnvelope {
   salesData: SaleListContent
 }
 
-export async function fetchSales(params: FetchSalesParams = {}, signal?: AbortSignal): Promise<{
+export async function fetchSales(
+  params: FetchSalesParams = {},
+  signal?: AbortSignal,
+): Promise<{
   items: Sale[]
   pageCount: number
   rows: number

@@ -24,9 +24,7 @@ export default function EditAccountRoleModal({ account, disabled, onClose, onSub
       <ModalHeader subtitle={formatAccountId(account.id)} title="Edit account" onClose={onClose} />
       <ModalBody>
         <div className="flex flex-col">
-          <span className="font-medium text-foreground capitalize">
-            {`${account.lastName}, ${account.firstName}`}
-          </span>
+          <span className="font-medium text-foreground capitalize">{`${account.lastName}, ${account.firstName}`}</span>
           <span className="text-sm text-muted-foreground">{account.email}</span>
         </div>
 

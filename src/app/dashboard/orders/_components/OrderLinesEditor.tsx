@@ -2,15 +2,7 @@ import { Plus, Trash2 } from 'lucide-react'
 import EntityDropdown from '@/components/EntityDropdown'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatPeso } from '@/lib/format'
 import type { getOrderLineRows } from '@/lib/helpers/orderHelpers'
 import type { OrderLineForm } from '@/types/order'
@@ -92,16 +84,14 @@ export default function OrderLinesEditor({
                         (product) =>
                           !lines.some(
                             (otherLine, otherIndex) =>
-                              otherIndex !== index && Number(otherLine.productId) === product.id
-                          )
+                              otherIndex !== index && Number(otherLine.productId) === product.id,
+                          ),
                       )}
                       placeholder="Select product"
                       searchPlaceholder="Search products..."
                       value={line.product?.name ?? ''}
                     />
-                    {line.product ? (
-                      <span className="text-xs text-muted-foreground">ID: {line.product.id}</span>
-                    ) : null}
+                    {line.product ? <span className="text-xs text-muted-foreground">ID: {line.product.id}</span> : null}
                   </div>
                 </TableCell>
                 <TableCell className="text-center text-foreground">{formatPeso(line.unitPrice)}</TableCell>

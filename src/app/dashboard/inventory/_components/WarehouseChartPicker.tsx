@@ -25,22 +25,16 @@ interface WarehouseChartPickerProps {
 export default function WarehouseChartPicker({ warehouses, selectedIds, onToggle }: WarehouseChartPickerProps) {
   const [search, setSearch] = useState('')
   const searchValue = search.toLowerCase()
-  const filteredWarehouses = warehouses.filter((warehouse) =>
-    search === '' ||
-    warehouse.name.toLowerCase().includes(searchValue) ||
-    warehouse.address.toLowerCase().includes(searchValue)
+  const filteredWarehouses = warehouses.filter(
+    (warehouse) =>
+      search === '' ||
+      warehouse.name.toLowerCase().includes(searchValue) ||
+      warehouse.address.toLowerCase().includes(searchValue),
   )
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            type="button"
-            variant="outline"
-          />
-        }
-      >
+      <DropdownMenuTrigger render={<Button type="button" variant="outline" />}>
         <CheckSquare className="h-4 w-4" />
         Select charts
       </DropdownMenuTrigger>
@@ -65,9 +59,7 @@ export default function WarehouseChartPicker({ warehouses, selectedIds, onToggle
 
           <div className="max-h-72 overflow-y-auto">
             {filteredWarehouses.length === 0 ? (
-              <div className="px-2 py-3 text-sm text-muted-foreground">
-                No warehouses found.
-              </div>
+              <div className="px-2 py-3 text-sm text-muted-foreground">No warehouses found.</div>
             ) : (
               filteredWarehouses.map((warehouse) => {
                 const checked = selectedIds.includes(warehouse.id)
@@ -88,9 +80,7 @@ export default function WarehouseChartPicker({ warehouses, selectedIds, onToggle
                     </span>
                     <span className="flex min-w-0 flex-col">
                       <span className="truncate capitalize">{warehouse.name}</span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {warehouse.address}
-                      </span>
+                      <span className="truncate text-xs text-muted-foreground">{warehouse.address}</span>
                     </span>
                   </DropdownMenuItem>
                 )

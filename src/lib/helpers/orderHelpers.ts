@@ -41,10 +41,7 @@ export function orderStatusDotClass(status: string | null | undefined) {
   return 'bg-muted-foreground'
 }
 
-export function getOrderLineRows(
-  orderLines: { productId: string; quantity: string }[],
-  products: ProductListItem[]
-) {
+export function getOrderLineRows(orderLines: { productId: string; quantity: string }[], products: ProductListItem[]) {
   return orderLines.map((line) => {
     const product = products.find((item) => item.id === Number(line.productId)) ?? null
     const quantity = Number(line.quantity) || 0

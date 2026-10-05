@@ -56,7 +56,9 @@ export function getDateRangeMonthLabels(range: DateRange | undefined, itemCount:
 
   return Array.from({ length: itemCount }, (_, index) => {
     const month = (startMonth + index) % 12
-    return new Date(currentYear, month, 1).toLocaleString('en-US', { month: 'short' })
+    return new Date(currentYear, month, 1).toLocaleString('en-US', {
+      month: 'short',
+    })
   })
 }
 

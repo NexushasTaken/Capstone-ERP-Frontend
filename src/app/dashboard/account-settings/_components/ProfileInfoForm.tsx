@@ -10,13 +10,22 @@ import { SaveButton, SettingsField, SettingsHeading } from './SettingsField'
 
 export default function ProfileInfoForm({ currentUser }: { currentUser: CurrentUser }) {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState({ firstName: currentUser.firstName, lastName: currentUser.lastName })
+  const [form, setForm] = useState({
+    firstName: currentUser.firstName,
+    lastName: currentUser.lastName,
+  })
 
   const updateProfileMutation = useMutation({
     mutationFn: updateProfileInfo,
     onSuccess: (_result, variables) => {
       queryClient.setQueryData<CurrentUser | null>(queryKeys.auth.currentUser, (current) =>
-        current ? { ...current, firstName: variables.firstName, lastName: variables.lastName } : current
+        current
+          ? {
+              ...current,
+              firstName: variables.firstName,
+              lastName: variables.lastName,
+            }
+          : current,
       )
       toast.success('Profile information updated successfully')
     },

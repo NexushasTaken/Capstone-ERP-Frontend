@@ -1,13 +1,11 @@
 import type { DriverListItem } from '@/types/driver'
-import type {
-  DriverListContent,
-  FetchDriversParams,
-  InsertDriverPayload,
-  UpdateDriverPayload,
-} from '@/types/driver'
+import type { DriverListContent, FetchDriversParams, InsertDriverPayload, UpdateDriverPayload } from '@/types/driver'
 import { ApiEnvelope, ApiEnvelopeNoContent } from '@/types/api'
 
-export async function fetchDrivers(params: FetchDriversParams = {}, signal?: AbortSignal): Promise<{
+export async function fetchDrivers(
+  params: FetchDriversParams = {},
+  signal?: AbortSignal,
+): Promise<{
   items: DriverListItem[]
   pageCount: number
   rows: number

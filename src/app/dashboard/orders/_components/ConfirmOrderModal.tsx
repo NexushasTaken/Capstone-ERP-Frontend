@@ -1,15 +1,7 @@
 import AppModal, { ModalTitle } from '@/components/AppModal'
 import CloseButton from '@/components/CloseButton'
 import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatPeso } from '@/lib/format'
 import type { getOrderLineRows } from '@/lib/helpers/orderHelpers'
 import DetailItem from './DetailItem'
@@ -97,18 +89,10 @@ export default function ConfirmOrderModal({
       </div>
 
       <div className="flex justify-end gap-2 border-t border-border p-5">
-        <Button
-          onClick={onBack}
-          type="button"
-          variant="outline"
-        >
+        <Button onClick={onBack} type="button" variant="outline">
           Back
         </Button>
-        <Button
-          disabled={disabled}
-          onClick={onConfirm}
-          type="button"
-        >
+        <Button disabled={disabled} onClick={onConfirm} type="button">
           Confirm order
         </Button>
       </div>

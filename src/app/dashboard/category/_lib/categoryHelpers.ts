@@ -18,13 +18,12 @@ export function filterAndSortCategories(
   categories: CategoryListItem[],
   search: string,
   sortBy: CategorySortBy,
-  sortOrder: 'asc' | 'desc'
+  sortOrder: 'asc' | 'desc',
 ) {
   const searchValue = search.trim().toLowerCase()
   const matched = searchValue
-    ? categories.filter((category) =>
-        category.type.toLowerCase().includes(searchValue) ||
-        String(category.id).includes(searchValue)
+    ? categories.filter(
+        (category) => category.type.toLowerCase().includes(searchValue) || String(category.id).includes(searchValue),
       )
     : categories
   const direction = sortOrder === 'asc' ? 1 : -1

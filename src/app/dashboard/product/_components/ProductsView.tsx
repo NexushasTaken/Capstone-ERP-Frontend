@@ -31,7 +31,8 @@ import ProductFormModal from './ProductFormModal'
 import ProductsTable from './ProductsTable'
 
 // The selected filter keeps a solid fill; the stock pressed state (bg-muted) is too faint here.
-const selectedFilterClass = 'aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90'
+const selectedFilterClass =
+  'aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90'
 
 // Which modal is open, and for which product.
 type ModalState =
@@ -60,10 +61,7 @@ export default function ProductsView() {
   const products = (list.data?.items ?? []).filter((product) => matchesFilter(product, selectedFilter))
   const displayedProducts = sortProducts(products, sortBy, sortOrder)
   const pageCount = Math.max(1, Math.ceil(displayedProducts.length / ITEMS_PER_PAGE))
-  const paginatedProducts = displayedProducts.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  )
+  const paginatedProducts = displayedProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
   const countByFilter: Record<ProductCategoryFilter, number> = {
     Categorized: categorizedItems?.filter((product) => matchesFilter(product, 'Categorized')).length ?? 0,
     Uncategorized: uncategorizedItems?.filter((product) => matchesFilter(product, 'Uncategorized')).length ?? 0,
@@ -123,10 +121,7 @@ export default function ProductsView() {
           </ToggleGroup>
           <ExportCsvButton onExport={() => exportProducts(displayedProducts)} />
           {can(role, 'product:add') && (
-            <Button
-              onClick={() => setModal({ type: 'add' })}
-              type="button"
-            >
+            <Button onClick={() => setModal({ type: 'add' })} type="button">
               <Plus className="h-4 w-4" />
               Add product
             </Button>
@@ -194,11 +189,17 @@ function exportProducts(products: ProductListItem[]) {
     products,
     [
       { header: 'Product ID', value: (product) => formatProductId(product.id) },
-      { header: 'Category', value: (product) => product.categoryName ?? 'Uncategorized' },
+      {
+        header: 'Category',
+        value: (product) => product.categoryName ?? 'Uncategorized',
+      },
       { header: 'Product name', value: (product) => product.name },
       { header: 'Price', value: (product) => product.price },
-      { header: 'Created at', value: (product) => formatDate(product.created_At) },
+      {
+        header: 'Created at',
+        value: (product) => formatDate(product.created_At),
+      },
     ],
-    'products'
+    'products',
   )
 }

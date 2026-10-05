@@ -19,10 +19,7 @@ import CategoryFormModal from './CategoryFormModal'
 
 // Which modal is open, and for which category.
 type ModalState =
-  | { type: 'add' }
-  | { type: 'edit'; category: CategoryListItem }
-  | { type: 'delete'; category: CategoryListItem }
-  | null
+  { type: 'add' } | { type: 'edit'; category: CategoryListItem } | { type: 'delete'; category: CategoryListItem } | null
 
 export default function CategoriesView() {
   const { data: currentUser } = useCurrentUser()
@@ -45,7 +42,10 @@ export default function CategoriesView() {
 
   function handleSubmitCategory(categoryName: string) {
     if (modal?.type === 'edit') {
-      mutations.updateCategory.mutate({ id: modal.category.id, type: categoryName })
+      mutations.updateCategory.mutate({
+        id: modal.category.id,
+        type: categoryName,
+      })
     } else {
       setCurrentPage(1)
       mutations.addCategory.mutate({ categoryName, optimisticId: -Date.now() })
@@ -75,10 +75,7 @@ export default function CategoriesView() {
           />
 
           {can(role, 'category:add') && (
-            <Button
-              onClick={() => setModal({ type: 'add' })}
-              type="button"
-            >
+            <Button onClick={() => setModal({ type: 'add' })} type="button">
               <Plus className="h-4 w-4" />
               Add category
             </Button>

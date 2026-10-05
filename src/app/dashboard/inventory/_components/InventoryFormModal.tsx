@@ -57,11 +57,7 @@ export default function InventoryFormModal({ open, item, disabled, onClose, onSu
   const canSubmit =
     !disabled &&
     commonFieldsValid &&
-    (isEdit || (
-      form.quantity.trim() !== '' &&
-      Number(form.quantity) > 0 &&
-      form.dateArrived.trim() !== ''
-    ))
+    (isEdit || (form.quantity.trim() !== '' && Number(form.quantity) > 0 && form.dateArrived.trim() !== ''))
 
   function updateField(field: keyof typeof form, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))

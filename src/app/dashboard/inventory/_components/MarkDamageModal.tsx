@@ -23,7 +23,11 @@ interface MarkDamageModalProps {
 
 // "Current item" damage is taken out of stock; "return item" damage only records a report.
 export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: MarkDamageModalProps) {
-  const [form, setForm] = useState<{ quantity: string; reason: string; damagedType: 1 | 2 }>({
+  const [form, setForm] = useState<{
+    quantity: string
+    reason: string
+    damagedType: 1 | 2
+  }>({
     quantity: '',
     reason: '',
     damagedType: 1,
@@ -31,7 +35,8 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
   const quantity = Number(form.quantity)
   const canSubmit =
     item.id > 0 &&
-    Number.isSafeInteger(quantity) && quantity > 0 &&
+    Number.isSafeInteger(quantity) &&
+    quantity > 0 &&
     (form.damagedType === 2 || quantity <= item.quantity) &&
     form.reason.trim() !== ''
   const close = () => {
@@ -41,32 +46,47 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
   return (
     <AppModal open onClose={close} className="flex max-h-fit flex-col lg:max-w-lg">
       <ModalHeader subtitle={formatInventoryId(String(item.id))} title="Mark as damage" onClose={close} />
-      <form onSubmit={(event) => {
-        event.preventDefault()
-        if (!canSubmit || isPending) return
-        onSubmit({
-          id: item.id,
-          damagedType: form.damagedType,
-          quantity,
-          reason: form.reason.trim(),
-          created_At: new Date().toISOString(),
-        })
-      }}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          if (!canSubmit || isPending) return
+          onSubmit({
+            id: item.id,
+            damagedType: form.damagedType,
+            quantity,
+            reason: form.reason.trim(),
+            created_At: new Date().toISOString(),
+          })
+        }}
+      >
         <div className="flex flex-col gap-4 p-4">
           <p className="text-sm text-muted-foreground">
             {item.name} · {formatNumber(item.quantity)} available.{' '}
-            {form.damagedType === 1 ? 'Damaged quantity will be deducted from stock.' : 'Returned damage does not change current stock.'}
+            {form.damagedType === 1
+              ? 'Damaged quantity will be deducted from stock.'
+              : 'Returned damage does not change current stock.'}
           </p>
           <div className="flex flex-col gap-1 text-sm text-foreground">
-            <label htmlFor="damage-type" className="text-xs text-muted-foreground">Damage type</label>
-            <Select items={damageTypeOptions} value={form.damagedType} disabled={isPending} onValueChange={(value) => {
-              if (value === 1 || value === 2) setForm((previous) => ({ ...previous, damagedType: value }))
-            }}>
+            <label htmlFor="damage-type" className="text-xs text-muted-foreground">
+              Damage type
+            </label>
+            <Select
+              items={damageTypeOptions}
+              value={form.damagedType}
+              disabled={isPending}
+              onValueChange={(value) => {
+                if (value === 1 || value === 2) setForm((previous) => ({ ...previous, damagedType: value }))
+              }}
+            >
               <SelectTrigger id="damage-type" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {damageTypeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                {damageTypeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -80,7 +100,12 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
               step={1}
               disabled={isPending}
               value={form.quantity}
-              onChange={(event) => setForm((previous) => ({ ...previous, quantity: event.target.value }))}
+              onChange={(event) =>
+                setForm((previous) => ({
+                  ...previous,
+                  quantity: event.target.value,
+                }))
+              }
             />
           </label>
           <label className="flex flex-col gap-1 text-sm text-foreground">
@@ -89,13 +114,20 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
               required
               disabled={isPending}
               value={form.reason}
-              onChange={(event) => setForm((previous) => ({ ...previous, reason: event.target.value }))}
+              onChange={(event) =>
+                setForm((previous) => ({
+                  ...previous,
+                  reason: event.target.value,
+                }))
+              }
               className="h-28 min-h-28 max-h-28 resize-none field-sizing-fixed overflow-y-auto"
             />
           </label>
         </div>
         <div className="flex justify-end gap-2 border-t border-border p-4">
-          <Button type="button" variant="outline" disabled={isPending} onClick={close}>Cancel</Button>
+          <Button type="button" variant="outline" disabled={isPending} onClick={close}>
+            Cancel
+          </Button>
           <Button type="submit" variant="destructive" disabled={!canSubmit || isPending}>
             {isPending ? 'Saving...' : 'Mark as damage'}
           </Button>

@@ -5,7 +5,14 @@ import type { AccountListItem } from '@/types/account'
 import type { StatusActionItem } from '@/types/statusAction'
 import { formatAccountId } from '../_lib/accountHelpers'
 
-const columns: DataTableColumn[] = ['Id', 'Role', 'First Name', 'Last Name', 'Email', { label: 'Action', className: 'text-right' }]
+const columns: DataTableColumn[] = [
+  'Id',
+  'Role',
+  'First Name',
+  'Last Name',
+  'Email',
+  { label: 'Action', className: 'text-right' },
+]
 
 interface AccountsTableProps {
   accounts: AccountListItem[]

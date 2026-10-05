@@ -14,12 +14,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { exportToCSV } from '@/lib/exportToCsv'
 import { formatDate } from '@/lib/format'
-import {
-  capitalize,
-  formatInventoryId,
-  getInventoryFilter,
-  inventorySortOptions,
-} from '@/lib/helpers/inventoryHelpers'
+import { capitalize, formatInventoryId, getInventoryFilter, inventorySortOptions } from '@/lib/helpers/inventoryHelpers'
 import { editDeleteActions } from '@/lib/helpers/statusActionHelpers'
 import { allowedActions, can } from '@/lib/permissions'
 import { queryKeys } from '@/lib/query/queryKeys'
@@ -32,7 +27,8 @@ import MarkDamageModal from './MarkDamageModal'
 import RestockModal from './RestockModal'
 
 // The selected filter keeps a solid fill; the stock pressed state (bg-muted) is too faint here.
-const selectedFilterClass = 'aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90'
+const selectedFilterClass =
+  'aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90'
 
 const ITEMS_PER_PAGE = 10
 
@@ -44,9 +40,10 @@ const inventoryStatusIds: Record<string, number> = {
 }
 
 // Which modal is open, and for which item. Adding has its own flag so its draft survives closing.
-type ModalState =
-  | { type: 'edit' | 'delete' | 'details' | 'damage' | 'restock'; item: InventoryListItem }
-  | null
+type ModalState = {
+  type: 'edit' | 'delete' | 'details' | 'damage' | 'restock'
+  item: InventoryListItem
+} | null
 
 export default function InventoryItemsSection() {
   const { data: currentUser } = useCurrentUser()
@@ -54,7 +51,12 @@ export default function InventoryItemsSection() {
   const inventoryActions = allowedActions(role, 'inventory', [
     ...editDeleteActions,
     { label: 'Restock', value: 'restock', icon: Plus },
-    { label: 'Mark as damage', value: 'damage', icon: AlertTriangle, variant: 'destructive' as const },
+    {
+      label: 'Mark as damage',
+      value: 'damage',
+      icon: AlertTriangle,
+      variant: 'destructive' as const,
+    },
   ])
 
   const [search, setSearch] = useState('')
@@ -84,14 +86,18 @@ export default function InventoryItemsSection() {
   const totalPages = Math.max(1, inventoriesResponse?.pageCount ?? 1)
   const countsAvailable = !!statusCounts && !statusCountsError
   const statusFilters = [
-    { label: 'All', count: statusCounts?.reduce((total, item) => total + item.count, 0) ?? 0 },
-    ...(statusCounts ?? []).map((item) => ({ label: item.status, count: item.count })),
+    {
+      label: 'All',
+      count: statusCounts?.reduce((total, item) => total + item.count, 0) ?? 0,
+    },
+    ...(statusCounts ?? []).map((item) => ({
+      label: item.status,
+      count: item.count,
+    })),
   ]
   const selectedFilterCount = statusFilters.find((filter) => filter.label === selectedFilter)?.count ?? 0
   // Show the latest copy of the selected item (e.g. after a restock) rather than the one clicked.
-  const modalItem = modal
-    ? inventories.find((item) => item.id === modal.item.id) ?? modal.item
-    : null
+  const modalItem = modal ? (inventories.find((item) => item.id === modal.item.id) ?? modal.item) : null
   const closeModal = () => setModal(null)
 
   function handleAction(action: string, item: InventoryListItem) {
@@ -106,7 +112,7 @@ export default function InventoryItemsSection() {
     setIsAddModalOpen(false)
     mutations.addInventory.mutate(
       { ...values, optimisticId: -Date.now() },
-      { onSuccess: () => setAddFormKey((key) => key + 1) }
+      { onSuccess: () => setAddFormKey((key) => key + 1) },
     )
   }
 
@@ -130,10 +136,17 @@ export default function InventoryItemsSection() {
   }
 
   return (
-    <section id="RawMaterials" className="relative flex w-full scroll-mt-6 flex-col rounded-2xl p-4 shadow-sm lg:p-5 border border-border">
+    <section
+      id="RawMaterials"
+      className="relative flex w-full scroll-mt-6 flex-col rounded-2xl p-4 shadow-sm lg:p-5 border border-border"
+    >
       <span id="Risks" className="absolute -top-6" aria-hidden="true" />
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <PageTitle as="h2" title="Inventory items" count={countsAvailable ? selectedFilterCount.toLocaleString() : '-'} />
+        <PageTitle
+          as="h2"
+          title="Inventory items"
+          count={countsAvailable ? selectedFilterCount.toLocaleString() : '-'}
+        />
 
         <div className="flex flex-wrap items-center gap-2">
           <SearchInput
@@ -178,10 +191,7 @@ export default function InventoryItemsSection() {
           />
 
           {can(role, 'inventory:add') && (
-            <Button
-              onClick={() => setIsAddModalOpen(true)}
-              type="button"
-            >
+            <Button onClick={() => setIsAddModalOpen(true)} type="button">
               <Plus className="h-4 w-4" />
               Add inventory
             </Button>
@@ -268,7 +278,10 @@ function exportInventory(items: InventoryListItem[]) {
   exportToCSV(
     items,
     [
-      { header: 'Inventory ID', value: (item) => formatInventoryId(String(item.id)) },
+      {
+        header: 'Inventory ID',
+        value: (item) => formatInventoryId(String(item.id)),
+      },
       { header: 'Product', value: (item) => item.name },
       { header: 'Available', value: (item) => item.quantity },
       { header: 'Reorder point', value: (item) => item.reorderPoint },
@@ -276,6 +289,6 @@ function exportInventory(items: InventoryListItem[]) {
       { header: 'Status', value: (item) => item.status },
       { header: 'Date arrived', value: (item) => formatDate(item.dateArrived) },
     ],
-    'inventory'
+    'inventory',
   )
 }

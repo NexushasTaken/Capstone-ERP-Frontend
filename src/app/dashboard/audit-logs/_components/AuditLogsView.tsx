@@ -91,12 +91,7 @@ export default function AuditLogsView() {
             onChange={withPageReset(setAction)}
           />
           {hasFilters && (
-            <Button
-              className="text-muted-foreground"
-              onClick={clearFilters}
-              type="button"
-              variant="ghost"
-            >
+            <Button className="text-muted-foreground" onClick={clearFilters} type="button" variant="ghost">
               <X className="h-4 w-4" />
               Clear filters
             </Button>

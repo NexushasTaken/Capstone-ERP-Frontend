@@ -10,57 +10,57 @@ interface DashboardShellProps {
 
 export default function DashboardShell({ children }: DashboardShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [showMenuButton, setShowMenuButton] = useState(true);
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showMenuButton, setShowMenuButton] = useState(true)
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const hideAfterDelay = () => {
       if (hideTimerRef.current) {
-        clearTimeout(hideTimerRef.current);
+        clearTimeout(hideTimerRef.current)
       }
 
       hideTimerRef.current = setTimeout(() => {
-        setShowMenuButton(false);
-      }, 2000);
-    };
+        setShowMenuButton(false)
+      }, 2000)
+    }
 
     const showMenuTemporarily = () => {
-      setShowMenuButton(true);
+      setShowMenuButton(true)
 
-      hideAfterDelay();
-    };
+      hideAfterDelay()
+    }
 
-    hideAfterDelay();
+    hideAfterDelay()
 
-    document.addEventListener("scroll", showMenuTemporarily, {
+    document.addEventListener('scroll', showMenuTemporarily, {
       capture: true,
       passive: true,
-    });
-    document.addEventListener("pointerdown", showMenuTemporarily, {
+    })
+    document.addEventListener('pointerdown', showMenuTemporarily, {
       capture: true,
       passive: true,
-    });
-    document.addEventListener("touchstart", showMenuTemporarily, {
+    })
+    document.addEventListener('touchstart', showMenuTemporarily, {
       capture: true,
       passive: true,
-    });
+    })
 
     return () => {
-      document.removeEventListener("scroll", showMenuTemporarily, {
+      document.removeEventListener('scroll', showMenuTemporarily, {
         capture: true,
-      });
-      document.removeEventListener("pointerdown", showMenuTemporarily, {
+      })
+      document.removeEventListener('pointerdown', showMenuTemporarily, {
         capture: true,
-      });
-      document.removeEventListener("touchstart", showMenuTemporarily, {
+      })
+      document.removeEventListener('touchstart', showMenuTemporarily, {
         capture: true,
-      });
+      })
 
       if (hideTimerRef.current) {
-        clearTimeout(hideTimerRef.current);
+        clearTimeout(hideTimerRef.current)
       }
-    };
-  }, []);
+    }
+  }, [])
 
   const closeSidebar = () => setIsSidebarOpen(false)
 
@@ -73,11 +73,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
           cursor-pointer rounded-full border border-border
           bg-primary p-2 text-primary-foreground xl:hidden
           transition-all duration-300 ease-out
-          ${
-            showMenuButton
-              ? "translate-y-0 opacity-100"
-              : "-translate-y-3 pointer-events-none opacity-0"
-          }
+          ${showMenuButton ? 'translate-y-0 opacity-100' : '-translate-y-3 pointer-events-none opacity-0'}
         `}
         onClick={() => setIsSidebarOpen(true)}
         type="button"
@@ -96,9 +92,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
 
       <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
 
-      <div className="min-w-0 w-0 flex-1 overflow-x-auto">
-        {children}
-      </div>
+      <div className="min-w-0 w-0 flex-1 overflow-x-auto">{children}</div>
     </div>
   )
 }

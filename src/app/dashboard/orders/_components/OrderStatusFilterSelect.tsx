@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useOrderStatusCounts } from '../_hooks/useOrders'
 
 interface OrderStatusFilterSelectProps {
@@ -18,7 +12,12 @@ interface OrderStatusFilterSelectProps {
 }
 
 // Status filter with the number of orders in each status next to it. "Completed" is left out.
-export default function OrderStatusFilterSelect({ value, onChange, statusOptions, disabled }: OrderStatusFilterSelectProps) {
+export default function OrderStatusFilterSelect({
+  value,
+  onChange,
+  statusOptions,
+  disabled,
+}: OrderStatusFilterSelectProps) {
   const { data: statusCounts, isError: statusCountsError } = useOrderStatusCounts()
   const items = [
     { value: 'all', label: 'All statuses' },

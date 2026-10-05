@@ -94,10 +94,7 @@ export default function OrdersView() {
             disabled={isFetching || !!error || orders.length === 0}
             onExport={() => exportOrders(orders)}
           />
-          <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            type="button"
-          >
+          <Button onClick={() => setIsCreateModalOpen(true)} type="button">
             <Plus className="h-4 w-4" />
             Add order
           </Button>
@@ -141,18 +138,33 @@ function exportOrders(groups: OrderGroup[]) {
   exportToCSV(
     groups.flatMap((group) => group.orders.map((line) => ({ ...group, ...line }))),
     [
-      { header: 'Order ID', value: (order) => formatOrderNumber(order.orderId) },
+      {
+        header: 'Order ID',
+        value: (order) => formatOrderNumber(order.orderId),
+      },
       { header: 'Product', value: (order) => order.productName },
-      { header: 'Order type', value: (order) => normalizeOrderText(order.orderType) },
-      { header: 'Status', value: (order) => normalizeOrderText(order.orderStatus) },
+      {
+        header: 'Order type',
+        value: (order) => normalizeOrderText(order.orderType),
+      },
+      {
+        header: 'Status',
+        value: (order) => normalizeOrderText(order.orderStatus),
+      },
       { header: 'Customer', value: (order) => order.customerName },
       { header: 'Driver', value: (order) => order.driverName || 'Unassigned' },
       { header: 'Quantity', value: (order) => order.quantity },
       { header: 'Amount', value: (order) => order.totalAmount },
-      { header: 'Pickup address', value: (order) => order.pickUpAddress ?? '-' },
-      { header: 'Delivery address', value: (order) => order.deliveryAddress ?? '-' },
+      {
+        header: 'Pickup address',
+        value: (order) => order.pickUpAddress ?? '-',
+      },
+      {
+        header: 'Delivery address',
+        value: (order) => order.deliveryAddress ?? '-',
+      },
       { header: 'Created at', value: (order) => formatDate(order.created_At) },
     ],
-    'orders'
+    'orders',
   )
 }

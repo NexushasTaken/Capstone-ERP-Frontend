@@ -6,7 +6,13 @@ import type { DriverListItem } from '@/types/driver'
 import type { StatusActionItem } from '@/types/statusAction'
 import { formatDriverId } from '../_lib/driverHelpers'
 
-const columns: DataTableColumn[] = ['Id', 'First Name', 'Last Name', 'Created At', { label: 'Action', className: 'text-right' }]
+const columns: DataTableColumn[] = [
+  'Id',
+  'First Name',
+  'Last Name',
+  'Created At',
+  { label: 'Action', className: 'text-right' },
+]
 
 interface DriversTableProps {
   drivers: DriverListItem[]

@@ -69,10 +69,7 @@ export default function SalesView() {
             }}
           />
 
-          <ExportCsvButton
-            disabled={isFetching || !!error || sales.length === 0}
-            onExport={() => exportSales(sales)}
-          />
+          <ExportCsvButton disabled={isFetching || !!error || sales.length === 0} onExport={() => exportSales(sales)} />
         </div>
       </div>
 
@@ -105,13 +102,16 @@ function exportSales(sales: Sale[]) {
     [
       { header: 'Sale ID', value: (sale) => formatSaleId(sale.id) },
       { header: 'Product', value: (sale) => getSaleProductName(sale) },
-      { header: 'Order type', value: (sale) => normalizeOrderText(sale.orderType) },
+      {
+        header: 'Order type',
+        value: (sale) => normalizeOrderText(sale.orderType),
+      },
       { header: 'Customer', value: (sale) => getSaleCustomerName(sale) },
       { header: 'Quantity', value: (sale) => getSaleQuantity(sale) },
       { header: 'Total amount', value: (sale) => sale.total },
       { header: 'Sale date', value: (sale) => formatDate(sale.created_At) },
       { header: 'Status', value: (sale) => getSaleStatusLabel(sale) },
     ],
-    'sales'
+    'sales',
   )
 }

@@ -26,10 +26,7 @@ import DriversTable from './DriversTable'
 
 // Which modal is open, and for which driver.
 type ModalState =
-  | { type: 'add' }
-  | { type: 'update'; driver: DriverListItem }
-  | { type: 'delete'; driver: DriverListItem }
-  | null
+  { type: 'add' } | { type: 'update'; driver: DriverListItem } | { type: 'delete'; driver: DriverListItem } | null
 
 export default function DriversView() {
   const { data: currentUser } = useCurrentUser()
@@ -88,10 +85,7 @@ export default function DriversView() {
           />
 
           {can(role, 'driver:add') && (
-            <Button
-              onClick={() => setModal({ type: 'add' })}
-              type="button"
-            >
+            <Button onClick={() => setModal({ type: 'add' })} type="button">
               <Plus className="h-4 w-4" />
               Add driver
             </Button>

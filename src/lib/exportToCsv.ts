@@ -11,12 +11,7 @@ export interface CSVColumn<T> {
   value: (row: T) => string | number | boolean | null | undefined
 }
 
-export function exportToCSV<T>(
-  rows: T[],
-  columns: CSVColumn<T>[],
-  filename: string
-): void {
-
+export function exportToCSV<T>(rows: T[], columns: CSVColumn<T>[], filename: string): void {
   if (isExportOnCooldown) {
     console.warn('Export is on cooldown.')
     return
@@ -27,17 +22,12 @@ export function exportToCSV<T>(
   const csvContent = [
     columns.map((col) => escapeCSVValue(col.header)).join(','),
 
-    ...rows.map((row) =>
-      columns
-        .map((col) => escapeCSVValue(col.value(row)))
-        .join(',')
-    ),
+    ...rows.map((row) => columns.map((col) => escapeCSVValue(col.value(row))).join(',')),
   ].join('\n')
 
-  const blob = new Blob(
-    ['\uFEFF', csvContent],
-    { type: 'text/csv;charset=utf-8;' }
-  )
+  const blob = new Blob(['\uFEFF', csvContent], {
+    type: 'text/csv;charset=utf-8;',
+  })
 
   const link = document.createElement('a')
   const url = URL.createObjectURL(blob)

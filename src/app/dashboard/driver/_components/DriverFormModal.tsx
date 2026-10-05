@@ -17,7 +17,10 @@ interface DriverFormModalProps {
 
 // Add and update share this modal. Render it only while open so the fields start fresh each time.
 export default function DriverFormModal({ driver, disabled, onClose, onSubmit }: DriverFormModalProps) {
-  const [form, setForm] = useState({ firstName: driver?.firstName ?? '', lastName: driver?.lastName ?? '' })
+  const [form, setForm] = useState({
+    firstName: driver?.firstName ?? '',
+    lastName: driver?.lastName ?? '',
+  })
   const isEdit = driver !== null
   const canSubmit = form.firstName.trim() !== '' && form.lastName.trim() !== '' && !disabled
 
@@ -46,7 +49,13 @@ export default function DriverFormModal({ driver, disabled, onClose, onSubmit }:
       </div>
       <ModalActions
         onCancel={onClose}
-        onConfirm={() => canSubmit && onSubmit({ firstName: form.firstName.trim(), lastName: form.lastName.trim() })}
+        onConfirm={() =>
+          canSubmit &&
+          onSubmit({
+            firstName: form.firstName.trim(),
+            lastName: form.lastName.trim(),
+          })
+        }
         confirmLabel={isEdit ? 'Update driver' : 'Add driver'}
         confirmIcon={isEdit ? undefined : Plus}
         confirmDisabled={!canSubmit}

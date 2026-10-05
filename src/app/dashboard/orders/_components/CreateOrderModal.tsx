@@ -8,13 +8,7 @@ import EntityDropdown from '@/components/EntityDropdown'
 import { FormField, FormInput } from '@/components/FormField'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useInventoryProductSearch } from '@/hooks/useInventoryProductSearch'
 import { useOrderTypes } from '@/hooks/useOrderTypes'
 import {
@@ -81,12 +75,11 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
     !disabled &&
     Number(form.orderTypeId) > 0 &&
     form.customerName.trim() !== '' &&
-    (isWalkin || (
-      form.deliveryRiderId.trim() !== '' &&
-      Number(form.deliveryRiderId) >= 0 &&
-      form.pickUpAddress.trim() !== '' &&
-      form.deliveryAddress.trim() !== ''
-    )) &&
+    (isWalkin ||
+      (form.deliveryRiderId.trim() !== '' &&
+        Number(form.deliveryRiderId) >= 0 &&
+        form.pickUpAddress.trim() !== '' &&
+        form.deliveryAddress.trim() !== '')) &&
     lines.every((line) => Number(line.productId) > 0 && Number(line.quantity) > 0)
 
   function updateField(field: keyof typeof emptyOrderForm, value: string) {
@@ -185,12 +178,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
             </FormField>
 
             <FormField label="Quantity (total items)">
-              <Input
-                className="bg-muted/50"
-                readOnly
-                disabled
-                value={totalQuantity}
-              />
+              <Input className="bg-muted/50" readOnly disabled value={totalQuantity} />
               <span className="text-xs text-muted-foreground">Calculated from items below</span>
             </FormField>
           </div>
@@ -225,18 +213,10 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
       </div>
 
       <div className="flex justify-end gap-2 border-t border-border p-5">
-        <Button
-          onClick={onClose}
-          type="button"
-          variant="outline"
-        >
+        <Button onClick={onClose} type="button" variant="outline">
           Cancel
         </Button>
-        <Button
-          disabled={!canSubmit}
-          onClick={() => setIsReviewing(true)}
-          type="button"
-        >
+        <Button disabled={!canSubmit} onClick={() => setIsReviewing(true)} type="button">
           <Plus className="h-4 w-4" />
           Add order
         </Button>

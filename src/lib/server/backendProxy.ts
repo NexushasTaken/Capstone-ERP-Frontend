@@ -13,10 +13,7 @@ const PUBLIC_PATHS = new Set(['User/Login'])
  */
 export async function proxyToBackend(request: NextRequest, path: string, search = request.nextUrl.search) {
   if (!backendUrl) {
-    return Response.json(
-      { message: 'The backend API URL has not been configured.' },
-      { status: 500 },
-    )
+    return Response.json({ message: 'The backend API URL has not been configured.' }, { status: 500 })
   }
 
   const headers = new Headers()
@@ -25,10 +22,7 @@ export async function proxyToBackend(request: NextRequest, path: string, search 
     const accessToken = (await cookies()).get('AccessToken')?.value
 
     if (!accessToken) {
-      return Response.json(
-        { message: 'No access token found in cookies.' },
-        { status: 401 },
-      )
+      return Response.json({ message: 'No access token found in cookies.' }, { status: 401 })
     }
 
     headers.set('Cookie', `AccessToken=${accessToken}`)
@@ -62,9 +56,6 @@ export async function proxyToBackend(request: NextRequest, path: string, search 
       headers: responseHeaders,
     })
   } catch {
-    return Response.json(
-      { message: 'Unable to reach the backend service.' },
-      { status: 502 },
-    )
+    return Response.json({ message: 'Unable to reach the backend service.' }, { status: 502 })
   }
 }

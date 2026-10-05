@@ -31,7 +31,14 @@ interface InventoryTableProps {
   onAction: (action: string, item: InventoryListItem) => void
 }
 
-export default function InventoryTable({ items, isLoading, error, actions, onShowDetails, onAction }: InventoryTableProps) {
+export default function InventoryTable({
+  items,
+  isLoading,
+  error,
+  actions,
+  onShowDetails,
+  onAction,
+}: InventoryTableProps) {
   return (
     <DataTable
       className="min-w-200"

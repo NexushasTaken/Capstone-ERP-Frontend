@@ -17,7 +17,14 @@ interface CategoriesTableProps {
   onDelete: (category: CategoryListItem) => void
 }
 
-export default function CategoriesTable({ categories, isLoading, error, actions, onEdit, onDelete }: CategoriesTableProps) {
+export default function CategoriesTable({
+  categories,
+  isLoading,
+  error,
+  actions,
+  onEdit,
+  onDelete,
+}: CategoriesTableProps) {
   return (
     <DataTable
       className="min-w-150"

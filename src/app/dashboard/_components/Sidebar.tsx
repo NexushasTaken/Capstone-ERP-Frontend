@@ -9,7 +9,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
-import cproLogo from "../../../../public/cproLogo.png"
+import cproLogo from '../../../../public/cproLogo.png'
 import { getNavItemClasses, profileFallback } from '@/app/dashboard/_lib/sidebarHelpers'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { can } from '@/lib/permissions'
@@ -41,32 +41,44 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     .filter((group) => group.items.length > 0)
 
   const isGroupOpen = (label: string) => openGroups[label] ?? true
-  const toggleGroup = (label: string) =>
-    setOpenGroups((prev) => ({ ...prev, [label]: !isGroupOpen(label) }))
+  const toggleGroup = (label: string) => setOpenGroups((prev) => ({ ...prev, [label]: !isGroupOpen(label) }))
 
   return (
     <>
-    <aside className={`h-dvh scrollbar-none shrink-0 flex-col gap-3 bg-background px-3 xl:pr-0 py-3 overflow-y-auto sm:gap-4 ${
-      isOpen
-        ? 'fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.5rem))] shadow-xl sm:w-[min(20rem,calc(100vw-2rem))] xl:static xl:z-auto xl:w-1/5 xl:shadow-none'
-        : 'hidden xl:flex w-auto xl:w-1/5'
-    }`}>
+      <aside
+        className={`h-dvh scrollbar-none shrink-0 flex-col gap-3 bg-background px-3 xl:pr-0 py-3 overflow-y-auto sm:gap-4 ${
+          isOpen
+            ? 'fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.5rem))] shadow-xl sm:w-[min(20rem,calc(100vw-2rem))] xl:static xl:z-auto xl:w-1/5 xl:shadow-none'
+            : 'hidden xl:flex w-auto xl:w-1/5'
+        }`}
+      >
         {/* BUTTON NAV - DASHBOARD */}
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center text-2xl text-foreground font-semibold sm:text-3xl md:text-4xl">
-            <div className='relative w-10 h-10 lg:w-20 lg:h-20 rounded-full'>
-              <Image src={cproLogo} alt="Cpro Logo" className='object-contain' fill priority sizes="(max-width: 1024px) 40px, 80px"/>
+            <div className="relative w-10 h-10 lg:w-20 lg:h-20 rounded-full">
+              <Image
+                src={cproLogo}
+                alt="Cpro Logo"
+                className="object-contain"
+                fill
+                priority
+                sizes="(max-width: 1024px) 40px, 80px"
+              />
             </div>
             CPro Home
           </span>
-          <button aria-label="Close navigation" className="cursor-pointer p-2 text-foreground xl:hidden" onClick={onClose} type="button">
+          <button
+            aria-label="Close navigation"
+            className="cursor-pointer p-2 text-foreground xl:hidden"
+            onClick={onClose}
+            type="button"
+          >
             <X className="h-6 w-6" />
           </button>
         </div>
 
         {/* BUTTON NAV */}
         <div className="flex flex-1 flex-col gap-2 w-full">
-
           <Link
             href="/dashboard"
             onClick={onClose}
@@ -116,29 +128,32 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             })}
           </div>
         </div>
-      
+
         {/* AUDIT LOGS */}
         <AuditLogSidebar onNavigate={onClose} />
 
         {/* PROFILE */}
-        <button aria-label="Open profile" className="flex h-16 w-full gap-2 rounded-2xl border-2 border-gray-200 p-3 text-left hover:border-border hover:bg-accent cursor-pointer sm:h-20 sm:pr-4" onClick={() => setIsProfileOpen(true)} type="button">
+        <button
+          aria-label="Open profile"
+          className="flex h-16 w-full gap-2 rounded-2xl border-2 border-gray-200 p-3 text-left hover:border-border hover:bg-accent cursor-pointer sm:h-20 sm:pr-4"
+          onClick={() => setIsProfileOpen(true)}
+          type="button"
+        >
           <div className="flex flex-col w-full h-full justify-center">
             <span className="text-foreground font-medium text-base sm:text-lg capitalize">
               {isLoadingCurrentUser ? 'Loading...' : formatProfileName(profile)}
             </span>
-            <span className="text-muted-foreground text-sm sm:text-base capitalize">{formatProfileDetails(profile)}</span>
+            <span className="text-muted-foreground text-sm sm:text-base capitalize">
+              {formatProfileDetails(profile)}
+            </span>
           </div>
 
           <div className="flex items-center justify-center shrink-0">
-            <Bell className="text-foreground w-6 h-6"/>
+            <Bell className="text-foreground w-6 h-6" />
           </div>
         </button>
-    </aside>
-    <ProfileModal
-      isOpen={isProfileOpen}
-      onClose={() => setIsProfileOpen(false)}
-      profile={profile}
-    />
+      </aside>
+      <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} profile={profile} />
     </>
   )
 }

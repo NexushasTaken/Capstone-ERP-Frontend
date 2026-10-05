@@ -10,7 +10,7 @@ export function useInventoryProductSearch(enabled: boolean) {
     queryFn: ({ signal }) => fetchInventoryProducts(signal),
     enabled,
   })
-  const products = query.isError ? [] : query.data ?? []
+  const products = query.isError ? [] : (query.data ?? [])
 
   return {
     products,
