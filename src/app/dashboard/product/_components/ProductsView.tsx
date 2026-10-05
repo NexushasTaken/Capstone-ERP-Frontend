@@ -1,445 +1,127 @@
 'use client'
 
-import { formatDate, formatPeso } from '@/lib/format'
-import { Spinner } from '@/components/ui/spinner'
-
-import { Search, X, Tag, Layers, Plus } from 'lucide-react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { deleteProduct, fetchProducts, insertProduct, updateProduct } from '@/services/productApi'
-import { exportToCSV } from '@/lib/exportToCsv'
-import { useEffect, useState } from 'react'
-import SeeMoreModal from '@/components/SeeMoreModal'
-import CloseButton from '@/components/CloseButton'
-import EntityDropdown from '@/components/EntityDropdown'
-import { TablePagination } from '@/components/TablePagination'
+import { useState } from 'react'
+import { Plus } from 'lucide-react'
+import DeleteConfirmModal from '@/components/DeleteConfirmModal'
+import ExportCsvButton from '@/components/ExportCsvButton'
+import PageTitle from '@/components/PageTitle'
+import SearchInput from '@/components/SearchInput'
 import SortPopover from '@/components/SortPopover'
-import { formatProductId, PRODUCT_LOAD_PAGE_SIZE, categoryPresentByFilter, ITEMS_PER_PAGE, tableColumns, productSortOptions } from '@/app/dashboard/product/_lib/productHelpers'
-import type { ProductCategoryFilter, ProductListItem, ProductSortBy } from '@/types/product'
-import type { InsertProductPayload } from '@/types/product'
+import { TablePagination } from '@/components/TablePagination'
 import { Button } from '@/components/ui/button'
-import AppModal from '@/components/AppModal'
-import { toast } from 'sonner'
-import { CategoryListItem } from '@/types/category'
-import { fetchCategories } from '@/services/categoryApi'
-import  Loading from "@/components/Loading"
-import StatusAction from '@/components/StatusAction'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { allowedActions, can } from '@/lib/permissions'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { exportToCSV } from '@/lib/exportToCsv'
+import { formatDate } from '@/lib/format'
 import { editDeleteActions } from '@/lib/helpers/statusActionHelpers'
-import { queryKeys } from '@/lib/query/queryKeys'
-import { invalidateProducts } from '@/lib/query/queryInvalidation'
-import { Input } from '@/components/ui/input'
+import { allowedActions, can } from '@/lib/permissions'
+import type { ProductCategoryFilter, ProductListItem, ProductSortBy } from '@/types/product'
+import { useProductMutations, useProducts, type ProductValues } from '../_hooks/useProducts'
+import {
+  formatProductId,
+  ITEMS_PER_PAGE,
+  matchesFilter,
+  productFilters,
+  productSortOptions,
+  sortProducts,
+} from '../_lib/productHelpers'
+import ProductDetailsModal from './ProductDetailsModal'
+import ProductFormModal from './ProductFormModal'
+import ProductsTable from './ProductsTable'
 
-function hasCategory(product: ProductListItem) {
-  return product.categoryId !== null && product.categoryId !== 0
-}
+// Which modal is open, and for which product.
+type ModalState =
+  | { type: 'add' }
+  | { type: 'edit'; product: ProductListItem }
+  | { type: 'delete'; product: ProductListItem }
+  | { type: 'details'; product: ProductListItem }
+  | null
 
 export default function ProductsView() {
   const { data: currentUser } = useCurrentUser()
   const role = currentUser?.role
   const productActions = allowedActions(role, 'product', editDeleteActions)
-  const [exportCooldown, setExportCooldown] = useState(0)
-
-  useEffect(() => {
-    if (exportCooldown <= 0) return
-
-    const timer = setTimeout(() => {
-      setExportCooldown((previous) => previous - 1)
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [exportCooldown])
-
-  const [isSeeMoreOpen, setIsSeeMoreOpen] = useState(false)
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<ProductListItem | null>(null)
 
   const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedFilter, setSelectedFilter] = useState<ProductCategoryFilter>('Categorized')
   const [currentPage, setCurrentPage] = useState(1)
   const [sortBy, setSortBy] = useState<ProductSortBy>('createdAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [modal, setModal] = useState<ModalState>(null)
+  const debouncedSearch = useDebouncedValue(search)
 
-  const [form, setForm] = useState({
-    name: '',
-    categoryId: '',
-    price: '',
-  })
-  const queryClient = useQueryClient()
-  const activeSearch = selectedFilter === 'Uncategorized' ? undefined : debouncedSearch || undefined
-  const productsQueryParams = {
-    page: 1,
-    pageSize: PRODUCT_LOAD_PAGE_SIZE,
-    name: activeSearch,
-    categoryPresent: categoryPresentByFilter[selectedFilter],
-  }
-  const productsQueryKey = queryKeys.products.all(productsQueryParams)
-  const {
-    data: productsResponse,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: productsQueryKey,
-    queryFn: () => fetchProducts(productsQueryParams),
-    keepPreviousData: true,
-  })
-  const categorizedCountParams = {
-    page: 1,
-    pageSize: PRODUCT_LOAD_PAGE_SIZE,
-    name: debouncedSearch || undefined,
-    categoryPresent: categoryPresentByFilter.Categorized,
-  }
-  const uncategorizedCountParams = {
-    page: 1,
-    pageSize: PRODUCT_LOAD_PAGE_SIZE,
-    categoryPresent: categoryPresentByFilter.Uncategorized,
-  }
-  const { data: categorizedCountResponse } = useQuery({
-    queryKey: queryKeys.products.all(categorizedCountParams),
-    queryFn: () => fetchProducts(categorizedCountParams),
-    keepPreviousData: true,
-  })
-  const { data: uncategorizedCountResponse } = useQuery({
-    queryKey: queryKeys.products.all(uncategorizedCountParams),
-    queryFn: () => fetchProducts(uncategorizedCountParams),
-    keepPreviousData: true,
-  })
-  const shouldLoadCategories = isAddModalOpen || isEditModalOpen
-  const {
-    data: categoriesResponse,
-    isLoading: categoriesLoading,
-  } = useQuery({
-    queryKey: queryKeys.categories.all({ page: 1, pageSize: 1000 }),
-    queryFn: () => fetchCategories({ page: 1, pageSize: 1000 }),
-    enabled: shouldLoadCategories,
-  })
-  const categories: CategoryListItem[] = categoriesResponse?.items ?? []
-  const products = (productsResponse?.items ?? []).filter((product) =>
-    selectedFilter === 'Categorized' ? hasCategory(product) : !hasCategory(product)
-  )
-  const rows = products.length
-  const categoryOptions = [
-    { id: 0, label: 'No category' },
-    ...categories.map((category) => ({
-      id: category.id,
-      label: category.type,
-      sublabel: `ID: ${category.id}`,
-    })),
-  ]
-  const selectedCategoryLabel =
-    form.categoryId === '0'
-      ? 'No category'
-      : categories.find((category) => category.id === Number(form.categoryId))?.type ?? ''
-  const productCountByFilter: Record<ProductCategoryFilter, number> = {
-    Categorized: categorizedCountResponse?.items.filter(hasCategory).length ?? 0,
-    Uncategorized: uncategorizedCountResponse?.items.filter((product) => !hasCategory(product)).length ?? 0,
-  }
-  const addProductMutation = useMutation({
-    mutationFn: (payload: InsertProductPayload & { optimisticId: number }) =>
-      insertProduct({
-        categoryId: payload.categoryId,
-        name: payload.name,
-        price: payload.price,
-      }),
-    onMutate: async (payload) => {
-      await queryClient.cancelQueries({ queryKey: ['products'] })
-      const previous = queryClient.getQueryData<typeof productsResponse>(productsQueryKey)
-      const categoryId = payload.categoryId
-      const belongsToCurrentFilter = categoryId === 0
-        ? selectedFilter === 'Uncategorized'
-        : selectedFilter === 'Categorized'
-      const optimisticProduct: ProductListItem = {
-        id: payload.optimisticId,
-        categoryId: categoryId || null,
-        name: payload.name,
-        price: payload.price,
-        categoryName: categories.find((category) => category.id === categoryId)?.type ?? null,
-        created_At: new Date().toISOString(),
-      }
+  const { list, listQueryKey, categorizedItems, uncategorizedItems } = useProducts(selectedFilter, debouncedSearch)
+  const mutations = useProductMutations(listQueryKey, selectedFilter)
 
-      queryClient.setQueryData<typeof productsResponse>(productsQueryKey, (current) => {
-        if (!current || !belongsToCurrentFilter) return current
-
-        return {
-          ...current,
-          items: [optimisticProduct, ...current.items],
-          rows: current.rows + 1,
-        }
-      })
-
-      return { previous }
-    },
-    onError: (err, _payload, context) => {
-      if (context?.previous) queryClient.setQueryData(productsQueryKey, context.previous)
-      toast.error(err instanceof Error ? err.message : 'Failed to add product')
-    },
-    onSuccess: () => toast.success('Product added successfully'),
-    onSettled: () => invalidateProducts(queryClient),
-  })
-  const updateProductMutation = useMutation({
-    mutationFn: updateProduct,
-    onMutate: async (payload) => {
-      await queryClient.cancelQueries({ queryKey: ['products'] })
-      const previous = queryClient.getQueryData<typeof productsResponse>(productsQueryKey)
-
-      queryClient.setQueryData<typeof productsResponse>(productsQueryKey, (current) => {
-        if (!current) return current
-
-        return {
-          ...current,
-          items: current.items.map((product) =>
-            product.id === payload.id
-              ? {
-                  ...product,
-                  categoryId: payload.categoryId || null,
-                  name: payload.name,
-                  price: payload.price,
-                  categoryName: categories.find((category) => category.id === payload.categoryId)?.type ?? null,
-                }
-              : product
-          ),
-        }
-      })
-
-      return { previous }
-    },
-    onError: (err, _payload, context) => {
-      if (context?.previous) queryClient.setQueryData(productsQueryKey, context.previous)
-      toast.error(err instanceof Error ? err.message : 'Failed to update product')
-    },
-    onSuccess: () => toast.success('Product updated successfully'),
-    onSettled: () => invalidateProducts(queryClient),
-  })
-  const deleteProductMutation = useMutation({
-    mutationFn: deleteProduct,
-    onMutate: async (productId) => {
-      await queryClient.cancelQueries({ queryKey: ['products'] })
-      const previous = queryClient.getQueryData<typeof productsResponse>(productsQueryKey)
-
-      queryClient.setQueryData<typeof productsResponse>(productsQueryKey, (current) => {
-        if (!current) return current
-
-        return {
-          ...current,
-          items: current.items.filter((product) => product.id !== productId),
-          rows: Math.max(current.rows - 1, 0),
-        }
-      })
-
-      return { previous }
-    },
-    onError: (err, _productId, context) => {
-      if (context?.previous) queryClient.setQueryData(productsQueryKey, context.previous)
-      toast.error(err instanceof Error ? err.message : 'Failed to delete product')
-    },
-    onSuccess: () => toast.success('Product deleted successfully'),
-    onSettled: () => invalidateProducts(queryClient),
-  })
-  const isSubmitting =
-    addProductMutation.isPending ||
-    updateProductMutation.isPending ||
-    deleteProductMutation.isPending
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setDebouncedSearch(search)
-      setCurrentPage(1)
-    }, 400)
-    return () => clearTimeout(timeout)
-  }, [search])
-
-  const displayedProducts = [...products].sort((a, b) => {
-    switch (sortBy) {
-      case 'id':
-        return sortOrder === 'asc' ? a.id - b.id : b.id - a.id
-      case 'name':
-        return sortOrder === 'asc'
-          ? a.name.localeCompare(b.name)
-          : b.name.localeCompare(a.name)
-      case 'price':
-        return sortOrder === 'asc' ? a.price - b.price : b.price - a.price
-      case 'createdAt':
-        return sortOrder === 'asc'
-          ? Date.parse(a.created_At) - Date.parse(b.created_At)
-          : Date.parse(b.created_At) - Date.parse(a.created_At)
-      default:
-        return 0
-    }
-  })
-
-  const filteredPageCount = Math.max(1, Math.ceil(displayedProducts.length / ITEMS_PER_PAGE))
+  const products = (list.data?.items ?? []).filter((product) => matchesFilter(product, selectedFilter))
+  const displayedProducts = sortProducts(products, sortBy, sortOrder)
+  const pageCount = Math.max(1, Math.ceil(displayedProducts.length / ITEMS_PER_PAGE))
   const paginatedProducts = displayedProducts.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   )
+  const countByFilter: Record<ProductCategoryFilter, number> = {
+    Categorized: categorizedItems?.filter((product) => matchesFilter(product, 'Categorized')).length ?? 0,
+    Uncategorized: uncategorizedItems?.filter((product) => matchesFilter(product, 'Uncategorized')).length ?? 0,
+  }
+  const closeModal = () => setModal(null)
 
-  const productFilters: { label: ProductCategoryFilter }[] = [
-    { label: 'Categorized' },
-    { label: 'Uncategorized' },
-  ]
-
-  const formCanSubmit =
-    form.name.trim() !== '' &&
-    form.price.trim() !== '' &&
-    Number(form.price) > 0
-
-  function updateFormField(field: keyof typeof form, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }))
+  function handleSubmitProduct(values: ProductValues) {
+    if (modal?.type === 'edit') {
+      mutations.updateProduct.mutate({ id: modal.product.id, ...values })
+    } else {
+      setCurrentPage(1)
+      mutations.addProduct.mutate({ ...values, optimisticId: -Date.now() })
+    }
+    closeModal()
   }
 
-  function resetForm() {
-    setForm({ name: '', categoryId: '', price: '' })
-    setSelectedProduct(null)
-  }
-
-  async function handleAddProduct() {
-    if (!formCanSubmit) return
-
-    const categoryId = form.categoryId ? Number(form.categoryId) : 0
-
-    setIsAddModalOpen(false)
-    resetForm()
-    setCurrentPage(1)
-
-    addProductMutation.mutate({
-      optimisticId: -Date.now(),
-      categoryId,
-      name: form.name.trim(),
-      price: Number(form.price),
-    })
-  }
-
-  async function handleUpdateProduct() {
-    if (!selectedProduct || !formCanSubmit) return
-
-    const productId = selectedProduct.id
-    const categoryId = form.categoryId ? Number(form.categoryId) : null
-
-    setIsEditModalOpen(false)
-    resetForm()
-
-    updateProductMutation.mutate({
-      id: productId,
-      categoryId: categoryId ?? 0,
-      name: form.name.trim(),
-      price: Number(form.price),
-    })
-  }
-
-  async function handleDeleteProduct() {
-    if (!selectedProduct) return
-
-    const productId = selectedProduct.id
-
-    setIsDeleteModalOpen(false)
-    resetForm()
-    deleteProductMutation.mutate(productId)
-  }
-
-  function openEditModal(product: ProductListItem) {
-    setSelectedProduct(product)
-    setForm({
-      name: product.name,
-      categoryId: product.categoryId ? String(product.categoryId) : '',
-      price: String(product.price),
-    })
-    setIsEditModalOpen(true)
-  }
-
-  function openDeleteModal(product: ProductListItem) {
-    setSelectedProduct(product)
-    setIsDeleteModalOpen(true)
+  function handleDeleteProduct() {
+    if (modal?.type !== 'delete') return
+    mutations.deleteProduct.mutate(modal.product.id)
+    closeModal()
   }
 
   return (
     <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-white p-4 lg:p-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-medium tracking-tight text-[#121514]">Products</h1>
-          <span className="rounded-md border border-[#DFE2E0] px-3 py-1 text-sm text-[#121514]">
-            {rows}
-          </span>
-        </div>
+        <PageTitle title="Products" count={products.length} />
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* Search only applies to categorized products. */}
           {selectedFilter !== 'Uncategorized' ? (
-            <div className="relative">
-              <Input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search products"
-                className="w-full rounded-xl border border-[#DFE2E0] bg-white px-3 py-2 text-sm text-[#121514] placeholder:text-[#737A76] focus:border-[#121514] focus:outline-none focus:ring-1 focus:ring-[#121514]"
-              />
-              {search ? (
-                <button
-                  type="button"
-                  onClick={() => setSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737A76] cursor-pointer transition-colors hover:text-[#121514]"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              ) : (
-                <Search className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#737A76]" />
-              )}
-            </div>
+            <SearchInput
+              value={search}
+              onChange={(value) => {
+                setSearch(value)
+                setCurrentPage(1)
+              }}
+              placeholder="Search products"
+            />
           ) : null}
-            {productFilters.map((filter) => (
-              <button
-                className={`cursor-pointer rounded-xl border px-3 py-2 text-sm whitespace-nowrap transition-colors ${
-                  selectedFilter === filter.label
-                    ? 'border-[#121514] bg-[#121514] text-white'
-                    : 'border-[#E1E4E2] bg-white text-[#121514] hover:bg-[#DCE4DF]'
-                }`}
-                key={filter.label}
-                type="button"
-                onClick={() => {
-                  setSelectedFilter(filter.label)
-                  setCurrentPage(1)
-                  if (filter.label === 'Uncategorized') {
-                    setSearch('')
-                    setDebouncedSearch('')
-                  }
-                }}
-              >
-                {filter.label} <span className="ml-1">{productCountByFilter[filter.label]}</span>
-              </button>
-            ))}
-          <Button
-
-            variant="outline"
-            className={`h-auto rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? "bg-gray-100 cursor-not-allowed text-gray-500" : "hover:bg-[#DCE4DF] cursor-pointer text-black"}`}
-            disabled={exportCooldown > 0}
-            type="button"
-            onClick={() => {
-              exportToCSV(
-                displayedProducts,
-                [
-                  { header: 'Product ID', value: (product) => formatProductId(product.id) },
-                  { header: 'Category', value: (product) => product.categoryName ?? 'Uncategorized' },
-                  { header: 'Product name', value: (product) => product.name },
-                  { header: 'Price', value: (product) => product.price },
-                  { header: 'Created at', value: (product) => formatDate(product.created_At) },
-                ],
-                'products'
-              )
-              setExportCooldown(10)
-            }}
-          >
-            {exportCooldown > 0 ? (
-              <>
-                <Spinner data-icon="inline-start" />
-                Cooldown
-              </>
-            ) : 'Export to CSV'}
-          </Button>
+          {productFilters.map((filter) => (
+            <button
+              className={`cursor-pointer rounded-xl border px-3 py-2 text-sm whitespace-nowrap transition-colors ${
+                selectedFilter === filter
+                  ? 'border-[#121514] bg-[#121514] text-white'
+                  : 'border-[#E1E4E2] bg-white text-[#121514] hover:bg-[#DCE4DF]'
+              }`}
+              key={filter}
+              type="button"
+              onClick={() => {
+                setSelectedFilter(filter)
+                setCurrentPage(1)
+                if (filter === 'Uncategorized') setSearch('')
+              }}
+            >
+              {filter} <span className="ml-1">{countByFilter[filter]}</span>
+            </button>
+          ))}
+          <ExportCsvButton onExport={() => exportProducts(displayedProducts)} />
           {can(role, 'product:add') && (
             <Button
               className="rounded-xl cursor-pointer px-3 py-2 text-sm"
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => setModal({ type: 'add' })}
               type="button"
             >
               <Plus className="h-4 w-4" />
@@ -460,342 +142,60 @@ export default function ProductsView() {
       </div>
 
       <div className="mt-5 min-h-0 overflow-auto scrollbar-none flex-1">
-        <table className="w-full min-w-235 border-separate border-spacing-y-2 text-left">
-          <thead className="text-sm font-normal text-[#737A76]">
-            <tr>
-              {tableColumns.map((column) => (
-                <th className="px-3 pb-1 font-normal" key={column} scope="col">
-                  {column}
-                </th>
-              ))}
-              <th className="px-3 pb-1 font-normal text-right" scope="col">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={tableColumns.length + 1} className="px-3 py-4 text-center text-sm text-[#737A76]">
-                  <Loading />
-                </td>
-              </tr>
-            ) : error ? (
-              <tr>
-                <td colSpan={tableColumns.length + 1} className="px-3 py-4 text-center text-sm text-red-500">
-                  {error instanceof Error ? error.message : 'Failed to load products'}
-                </td>
-              </tr>
-            ) : displayedProducts.length === 0 ? (
-              <tr>
-                <td colSpan={tableColumns.length + 1} className="px-3 py-4 text-center text-sm text-[#737A76]">
-                  No products found.
-                </td>
-              </tr>
-            ) : (
-              paginatedProducts.map((product) => (
-                <tr className="bg-[#FAFBFA] text-sm text-[#121514]" key={product.id}>
-                  <td className="rounded-l-xl px-3 py-5 font-medium">{formatProductId(product.id)}</td>
-                  <td className="px-3 py-5 font-medium whitespace-nowrap capitalize">{product.categoryName ?? 'Uncategorized'}</td>
-                  <td className="px-3 py-5 whitespace-nowrap capitalize">{product.name}</td>
-                  <td className="px-3 py-5 font-medium whitespace-nowrap">{formatPeso(product.price)}</td>
-                  <td className="px-3 py-5 whitespace-nowrap">{formatDate(product.created_At)}</td>
-                  <td className="rounded-r-xl px-3 py-5">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
-                        type="button"
-                        onClick={() => {
-                          setSelectedProduct(product)
-                          setIsSeeMoreOpen(true)
-                        }}
-                      >
-                        See more
-                      </button>
-                      {productActions.length > 0 && (
-                        <StatusAction
-                          actions={productActions}
-                          label={`More actions for product ${product.id}`}
-                          onAction={(action) => {
-                            if (action === 'edit') openEditModal(product)
-                            if (action === 'delete') openDeleteModal(product)
-                          }}
-                        />
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        <ProductsTable
+          products={paginatedProducts}
+          isLoading={list.isLoading}
+          error={list.error}
+          actions={productActions}
+          onShowDetails={(product) => setModal({ type: 'details', product })}
+          onEdit={(product) => setModal({ type: 'edit', product })}
+          onDelete={(product) => setModal({ type: 'delete', product })}
+        />
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-[#737A76]">
-          Showing {paginatedProducts.length} of {rows} products
+          Showing {paginatedProducts.length} of {products.length} products
         </span>
         <div className="flex">
-          <TablePagination currentPage={currentPage} totalPages={filteredPageCount} onPageChange={setCurrentPage} />
+          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
         </div>
       </div>
 
-      {/* MODALS */}
-      
-      <SeeMoreModal onClose={() => setIsSeeMoreOpen(false)} open={isSeeMoreOpen} className="flex h-auto flex-col lg:max-h-[70vh]">
-        <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
-          <div className="flex flex-col justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xs">{selectedProduct ? formatProductId(selectedProduct.id) : ''}</span>
-            </div>
-            <span className="text-xl font-medium text-[#0c0d0d] capitalize">{selectedProduct?.name}</span>
-          </div>
-          <CloseButton onClick={() => setIsSeeMoreOpen(false)} />
-        </div>
+      <ProductDetailsModal product={modal?.type === 'details' ? modal.product : null} onClose={closeModal} />
 
-        <div className="flex h-full w-full flex-col overflow-y-auto p-4">
-          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex h-16 w-full items-center gap-2 rounded-lg bg-[#F0F1F1] px-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#1B1C1C]">
-                <Layers className="h-6 w-6 text-[#777777]" />
-              </span>
-              <div className="flex min-w-0 flex-col">
-                <span className="text-xs">Category</span>
-                <span className="truncate text-base font-semibold capitalize">{selectedProduct?.categoryName ?? 'Uncategorized'}</span>
-              </div>
-            </div>
+      {(modal?.type === 'add' || modal?.type === 'edit') && (
+        <ProductFormModal
+          product={modal.type === 'edit' ? modal.product : null}
+          disabled={mutations.isSubmitting}
+          onClose={closeModal}
+          onSubmit={handleSubmitProduct}
+        />
+      )}
 
-            <div className="flex h-16 w-full items-center gap-2 rounded-lg bg-[#F0F1F1] px-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#1B1C1C]">
-                <Tag className="h-6 w-6 text-[#777777]" />
-              </span>
-              <div className="flex min-w-0 flex-col">
-                <span className="text-xs">Price</span>
-                <span className="truncate text-base font-semibold">
-                  {selectedProduct ? formatPeso(selectedProduct.price) : ''}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-col gap-2">
-            <span className="text-xs uppercase text-[#121514]">Product history</span>
-            <div className="h-px w-full border-b border-[#E2E2E2]" />
-          </div>
-
-          <div className="mt-4 rounded-xl bg-[#F0F1F1] p-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="block text-xs text-[#737A76]">Created at</span>
-                <span className="font-semibold text-[#0c0d0d]">
-                  {selectedProduct ? formatDate(selectedProduct.created_At) : ''}
-                </span>
-              </div>
-              {/* createdBy / updatedBy / updatedAt dto */}
-            </div>
-          </div>
-        </div>
-      </SeeMoreModal>
-
-      <AppModal
-          className="flex flex-col max-h-fit lg:max-w-lg"
-          onClose={() => setIsAddModalOpen(false)}
-          open={isAddModalOpen}
-        >
-          <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
-            <div className="flex flex-col">
-              <span className="text-xs text-[#737A76]">New product item</span>
-              <span className="text-xl font-medium text-[#0c0d0d]">Add product</span>
-            </div>
-            <CloseButton onClick={() => setIsAddModalOpen(false)} />
-          </div>
-
-          <div className="flex flex-col gap-4 p-4">
-            <label className="flex flex-col gap-1 text-sm text-[#121514]">
-              <span className="text-xs text-[#68716C]">Product name</span>
-              <Input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
-                onChange={(event) => updateFormField('name', event.target.value)}
-                value={form.name}
-              />
-            </label>
-
-            <label className="flex flex-col gap-1 text-sm text-[#121514]">
-              <span className="text-xs text-[#68716C]">Category</span>
-              <EntityDropdown
-                emptyLabel="No categories found"
-                isLoading={categoriesLoading}
-                onSelect={(categoryId) => updateFormField('categoryId', categoryId === 0 ? '' : String(categoryId))}
-                options={categoryOptions}
-                placeholder="No category"
-                searchPlaceholder="Search categories..."
-                value={selectedCategoryLabel}
-              />
-            </label>
-
-            <label className="flex flex-col gap-1 text-sm text-[#121514]">
-              <span className="text-xs text-[#68716C]">Price</span>
-              <Input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                min={1}
-                onChange={(event) => updateFormField('price', event.target.value)}
-                type="number"
-                value={form.price}
-              />
-            </label>
-          </div>
-
-          <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
-            <Button
-              className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
-              onClick={() => setIsAddModalOpen(false)}
-              type="button"
-              variant="outline"
-            >
-              Cancel
-            </Button>
-            <Button
-              className="rounded-xl px-3 py-2 text-sm"
-              disabled={!formCanSubmit}
-              onClick={handleAddProduct}
-              type="button"
-            >
-              <Plus className="h-4 w-4" />
-              Add product
-            </Button>
-          </div>
-      </AppModal>
-
-      <AppModal
-          className="flex max-h-fit flex-col lg:max-w-lg"
-          onClose={() => {
-            setIsEditModalOpen(false)
-            resetForm()
-          }}
-          open={isEditModalOpen}
-        >
-          <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
-            <div className="flex flex-col">
-              <span className="text-xs text-[#737A76]">{selectedProduct ? formatProductId(selectedProduct.id) : ''}</span>
-              <span className="text-xl font-medium text-[#0c0d0d]">Edit product</span>
-            </div>
-            <CloseButton
-              onClick={() => {
-                setIsEditModalOpen(false)
-                resetForm()
-              }}
-            />
-          </div>
-
-          <div className="flex flex-col gap-4 p-4">
-            <label className="flex flex-col gap-1 text-sm text-[#121514]">
-              <span className="text-xs text-[#68716C]">Product name</span>
-              <Input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514] capitalize"
-                onChange={(event) => updateFormField('name', event.target.value)}
-                value={form.name}
-              />
-            </label>
-
-            <label className="flex flex-col gap-1 text-sm text-[#121514]">
-              <span className="text-xs text-[#68716C]">Category</span>
-              <EntityDropdown
-                emptyLabel="No categories found"
-                isLoading={categoriesLoading}
-                onSelect={(categoryId) => updateFormField('categoryId', categoryId === 0 ? '' : String(categoryId))}
-                options={categoryOptions}
-                placeholder="No category"
-                searchPlaceholder="Search categories..."
-                value={selectedCategoryLabel}
-              />
-            </label>
-
-            <label className="flex flex-col gap-1 text-sm text-[#121514]">
-              <span className="text-xs text-[#68716C]">Price</span>
-              <Input
-                className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
-                min={1}
-                onChange={(event) => updateFormField('price', event.target.value)}
-                type="number"
-                value={form.price}
-              />
-            </label>
-          </div>
-
-          <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
-            <Button
-              className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
-              onClick={() => {
-                setIsEditModalOpen(false)
-                resetForm()
-              }}
-              type="button"
-              variant="outline"
-            >
-              Cancel
-            </Button>
-            <Button
-              className="rounded-xl px-3 py-2 text-sm"
-              disabled={!formCanSubmit || isSubmitting}
-              onClick={handleUpdateProduct}
-              type="button"
-            >
-              Save changes
-            </Button>
-          </div>
-      </AppModal>
-
-      <AppModal
-          className="flex max-h-fit flex-col lg:max-w-lg"
-          onClose={() => {
-            setIsDeleteModalOpen(false)
-            resetForm()
-          }}
-          open={isDeleteModalOpen}
-        >
-          <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
-            <div className="flex flex-col">
-              <span className="text-xs text-[#737A76]">{selectedProduct ? formatProductId(selectedProduct.id) : ''}</span>
-              <span className="text-xl font-medium text-[#0c0d0d]">Delete product</span>
-            </div>
-            <CloseButton
-              onClick={() => {
-                setIsDeleteModalOpen(false)
-                resetForm()
-              }}
-            />
-          </div>
-
-          <div className="flex flex-col gap-2 p-4">
-            <span className="text-sm text-[#121514]">
-              Are you sure you want to delete this product?
-            </span>
-            <span className="text-sm font-medium text-[#0c0d0d] capitalize">
-              {selectedProduct?.name}
-            </span>
-          </div>
-
-          <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
-            <Button
-              className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
-              onClick={() => {
-                setIsDeleteModalOpen(false)
-                resetForm()
-              }}
-              type="button"
-              variant="outline"
-            >
-              Cancel
-            </Button>
-            <Button
-              className="rounded-xl px-3 py-2 text-sm"
-              disabled={isSubmitting || !selectedProduct}
-              onClick={handleDeleteProduct}
-              type="button"
-              variant="destructive"
-            >
-              Delete product
-            </Button>
-          </div>
-      </AppModal>
+      <DeleteConfirmModal
+        open={modal?.type === 'delete'}
+        onClose={closeModal}
+        onConfirm={handleDeleteProduct}
+        entityName="product"
+        subtitle={modal?.type === 'delete' ? formatProductId(modal.product.id) : ''}
+        itemLabel={modal?.type === 'delete' ? modal.product.name : null}
+        disabled={mutations.isSubmitting}
+      />
     </section>
+  )
+}
+
+function exportProducts(products: ProductListItem[]) {
+  exportToCSV(
+    products,
+    [
+      { header: 'Product ID', value: (product) => formatProductId(product.id) },
+      { header: 'Category', value: (product) => product.categoryName ?? 'Uncategorized' },
+      { header: 'Product name', value: (product) => product.name },
+      { header: 'Price', value: (product) => product.price },
+      { header: 'Created at', value: (product) => formatDate(product.created_At) },
+    ],
+    'products'
   )
 }
