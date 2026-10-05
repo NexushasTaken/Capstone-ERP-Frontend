@@ -1,5 +1,8 @@
-import AuditLogsView from '@/app/dashboard/audit-logs/_components/AuditLogsView'
+import type { Metadata } from 'next'
+import AuditLogsView from './_components/AuditLogsView'
 
-export default function AuditLogs() {
+export const metadata: Metadata = { title: 'Audit logs' }
+
+export default function AuditLogsPage() {
   return <AuditLogsView />
 }

@@ -1,5 +1,8 @@
-import CategoriesView from '@/app/dashboard/category/_components/CategoriesView'
+import type { Metadata } from 'next'
+import CategoriesView from './_components/CategoriesView'
 
-export default function Category() {
+export const metadata: Metadata = { title: 'Categories' }
+
+export default function CategoriesPage() {
   return <CategoriesView />
 }

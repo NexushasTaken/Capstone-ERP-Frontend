@@ -1,5 +1,8 @@
-import AccountSettingsView from '@/app/dashboard/account-settings/_components/AccountSettingsView'
+import type { Metadata } from 'next'
+import AccountSettingsView from './_components/AccountSettingsView'
 
-export default function AccountSettings() {
+export const metadata: Metadata = { title: 'Account settings' }
+
+export default function AccountSettingsPage() {
   return <AccountSettingsView />
 }

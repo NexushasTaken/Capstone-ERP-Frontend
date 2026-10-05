@@ -1,5 +1,8 @@
-import AccountsView from '@/app/dashboard/accounts/_components/AccountsView'
+import type { Metadata } from 'next'
+import AccountsView from './_components/AccountsView'
 
-export default function Accounts() {
+export const metadata: Metadata = { title: 'Accounts' }
+
+export default function AccountsPage() {
   return <AccountsView />
 }

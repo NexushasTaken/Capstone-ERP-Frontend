@@ -1,8 +1,8 @@
-import DashboardView from '@/app/dashboard/_components/DashboardView'
-import React from 'react'
+import type { Metadata } from 'next'
+import DashboardView from './_components/DashboardView'
 
-export default function Dashboard() {
-  return (
-      <DashboardView />
-  )
+export const metadata: Metadata = { title: 'Dashboard' }
+
+export default function DashboardPage() {
+  return <DashboardView />
 }

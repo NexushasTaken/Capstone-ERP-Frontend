@@ -1,8 +1,8 @@
-import ProductsView from '@/app/dashboard/product/_components/ProductsView'
-import React from 'react'
+import type { Metadata } from 'next'
+import ProductsView from './_components/ProductsView'
 
-export default function Product() {
-  return (
-    <ProductsView />
-  )
+export const metadata: Metadata = { title: 'Products' }
+
+export default function ProductsPage() {
+  return <ProductsView />
 }
