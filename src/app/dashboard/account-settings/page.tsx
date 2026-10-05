@@ -1,5 +1,5 @@
-import AccountSettingsForm from '@/app/components/account/AccountSettingsForm'
+import AccountSettingsView from '@/app/dashboard/account-settings/_components/AccountSettingsView'
 
 export default function AccountSettings() {
-  return <AccountSettingsForm />
+  return <AccountSettingsView />
 }

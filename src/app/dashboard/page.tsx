@@ -1,8 +1,8 @@
-import DashboardPage from '@/app/components/DashboardPage'
+import DashboardView from '@/app/dashboard/_components/DashboardView'
 import React from 'react'
 
 export default function Dashboard() {
   return (
-      <DashboardPage />
+      <DashboardView />
   )
 }
