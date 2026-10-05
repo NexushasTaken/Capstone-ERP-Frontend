@@ -53,12 +53,12 @@ export default function AuditFilterDropdown<T extends string | number>({
         }}
         className="cursor-pointer items-start gap-2 px-2 py-2"
       >
-        <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-[#C9D1CB]">
+        <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-border">
           {checked && <Check className="h-3 w-3" />}
         </span>
         <span className="flex min-w-0 flex-col">
           <span className="truncate capitalize">{itemLabel}</span>
-          {description && <span className="truncate text-xs text-[#737A76]">{description}</span>}
+          {description && <span className="truncate text-xs text-muted-foreground">{description}</span>}
         </span>
       </DropdownMenuItem>
     )
@@ -69,15 +69,15 @@ export default function AuditFilterDropdown<T extends string | number>({
       <DropdownMenuTrigger
         render={
           <Button
-            className={`rounded-xl cursor-pointer border-[#DFE2E0] px-3 py-2 text-sm ${
-              selected ? 'border-[#121514] text-[#121514]' : ''
+            className={`rounded-xl cursor-pointer border-border px-3 py-2 text-sm ${
+              selected ? 'border-foreground text-foreground' : ''
             }`}
             type="button"
             variant="outline"
           />
         }
       >
-        <span className="text-[#737A76]">{label}:</span>
+        <span className="text-muted-foreground">{label}:</span>
         <span className="max-w-32 truncate capitalize">{selected?.label ?? 'All'}</span>
         <ChevronDown className="h-4 w-4" />
       </DropdownMenuTrigger>
@@ -88,7 +88,7 @@ export default function AuditFilterDropdown<T extends string | number>({
           {searchPlaceholder && (
             <div className="px-1.5 pb-2">
               <Input
-                className="h-9 w-full rounded-lg border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
                 onChange={(event) => setSearch(event.target.value)}
                 onClick={(event) => event.stopPropagation()}
                 onKeyDown={(event) => event.stopPropagation()}
@@ -102,7 +102,7 @@ export default function AuditFilterDropdown<T extends string | number>({
           <div className="max-h-72 overflow-y-auto">
             {!normalizedSearch && renderItem(null, allLabel)}
             {filteredOptions.length === 0 ? (
-              <div className="px-2 py-3 text-sm text-[#737A76]">No matches found.</div>
+              <div className="px-2 py-3 text-sm text-muted-foreground">No matches found.</div>
             ) : (
               filteredOptions.map((option) => renderItem(option.value, option.label, option.description))
             )}

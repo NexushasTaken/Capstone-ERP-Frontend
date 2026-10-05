@@ -70,8 +70,8 @@ export default function DashboardShell({ children }: DashboardShellProps) {
         aria-label="Open navigation"
         className={`
           fixed top-4 left-1/2 z-40 -translate-x-1/2
-          cursor-pointer rounded-full border border-[#E1E4E2]
-          bg-[#121514] p-2 text-white xl:hidden
+          cursor-pointer rounded-full border border-border
+          bg-primary p-2 text-primary-foreground xl:hidden
           transition-all duration-300 ease-out
           ${
             showMenuButton

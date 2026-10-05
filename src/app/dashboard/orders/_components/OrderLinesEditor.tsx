@@ -51,8 +51,8 @@ export default function OrderLinesEditor({
     <div className="flex flex-col">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col">
-          <span className="text-xl font-medium text-[#0c0d0d]">Order items</span>
-          <span className="text-sm text-[#737A76]">Add one or more products to this order.</span>
+          <span className="text-xl font-medium text-foreground">Order items</span>
+          <span className="text-sm text-muted-foreground">Add one or more products to this order.</span>
         </div>
         <Button
           className="w-full rounded-xl px-3 py-2 text-sm sm:w-auto"
@@ -65,22 +65,22 @@ export default function OrderLinesEditor({
         </Button>
       </div>
 
-      <div className="overflow-auto max-h-96 rounded-xl border border-[#DFE2E0]">
+      <div className="overflow-auto max-h-96 rounded-xl border border-border">
         <Table>
-          <TableHeader className="bg-[#F7F8F8]">
+          <TableHeader className="bg-muted/50">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="w-14 text-center text-[#121514]">#</TableHead>
-              <TableHead className="min-w-72 text-[#121514]">Product</TableHead>
-              <TableHead className="w-36 text-center text-[#121514]">Unit price</TableHead>
-              <TableHead className="w-40 text-center text-[#121514]">Quantity</TableHead>
-              <TableHead className="w-36 text-center text-[#121514]">Subtotal</TableHead>
-              <TableHead className="w-24 text-center text-[#121514]">Action</TableHead>
+              <TableHead className="w-14 text-center text-foreground">#</TableHead>
+              <TableHead className="min-w-72 text-foreground">Product</TableHead>
+              <TableHead className="w-36 text-center text-foreground">Unit price</TableHead>
+              <TableHead className="w-40 text-center text-foreground">Quantity</TableHead>
+              <TableHead className="w-36 text-center text-foreground">Subtotal</TableHead>
+              <TableHead className="w-24 text-center text-foreground">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {lineRows.map((line, index) => (
-              <TableRow className="hover:bg-[#F7F8F8]" key={index}>
-                <TableCell className="text-center font-medium text-[#121514]">{index + 1}</TableCell>
+              <TableRow className="hover:bg-accent" key={index}>
+                <TableCell className="text-center font-medium text-foreground">{index + 1}</TableCell>
                 <TableCell>
                   <div className="flex flex-col gap-1">
                     <EntityDropdown
@@ -100,25 +100,25 @@ export default function OrderLinesEditor({
                       value={line.product?.name ?? ''}
                     />
                     {line.product ? (
-                      <span className="text-xs text-[#737A76]">ID: {line.product.id}</span>
+                      <span className="text-xs text-muted-foreground">ID: {line.product.id}</span>
                     ) : null}
                   </div>
                 </TableCell>
-                <TableCell className="text-center text-[#121514]">{formatPeso(line.unitPrice)}</TableCell>
+                <TableCell className="text-center text-foreground">{formatPeso(line.unitPrice)}</TableCell>
                 <TableCell>
                   <Input
-                    className="mx-auto h-10 w-28 rounded-xl border border-[#DFE2E0] bg-white px-3 text-center text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+                    className="mx-auto h-10 w-28 rounded-xl border border-border bg-background px-3 text-center text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
                     min={1}
                     onChange={(event) => updateLine(index, 'quantity', event.target.value)}
                     type="number"
                     value={line.quantity || ''}
                   />
                 </TableCell>
-                <TableCell className="text-center font-medium text-[#121514]">{formatPeso(line.subtotal)}</TableCell>
+                <TableCell className="text-center font-medium text-foreground">{formatPeso(line.subtotal)}</TableCell>
                 <TableCell className="text-center">
                   <button
                     aria-label="Remove order line"
-                    className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[#F4B2B2] bg-white text-[#D92D20] transition-colors hover:bg-[#FFF4F4]"
+                    className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-destructive/30 bg-background text-destructive transition-colors hover:bg-destructive/10"
                     disabled={lines.length === 1}
                     onClick={() => onChange(lines.filter((_, lineIndex) => lineIndex !== index))}
                     type="button"
@@ -129,12 +129,12 @@ export default function OrderLinesEditor({
               </TableRow>
             ))}
           </TableBody>
-          <TableFooter className="border-t border-[#DFE2E0] bg-white">
+          <TableFooter className="border-t border-border bg-background">
             <TableRow className="hover:bg-transparent">
-              <TableCell className="text-right text-sm font-semibold uppercase text-[#121514]" colSpan={4}>
+              <TableCell className="text-right text-sm font-semibold uppercase text-foreground" colSpan={4}>
                 Total
               </TableCell>
-              <TableCell className="text-center text-base font-medium text-[#159947]">
+              <TableCell className="text-center text-base font-medium text-green-700">
                 {formatPeso(totalAmount)}
               </TableCell>
               <TableCell />

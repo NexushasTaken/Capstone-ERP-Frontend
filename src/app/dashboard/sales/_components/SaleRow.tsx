@@ -41,7 +41,7 @@ export default function SaleRow({ sale, columnCount, isExpanded, onExpandedChang
         <TableCell className="px-3 py-4">
           <CollapsibleTrigger
             type="button"
-            className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#DFE2E0] bg-white px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
+            className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-accent"
             aria-label={'View ' + formatSaleId(sale.id) + ' details'}
           >
             View
@@ -74,19 +74,19 @@ function SaleDetails({ sale }: { sale: Sale }) {
   ]
 
   return (
-    <div className="border-t border-[#E2E2E2] bg-white p-4">
+    <div className="border-t border-border bg-background p-4">
       <dl className="grid grid-cols-4 gap-4 text-sm">
         {details.map(([label, value]) => (
           <div key={label}>
-            <dt className="text-xs text-[#737A76]">{label}</dt>
-            <dd className="wrap-break-word font-medium text-[#121514] capitalize">{value}</dd>
+            <dt className="text-xs text-muted-foreground">{label}</dt>
+            <dd className="wrap-break-word font-medium text-foreground capitalize">{value}</dd>
           </div>
         ))}
       </dl>
-      <div className="mt-5 max-h-80 overflow-auto rounded-lg border border-[#E2E2E2] scrollbar-none">
+      <div className="mt-5 max-h-80 overflow-auto rounded-lg border border-border scrollbar-none">
         <table className="w-full text-left text-sm">
           <caption className="sr-only">Sale products</caption>
-          <thead className="sticky top-0 bg-[#F0F1F1] text-xs text-[#737A76]">
+          <thead className="sticky top-0 bg-muted text-xs text-muted-foreground">
             <tr>
               {['Product', 'Quantity', 'Unit price', 'Amount'].map((column) => (
                 <th key={column} scope="col" className="px-3 py-2 font-normal">{column}</th>
@@ -95,7 +95,7 @@ function SaleDetails({ sale }: { sale: Sale }) {
           </thead>
           <tbody>
             {sale.orders.map((item, index) => (
-              <tr key={`${sale.id}-${index}`} className="border-t border-[#E2E2E2]">
+              <tr key={`${sale.id}-${index}`} className="border-t border-border">
                 <td className="px-3 py-3 capitalize">{item.productName}</td>
                 <td className="px-3 py-3">{item.quantity}</td>
                 <td className="whitespace-nowrap px-3 py-3">{formatPeso(item.price)}</td>
@@ -103,7 +103,7 @@ function SaleDetails({ sale }: { sale: Sale }) {
               </tr>
             ))}
             {sale.orders.length === 0 && (
-              <tr><td colSpan={4} className="px-3 py-3 text-[#737A76]">No products recorded.</td></tr>
+              <tr><td colSpan={4} className="px-3 py-3 text-muted-foreground">No products recorded.</td></tr>
             )}
           </tbody>
         </table>

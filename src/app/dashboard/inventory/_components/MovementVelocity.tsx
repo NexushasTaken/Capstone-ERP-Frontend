@@ -20,9 +20,9 @@ export default function MovementVelocity() {
   })
 
   return (
-    <article className="rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm flex flex-col h-96">
+    <article className="rounded-2xl border border-border bg-background p-5 shadow-sm flex flex-col h-96">
       <div className="flex w-full justify-between gap-4">
-        <h2 className="font-semibold text-[#0c0d0d]">
+        <h2 className="font-semibold text-foreground">
           Movement Velocity
         </h2>
 
@@ -53,15 +53,15 @@ export default function MovementVelocity() {
             <Loading />
           </div>
         ) : isError ? (
-          <div role="alert" className="space-y-2 text-sm text-red-600">
+          <div role="alert" className="space-y-2 text-sm text-destructive">
             <p>Unable to load movement velocity.</p>
             <Button variant="outline" size="sm" onClick={() => void refetch()}>Retry</Button>
           </div>
         ) : !data?.items.length ? (
-          <p className="text-sm text-[#68716C]">No inventory movement found for this period.</p>
+          <p className="text-sm text-muted-foreground">No inventory movement found for this period.</p>
         ) : (
           <table className="w-full text-left text-sm">
-            <thead className="text-xs text-[#68716C]">
+            <thead className="text-xs text-muted-foreground">
               <tr>
                 <th scope="col" className="pb-3 pr-3">Inventory</th>
                 <th scope="col" className="pb-3 pr-3">Warehouse</th>
@@ -70,7 +70,7 @@ export default function MovementVelocity() {
             </thead>
             <tbody>
               {data.items.map((item) => (
-                <tr key={item.inventoryId} className="border-t border-[#E7ECE8]">
+                <tr key={item.inventoryId} className="border-t border-border">
                   <td className="py-3 pr-3 capitalize">{item.name}</td>
                   <td className="py-3 pr-3">{item.warehouse}</td>
                   <td className="py-3 pr-3">{item.classification}</td>
@@ -82,7 +82,7 @@ export default function MovementVelocity() {
       </div>
       {!isLoading && !isError && data && (
         <div className="flex w-full mt-4 overflow-x-auto justify-between items-center">
-          <p className="text-xs text-[#68716C] flex">Showing {data.items.length.toLocaleString()} out of {data.rows.toLocaleString()} inventories</p>
+          <p className="text-xs text-muted-foreground flex">Showing {data.items.length.toLocaleString()} out of {data.rows.toLocaleString()} inventories</p>
           <div className='flex'>
             {data.pageCount > 1 && (
               <TablePagination currentPage={currentPage} totalPages={data.pageCount} onPageChange={setCurrentPage} />

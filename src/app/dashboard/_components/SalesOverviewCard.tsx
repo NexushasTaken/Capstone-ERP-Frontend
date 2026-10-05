@@ -60,11 +60,11 @@ export default function SalesOverviewCard() {
   const growthErrorMessage = salesOverview?.growthErrorMessage?.trim()
 
   return (
-    <div className="flex shrink-0 flex-col gap-4 rounded-lg bg-[#EBF3ED] p-4">
+    <div className="flex shrink-0 flex-col gap-4 rounded-lg bg-muted p-4">
       <div className='flex flex-col xl:flex-row w-full'>
         <div className="flex min-h-76 w-full flex-col gap-4 p-4">
           <div className="flex w-full flex-wrap gap-4 justify-between items-center">
-            <span className="text-[#0c0d0d] text-lg font-medium md:text-2xl">
+            <span className="text-foreground text-lg font-medium md:text-2xl">
               Sales Overview
             </span>
             <div className="flex flex-wrap items-end gap-2">
@@ -105,7 +105,7 @@ export default function SalesOverviewCard() {
                 />
               </div>
               <Popover>
-                <PopoverTrigger className="bg-transparent border-2 border-[#C6C6C7] rounded-xl text-[#0c0d0d] font-medium p-2 cursor-pointer transition-all duration-300 hover:scale-105 group">
+                <PopoverTrigger className="bg-transparent border-2 border-border rounded-xl text-foreground font-medium p-2 cursor-pointer transition-all duration-300 hover:scale-105 group">
                   <ArrowUpDown className="transition-all group-hover:scale-105" />
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-60">
@@ -122,13 +122,13 @@ export default function SalesOverviewCard() {
                           key={option.value}
                           type="button"
                           onClick={() => setSalesChartType(option.value)}
-                          className={`flex w-full items-center justify-between px-4 py-2 text-sm transition-colors hover:bg-[#F7F9F7] ${selected ? 'bg-[#F7F9F7] font-medium' : ''
+                          className={`flex w-full items-center justify-between px-4 py-2 text-sm transition-colors hover:bg-accent ${selected ? 'bg-muted/50 font-medium' : ''
                             }`}
                         >
                           <span>{option.label}</span>
 
                           {selected && (
-                            <Check size={16} className="text-[#121514]" />
+                            <Check size={16} className="text-foreground" />
                           )}
                         </button>
                       )
@@ -141,11 +141,11 @@ export default function SalesOverviewCard() {
 
           <div className='relative w-full min-h-0 flex-1'>
             <div className="flex flex-wrap items-end gap-3">
-              <span className="text-4xl font-bold text-[#0c0d0d] md:text-5xl">
-                <span className="text-[#909191]">&#8369;</span>
+              <span className="text-4xl font-bold text-foreground md:text-5xl">
+                <span className="text-muted-foreground">&#8369;</span>
                 {isSalesOverviewLoading ? '...' : formatDashboardPeso(totalSales)}
               </span>
-              <span className="inline-flex items-center gap-1 rounded-md text-nowrap border border-[#D7DFD9] bg-[#F4F7F4] px-2 py-1 text-xs text-[#68716C] md:text-sm">
+              <span className="inline-flex items-center gap-1 rounded-md text-nowrap border border-border bg-muted/50 px-2 py-1 text-xs text-muted-foreground md:text-sm">
                 {growthPercentage.toFixed(1)}% 
                 {!growthErrorMessage && (growthPercentage < 0 ? (
                   <MoveDownRight className="h-4 w-4" />
@@ -154,13 +154,13 @@ export default function SalesOverviewCard() {
                 ))}
               </span>
               {growthErrorMessage && (
-                <span className="text-xs text-red-600 md:text-sm">
+                <span className="text-xs text-destructive md:text-sm">
                   {growthErrorMessage}
                 </span>
               )}
             </div>
             {salesOverviewError ? (
-              <div className="flex h-full min-h-64 items-center justify-center text-sm text-red-500">
+              <div className="flex h-full min-h-64 items-center justify-center text-sm text-destructive">
                 {salesOverviewError instanceof Error ? salesOverviewError.message : 'Failed to load sales overview'}
               </div>
             ) : (

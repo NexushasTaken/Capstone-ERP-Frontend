@@ -1,7 +1,7 @@
 export const getNavItemClasses = (isActive: boolean) =>
     isActive
-      ? 'bg-[#0c0d0d] text-[#F2F0F0] hover:bg-[#1B1C1C] duration-300 transition-all'
-      : 'text-[#0c0d0d] hover:bg-[#F0F1F1] duration-300 transition-all'
+      ? 'bg-primary text-primary-foreground hover:bg-primary/90 duration-300 transition-all'
+      : 'text-foreground hover:bg-accent duration-300 transition-all'
 
 export const profileFallback = {
   firstName: 'User',

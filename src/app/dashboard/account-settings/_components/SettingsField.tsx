@@ -12,10 +12,10 @@ interface SettingsFieldProps extends Omit<ComponentProps<typeof Input>, 'onChang
 
 export function SettingsField({ label, onChange, ...inputProps }: SettingsFieldProps) {
   return (
-    <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-[#121514]`}>
-      <span className="text-[#68716C]">{label}</span>
+    <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-foreground`}>
+      <span className="text-muted-foreground">{label}</span>
       <Input
-        className="h-10 rounded-xl border border-[#DFE2E0] bg-white px-3 text-sm outline-none focus:border-[#121514] focus:ring-1 focus:ring-[#121514]"
+        className="h-10 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
         onChange={(event) => onChange(event.target.value)}
         {...inputProps}
       />
@@ -35,8 +35,8 @@ export function SettingsRow({ children }: { children: ReactNode }) {
 export function SettingsHeading({ title, description }: { title: string; description: string }) {
   return (
     <div className="flex flex-col gap-1">
-      <h2 className="text-lg font-medium text-[#121514]">{title}</h2>
-      <p className="text-sm text-[#737A76]">{description}</p>
+      <h2 className="text-lg font-medium text-foreground">{title}</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   )
 }

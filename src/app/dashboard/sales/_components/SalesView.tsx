@@ -47,7 +47,7 @@ export default function SalesView() {
   }
 
   return (
-    <section className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white">
+    <section className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-background">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <PageTitle title="Sales" count={rows} />
 
@@ -87,7 +87,7 @@ export default function SalesView() {
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
-        <span className="text-sm text-[#737A76]">
+        <span className="text-sm text-muted-foreground">
           Showing {sales.length} of {rows} sales
           {isFetching ? ' - Updating...' : ''}
         </span>

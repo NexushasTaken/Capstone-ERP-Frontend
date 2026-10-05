@@ -24,16 +24,16 @@ export default function EditAccountRoleModal({ account, disabled, onClose, onSub
       <ModalHeader subtitle={formatAccountId(account.id)} title="Edit account" onClose={onClose} />
       <ModalBody>
         <div className="flex flex-col">
-          <span className="font-medium text-[#0c0d0d] capitalize">
+          <span className="font-medium text-foreground capitalize">
             {`${account.lastName}, ${account.firstName}`}
           </span>
-          <span className="text-sm text-[#ACABAA]">{account.email}</span>
+          <span className="text-sm text-muted-foreground">{account.email}</span>
         </div>
 
         <FormField label="Role">
           <RoleSelect value={role} onChange={setRole} disabled={isLocked} />
           {isLocked && (
-            <span className="text-xs text-[#ACABAA]">This account&apos;s role cannot be changed.</span>
+            <span className="text-xs text-muted-foreground">This account&apos;s role cannot be changed.</span>
           )}
         </FormField>
       </ModalBody>

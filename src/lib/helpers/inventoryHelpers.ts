@@ -24,22 +24,22 @@ export function capitalize(value: string) {
 }
 
 export const statusDotColors: Record<string, string> = {
-  critical: 'bg-[#D92D20]',
-  available: 'bg-[#31723B]',
-  'low stock': 'bg-[#D98C00]',
-  pending: 'bg-[#9CA3AF]',
+  critical: 'bg-destructive',
+  available: 'bg-green-600',
+  'low stock': 'bg-amber-500',
+  pending: 'bg-muted-foreground',
 }
 export const statusTextColors: Record<string, string> = {
-  critical: 'text-[#B42318]',
-  available: 'text-[#31723B]',
-  'low stock': 'text-[#9A6700]',
-  pending: 'text-[#6B7280]',
+  critical: 'text-destructive',
+  available: 'text-green-700',
+  'low stock': 'text-amber-700',
+  pending: 'text-muted-foreground',
 }
 
 export function getInventoryStatusStyleFromLabel(status: string) {
   return {
-    dotClassName: statusDotColors[status] ?? 'bg-[#737A76]',
-    labelClassName: statusTextColors[status] ?? 'text-[#737A76]',
+    dotClassName: statusDotColors[status] ?? 'bg-muted-foreground',
+    labelClassName: statusTextColors[status] ?? 'text-muted-foreground',
   }
 }
 

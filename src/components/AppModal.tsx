@@ -24,7 +24,7 @@ export default function AppModal({
       <DialogContent
         showCloseButton={false}
         className={cn(
-          'h-full w-full max-w-none gap-0 rounded-none bg-white p-0 text-base sm:max-w-none lg:rounded-lg xl:h-auto',
+          'h-full w-full max-w-none gap-0 rounded-none bg-background p-0 text-base sm:max-w-none lg:rounded-lg xl:h-auto',
           className
         )}
       >
@@ -40,10 +40,10 @@ export const ModalTitle = DialogTitle
 // Small caption (e.g. an ID) above the title, close button on the right.
 export function ModalHeader({ subtitle, title, onClose }: { subtitle?: ReactNode; title: ReactNode; onClose: () => void }) {
   return (
-    <div className="flex w-full items-center justify-between gap-2 border-b border-[#E2E2E2] p-4">
+    <div className="flex w-full items-center justify-between gap-2 border-b border-border p-4">
       <div className="flex flex-col">
-        <span className="text-xs text-[#737A76]">{subtitle}</span>
-        <DialogTitle className="text-xl font-medium text-[#0c0d0d]">{title}</DialogTitle>
+        <span className="text-xs text-muted-foreground">{subtitle}</span>
+        <DialogTitle className="text-xl font-medium text-foreground">{title}</DialogTitle>
       </div>
       <CloseButton onClick={onClose} />
     </div>
@@ -73,9 +73,9 @@ export function ModalActions({
   destructive = false,
 }: ModalActionsProps) {
   return (
-    <div className="flex justify-end gap-2 border-t border-[#E2E2E2] p-4">
+    <div className="flex justify-end gap-2 border-t border-border p-4">
       <Button
-        className="rounded-xl border-[#DFE2E0] px-3 py-2 text-sm"
+        className="rounded-xl border-border px-3 py-2 text-sm"
         onClick={onCancel}
         type="button"
         variant="outline"

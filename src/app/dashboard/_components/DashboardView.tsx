@@ -4,7 +4,7 @@ import SalesOverviewCard from './SalesOverviewCard'
 
 export default function DashboardView() {
   return (
-    <div className="flex h-dvh scrollbar-none w-full flex-col gap-4 overflow-auto p-3 bg-white">
+    <div className="flex h-dvh scrollbar-none w-full flex-col gap-4 overflow-auto p-3 bg-background">
       <SalesOverviewCard />
 
       <div className="flex flex-col xl:flex-row gap-4 w-full">

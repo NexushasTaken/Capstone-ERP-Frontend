@@ -58,7 +58,7 @@ export default function InventoryTable({ items, isLoading, error, actions, onSho
             <TableCell className="px-3 py-4">
               <div className="flex items-center justify-end gap-2">
                 <button
-                  className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
+                  className="cursor-pointer rounded-xl border border-border px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-accent"
                   type="button"
                   onClick={() => onShowDetails(item)}
                 >

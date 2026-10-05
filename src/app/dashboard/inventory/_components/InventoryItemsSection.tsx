@@ -126,7 +126,7 @@ export default function InventoryItemsSection() {
   }
 
   return (
-    <section id="RawMaterials" className="relative flex w-full scroll-mt-6 flex-col rounded-2xl p-4 shadow-sm lg:p-5 border border-[#DCE4DE]">
+    <section id="RawMaterials" className="relative flex w-full scroll-mt-6 flex-col rounded-2xl p-4 shadow-sm lg:p-5 border border-border">
       <span id="Risks" className="absolute -top-6" aria-hidden="true" />
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <PageTitle as="h2" title="Inventory items" count={countsAvailable ? selectedFilterCount.toLocaleString() : '-'} />
@@ -153,8 +153,8 @@ export default function InventoryItemsSection() {
               }}
               className={`cursor-pointer rounded-xl border px-3 py-2 text-sm whitespace-nowrap transition-colors ${
                 selectedFilter === filter.label
-                  ? 'border-[#121514] bg-[#121514] text-white'
-                  : 'border-[#E1E4E2] bg-white text-[#121514] hover:bg-[#DCE4DF]'
+                  ? 'border-foreground bg-primary text-primary-foreground'
+                  : 'border-border bg-background text-foreground hover:bg-accent'
               }`}
             >
               {filter.label === 'All' ? 'All' : capitalize(filter.label)}
@@ -198,7 +198,7 @@ export default function InventoryItemsSection() {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-0 w-full justify-between items-center">
-        <span className="text-sm text-[#737A76]">
+        <span className="text-sm text-muted-foreground">
           Showing {inventories.length} of {rows} inventory items
         </span>
         <div className="flex">

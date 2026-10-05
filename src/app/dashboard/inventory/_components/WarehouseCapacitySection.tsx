@@ -75,15 +75,15 @@ export default function WarehouseCapacitySection() {
 
   return (
     <section id="WarehouseCapacity" className="grid scroll-mt-6 gap-5">
-      <article className="flex min-h-85 flex-col rounded-2xl border border-[#DCE4DE] bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-[#E7ECE8] pb-4 xl:flex-row xl:items-start xl:justify-between">
+      <article className="flex min-h-85 flex-col rounded-2xl border border-border bg-background p-5 shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-border pb-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="flex items-center gap-2">
-            <span className="rounded-lg bg-[#EBF3ED] p-2 text-[#0c0d0d]">
+            <span className="rounded-lg bg-muted p-2 text-foreground">
               <Warehouse className="h-5 w-5" />
             </span>
             <div>
-              <h2 className="font-semibold text-[#0c0d0d]">Warehouse capacity</h2>
-              <p className="text-sm text-[#68716C]">
+              <h2 className="font-semibold text-foreground">Warehouse capacity</h2>
+              <p className="text-sm text-muted-foreground">
                 {formatNumber(chartWarehouses.length)} warehouses tracked
               </p>
             </div>
@@ -113,32 +113,32 @@ export default function WarehouseCapacitySection() {
         </div>
 
         <div className="mt-5 grid gap-4 xl:grid-cols-4">
-          <div className="rounded-xl border border-[#E2E2E2] bg-[#FAFBFA] p-4">
+          <div className="rounded-xl border border-border bg-muted/50 p-4">
             <div className="flex flex-col">
-              <h3 className="text-sm font-semibold text-[#0c0d0d]">Total capacity</h3>
-              <p className="text-xs text-[#68716C]">All added warehouses</p>
+              <h3 className="text-sm font-semibold text-foreground">Total capacity</h3>
+              <p className="text-xs text-muted-foreground">All added warehouses</p>
             </div>
             <WarehouseCapacityChart capacity={totalCapacity} />
           </div>
 
           <div className="grid gap-4 xl:col-span-3 xl:grid-cols-3">
             {isLoading ? (
-              <div className="flex min-h-72 items-center justify-center rounded-xl border border-dashed border-[#DCE4DE] bg-[#FAFBFA] text-sm text-[#737A76] xl:col-span-3">
+              <div className="flex min-h-72 items-center justify-center rounded-xl border border-dashed border-border bg-muted/50 text-sm text-muted-foreground xl:col-span-3">
                 <Loading />
               </div>
             ) : selectedWarehouses.length === 0 ? (
-              <div className="flex min-h-72 items-center justify-center rounded-xl border border-dashed border-[#DCE4DE] bg-[#FAFBFA] text-sm text-[#737A76] xl:col-span-3">
+              <div className="flex min-h-72 items-center justify-center rounded-xl border border-dashed border-border bg-muted/50 text-sm text-muted-foreground xl:col-span-3">
                 Select warehouse charts from the dropdown.
               </div>
             ) : (
               selectedWarehouses.map((warehouse) => (
-                <div className="rounded-xl border border-[#E2E2E2] bg-white p-4" key={warehouse.id}>
+                <div className="rounded-xl border border-border bg-background p-4" key={warehouse.id}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 flex-col">
-                      <h3 className="truncate text-sm font-semibold text-[#0c0d0d] capitalize">
+                      <h3 className="truncate text-sm font-semibold text-foreground capitalize">
                         {warehouse.name}
                       </h3>
-                      <p className="truncate text-xs text-[#68716C]">
+                      <p className="truncate text-xs text-muted-foreground">
                         {warehouse.address}
                       </p>
                     </div>

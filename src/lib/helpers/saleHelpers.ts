@@ -24,11 +24,11 @@ export function getSaleStatusLabel(sale: Sale): string {
 }
 
 const statusDotColors: Record<string, string> = {
-  Processing: 'bg-[#F7A33C]',
-  Completed: 'bg-[#39B82C]',
-  Cancelled: 'bg-[#E75959]',
+  Processing: 'bg-amber-500',
+  Completed: 'bg-green-600',
+  Cancelled: 'bg-destructive',
 }
 
 export function saleStatusDotClass(statusLabel: string) {
-  return statusDotColors[statusLabel] ?? 'bg-[#737A76]'
+  return statusDotColors[statusLabel] ?? 'bg-muted-foreground'
 }
