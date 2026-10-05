@@ -1,8 +1,6 @@
-import type { ProductCategoryFilter, ProductListItem, ProductSortBy, ProductSortOption } from "@/types/product"
+import type { ProductCategoryFilter, ProductSortBy, ProductSortOption } from "@/types/product"
 
 export const ITEMS_PER_PAGE = 10
-// The page loads up to this many products at once, then filters, sorts and pages them in the browser.
-export const PRODUCT_LOAD_PAGE_SIZE = 1000
 
 export const productFilters: ProductCategoryFilter[] = ["Categorized", "Uncategorized"]
 
@@ -24,29 +22,16 @@ export function formatProductId(productId: string | number) {
   return `PR-${productId}`
 }
 
-export function hasCategory(product: ProductListItem) {
-  return product.categoryId !== null && product.categoryId !== 0
-}
-
-export function matchesFilter(product: ProductListItem, filter: ProductCategoryFilter) {
-  return filter === "Categorized" ? hasCategory(product) : !hasCategory(product)
-}
-
-export function sortProducts(products: ProductListItem[], sortBy: ProductSortBy, sortOrder: "asc" | "desc") {
-  const direction = sortOrder === "asc" ? 1 : -1
-
-  return [...products].sort((a, b) => {
-    switch (sortBy) {
-      case "id":
-        return (a.id - b.id) * direction
-      case "name":
-        return a.name.localeCompare(b.name) * direction
-      case "price":
-        return (a.price - b.price) * direction
-      case "createdAt":
-        return (Date.parse(a.created_At) - Date.parse(b.created_At)) * direction
-      default:
-        return 0
-    }
-  })
+// The backend's `filter` sort code for GET /api/Product/all.
+export function getProductFilter(sortBy: ProductSortBy, sortOrder: "asc" | "desc") {
+  switch (sortBy) {
+    case "id":
+      return 1
+    case "name":
+      return sortOrder === "asc" ? 2 : 3
+    case "price":
+      return sortOrder === "asc" ? 4 : 5
+    default:
+      return 0
+  }
 }

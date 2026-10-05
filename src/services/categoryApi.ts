@@ -25,6 +25,8 @@ export async function fetchCategories(params: FetchCategoriesParams = {}): Promi
   const query = new URLSearchParams()
   if (params.page !== undefined) query.set("page", String(params.page))
   if (params.pageSize !== undefined) query.set("pageSize", String(params.pageSize))
+  if (params.name) query.set("name", params.name)
+  if (params.filter !== undefined) query.set("filter", String(params.filter))
 
   const response = await fetch(`/api/Category/all?${query.toString()}`, {
     method: "GET",

@@ -9,11 +9,12 @@ import SortPopover from "@/components/SortPopover"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
+import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
 import { allowedActions, can } from "@/lib/permissions"
 import type { CategoryListItem, CategorySortBy } from "@/types/category"
 import { useCategories, useCategoryMutations } from "../_hooks/useCategories"
-import { categorySortOptions, filterAndSortCategories, formatCategoryId } from "../_lib/categoryHelpers"
+import { categorySortOptions, formatCategoryId, getCategoryFilter } from "../_lib/categoryHelpers"
 import CategoriesTable from "./CategoriesTable"
 import CategoryFormModal from "./CategoryFormModal"
 
@@ -32,10 +33,13 @@ export default function CategoriesView() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [modal, setModal] = useState<ModalState>(null)
 
-  const { data: categoriesResponse, isLoading, error } = useCategories(currentPage)
-  const mutations = useCategoryMutations(currentPage)
+  const debouncedSearch = useDebouncedValue(search.trim())
 
-  const categories = filterAndSortCategories(categoriesResponse?.items ?? [], search, sortBy, sortOrder)
+  const categoriesQuery = { page: currentPage, search: debouncedSearch, sort: getCategoryFilter(sortBy, sortOrder) }
+  const { data: categoriesResponse, isLoading, error } = useCategories(categoriesQuery)
+  const mutations = useCategoryMutations(categoriesQuery)
+
+  const categories = categoriesResponse?.items ?? []
   const rows = categoriesResponse?.rows ?? 0
   const pageCount = Math.max(1, categoriesResponse?.pageCount ?? 1)
   const closeModal = () => setModal(null)

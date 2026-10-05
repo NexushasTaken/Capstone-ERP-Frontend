@@ -18,14 +18,7 @@ import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
 import { allowedActions, can } from "@/lib/permissions"
 import type { ProductCategoryFilter, ProductListItem, ProductSortBy } from "@/types/product"
 import { useProductMutations, useProducts, type ProductValues } from "../_hooks/useProducts"
-import {
-  formatProductId,
-  ITEMS_PER_PAGE,
-  matchesFilter,
-  productFilters,
-  productSortOptions,
-  sortProducts,
-} from "../_lib/productHelpers"
+import { formatProductId, getProductFilter, productFilters, productSortOptions } from "../_lib/productHelpers"
 import ProductDetailsModal from "./ProductDetailsModal"
 import ProductFormModal from "./ProductFormModal"
 import ProductsTable from "./ProductsTable"
@@ -55,17 +48,17 @@ export default function ProductsView() {
   const [modal, setModal] = useState<ModalState>(null)
   const debouncedSearch = useDebouncedValue(search)
 
-  const { list, listQueryKey, categorizedItems, uncategorizedItems } = useProducts(selectedFilter, debouncedSearch)
+  const { list, listQueryKey, countByFilter } = useProducts({
+    filter: selectedFilter,
+    search: debouncedSearch,
+    page: currentPage,
+    sort: getProductFilter(sortBy, sortOrder),
+  })
   const mutations = useProductMutations(listQueryKey, selectedFilter)
 
-  const products = (list.data?.items ?? []).filter((product) => matchesFilter(product, selectedFilter))
-  const displayedProducts = sortProducts(products, sortBy, sortOrder)
-  const pageCount = Math.max(1, Math.ceil(displayedProducts.length / ITEMS_PER_PAGE))
-  const paginatedProducts = displayedProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-  const countByFilter: Record<ProductCategoryFilter, number> = {
-    Categorized: categorizedItems?.filter((product) => matchesFilter(product, "Categorized")).length ?? 0,
-    Uncategorized: uncategorizedItems?.filter((product) => matchesFilter(product, "Uncategorized")).length ?? 0,
-  }
+  const products = list.data?.items ?? []
+  const rows = list.data?.rows ?? 0
+  const pageCount = Math.max(1, list.data?.pageCount ?? 1)
   const closeModal = () => setModal(null)
 
   function handleSubmitProduct(values: ProductValues) {
@@ -87,7 +80,7 @@ export default function ProductsView() {
   return (
     <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <PageTitle title="Products" count={products.length} />
+        <PageTitle title="Products" count={rows} />
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Search only applies to categorized products. */}
@@ -119,7 +112,7 @@ export default function ProductsView() {
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
-          <ExportCsvButton onExport={() => exportProducts(displayedProducts)} />
+          <ExportCsvButton onExport={() => exportProducts(products)} />
           {can(role, "product:add") && (
             <Button onClick={() => setModal({ type: "add" })} type="button">
               <Plus className="h-4 w-4" />
@@ -141,7 +134,7 @@ export default function ProductsView() {
 
       <div className="mt-5 min-h-0 overflow-auto scrollbar-none flex-1">
         <ProductsTable
-          products={paginatedProducts}
+          products={products}
           isLoading={list.isLoading}
           error={list.error}
           actions={productActions}
@@ -153,7 +146,7 @@ export default function ProductsView() {
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-muted-foreground">
-          Showing {paginatedProducts.length} of {products.length} products
+          Showing {products.length} of {rows} products
         </span>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />

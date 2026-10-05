@@ -18,6 +18,7 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
   if (params.pageSize) query.set("pageSize", String(params.pageSize))
   if (params.name) query.set("name", params.name)
   if (params.categoryPresent !== undefined) query.set("categoryPresent", String(params.categoryPresent))
+  if (params.filter !== undefined) query.set("filter", String(params.filter))
 
   const response = await fetch(`/api/Product/all?${query.toString()}`, {
     method: "GET",

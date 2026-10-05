@@ -5,7 +5,7 @@ import { deleteProduct, fetchProducts, insertProduct, updateProduct } from "@/se
 import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
 import { queryKeys } from "@/lib/query/queryKeys"
 import type { FetchProductsParams, ProductCategoryFilter, ProductListItem } from "@/types/product"
-import { categoryPresentByFilter, PRODUCT_LOAD_PAGE_SIZE } from "../_lib/productHelpers"
+import { categoryPresentByFilter, ITEMS_PER_PAGE } from "../_lib/productHelpers"
 
 type ProductsResponse = Awaited<ReturnType<typeof fetchProducts>>
 
@@ -17,36 +17,48 @@ function useProductsQuery(params: FetchProductsParams) {
   })
 }
 
+interface UseProductsParams {
+  filter: ProductCategoryFilter
+  search: string
+  page: number
+  /** Sort code, see getProductFilter. */
+  sort: number
+}
+
 /**
- * Products for the selected filter, plus the counts shown on the two filter buttons.
+ * One sorted page of products for the selected filter, plus the counts shown on the two filter buttons.
  * Search only applies to categorized products.
  */
-export function useProducts(filter: ProductCategoryFilter, search: string) {
+export function useProducts({ filter, search, page, sort }: UseProductsParams) {
   const listParams: FetchProductsParams = {
-    page: 1,
-    pageSize: PRODUCT_LOAD_PAGE_SIZE,
+    page,
+    pageSize: ITEMS_PER_PAGE,
     name: filter === "Uncategorized" ? undefined : search || undefined,
     categoryPresent: categoryPresentByFilter[filter],
+    filter: sort,
   }
 
   const list = useProductsQuery(listParams)
+  // The filter buttons only need totals, so ask for a single row and read `rows`.
   const categorized = useProductsQuery({
     page: 1,
-    pageSize: PRODUCT_LOAD_PAGE_SIZE,
+    pageSize: 1,
     name: search || undefined,
     categoryPresent: categoryPresentByFilter.Categorized,
   })
   const uncategorized = useProductsQuery({
     page: 1,
-    pageSize: PRODUCT_LOAD_PAGE_SIZE,
+    pageSize: 1,
     categoryPresent: categoryPresentByFilter.Uncategorized,
   })
 
   return {
     list,
     listQueryKey: queryKeys.products.all(listParams),
-    categorizedItems: categorized.data?.items,
-    uncategorizedItems: uncategorized.data?.items,
+    countByFilter: {
+      Categorized: categorized.data?.rows ?? 0,
+      Uncategorized: uncategorized.data?.rows ?? 0,
+    } satisfies Record<ProductCategoryFilter, number>,
   }
 }
 
