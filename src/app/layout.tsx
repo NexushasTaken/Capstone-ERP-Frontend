@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", hostGrotesk.variable, "font-mono", jetbrainsMono.variable)}
+      className={cn("h-full", "antialiased", hostGrotesk.variable, "font-sans", jetbrainsMono.variable)}
     >
       <body className="flex flex-col h-full overflow-hidden select-none outline-none focus:outline-none">
         <Providers>

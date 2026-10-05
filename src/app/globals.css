@@ -48,10 +48,6 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-body {
-  font-family: var(--font-host-grotesk), sans-serif;
-}
-
 @keyframes sales-flow-drop {
   0% {
     opacity: 0;
@@ -175,6 +171,6 @@ body {
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-mono;
+    @apply font-sans;
   }
 }
