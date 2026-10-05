@@ -14,6 +14,7 @@ import type { StatusActionItem } from "@/types/statusAction"
 const columns: DataTableColumn[] = [
   "Inventory ID",
   "Name",
+  "Category",
   "Quantity",
   "Reorder point",
   "Warehouse",
@@ -56,6 +57,7 @@ export default function InventoryTable({
           <TableRow key={item.id}>
             <TableCell className="px-3 py-4 font-medium">{formatInventoryId(String(item.id))}</TableCell>
             <TableCell className="px-3 py-4 font-medium capitalize">{item.name}</TableCell>
+            <TableCell className="px-3 py-4 capitalize">{item.categoryName}</TableCell>
             <TableCell className="px-3 py-4">{formatNumber(item.quantity)}</TableCell>
             <TableCell className="px-3 py-4">{formatNumber(item.reorderPoint)}</TableCell>
             <TableCell className="px-3 py-4 font-medium capitalize">{item.warehouseName}</TableCell>
