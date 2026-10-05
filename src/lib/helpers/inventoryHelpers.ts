@@ -1,12 +1,5 @@
 import type {
-  Inventory,
-  InventoryDashboardData,
-  InventoryLabel,
   InventorySortBy,
-  InventoryStatus,
-  MovementVelocityCategory,
-  VelocityStatus,
-  Warehouse,
   WarehouseCapacity,
 } from '@/types/inventory'
 import { WarehouseListItem } from '@/types/warehouseCapacity'
@@ -30,32 +23,6 @@ export function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
-const velocityColors: Record<MovementVelocityCategory, string> = {
-  fast: 'bg-[#187B49]',
-  stable: 'bg-[#1769C2]',
-  slow: 'bg-[#D92D20]',
-}
-
-export function getVelocityColor(category: MovementVelocityCategory) {
-  return velocityColors[category]
-}
-
-export function getWarehouseName(warehouses: Warehouse[], warehouseId: string): string {
-  return warehouses.find((w) => w.id === warehouseId)?.name ?? 'Unknown'
-}
-
-export function getInventoryStatusLabel(statuses: InventoryStatus[], statusId: string): string {
-  return statuses.find((s) => s.id === statusId)?.status ?? 'Unknown'
-}
-
-export function getVelocityStatusLabel(velocityStatuses: VelocityStatus[], velocityStatusId: string): string {
-  return velocityStatuses.find((v) => v.id === velocityStatusId)?.status ?? 'Unknown'
-}
-
-export function getInventoryLabelType(labels: InventoryLabel[], inventoryLabelId: string): string {
-  return labels.find((l) => l.id === inventoryLabelId)?.type ?? 'Unknown'
-}
-
 export const statusDotColors: Record<string, string> = {
   critical: 'bg-[#D92D20]',
   available: 'bg-[#31723B]',
@@ -73,47 +40,6 @@ export function getInventoryStatusStyleFromLabel(status: string) {
   return {
     dotClassName: statusDotColors[status] ?? 'bg-[#737A76]',
     labelClassName: statusTextColors[status] ?? 'text-[#737A76]',
-  }
-}
-
-export function buildInventoryDashboardData(
-  inventories: Inventory[],
-  statuses: InventoryStatus[],
-  warehouses: Warehouse[],
-  velocityStatuses: VelocityStatus[]
-): InventoryDashboardData {
-  const criticalStatusId = statuses.find((s) => s.status === 'critical')?.id
-  const criticalInventories = criticalStatusId
-    ? inventories.filter((item) => item.statusId === criticalStatusId)
-    : []
-
-  return {
-    forecastWarningCount: criticalInventories.length,
-    warehouseCapacity: {
-      warehouse: 'All warehouses',
-      used: inventories.reduce((sum, item) => sum + item.quantity, 0),
-      total: 1000,
-    },
-    movementVelocity: velocityStatuses.map((velocity) => {
-      const count = inventories.filter((item) => item.velocityStatusId === velocity.id).length
-      return {
-        category: velocity.status as MovementVelocityCategory,
-        label: capitalize(velocity.status),
-        percentage: inventories.length > 0 ? Math.round((count / inventories.length) * 100) : 0,
-      }
-    }),
-    predictedStockouts: criticalInventories.map((item) => {
-      const warehouse = warehouses.find((w) => w.id === item.warehouseId)
-      return {
-        inventoryId: item.id,
-        product: item.name,
-        warehouse: warehouse?.name ?? 'Unknown',
-        availableUnits: item.quantity,
-        reorderPoint: item.reorderPoint,
-        estimatedStockoutDate: 'Within 7 days',
-        risk: 'critical',
-      }
-    }),
   }
 }
 

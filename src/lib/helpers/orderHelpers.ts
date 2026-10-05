@@ -15,8 +15,6 @@ export const tableColumns = [
   'Amount',
 ]
 
-export const productSelectPageSize = 100
-
 export function getOrderGroupKey(group: OrderGroup) {
   return String(group.orderId)
 }
