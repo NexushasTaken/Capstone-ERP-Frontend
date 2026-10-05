@@ -101,6 +101,7 @@ export default function LoginForm() {
               aria-invalid={!!errors.password}
               {...register("password")}
               leading={<LockKeyhole className="text-foreground size-5" />}
+              leadingClassName="pl-4 pr-1.5"
               groupClassName="h-auto rounded-lg border-border"
               className="h-auto py-4 text-foreground"
               placeholder="Password"
