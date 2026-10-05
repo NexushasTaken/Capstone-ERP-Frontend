@@ -12,7 +12,7 @@ import {
   getAuditAction,
   getAuditModuleLabel,
 } from '@/lib/helpers/auditLogHelpers'
-import { clsx } from 'cn'
+import { cn } from '@/lib/utils'
 import { usePathname } from 'next/navigation'
 
 const sidebarParams = { page: 1, pageSize: AUDIT_LOG_SIDEBAR_LIMIT }
@@ -32,9 +32,9 @@ export default function AuditLogSidebar({ onNavigate }: { onNavigate: () => void
   const logs = data?.items ?? []
 
   return (
-    <section className={clsx(
+    <section className={cn(
       "flex w-full min-h-96 flex-col overflow-hidden rounded-2xl border border-[#E1E4E2] bg-[#FAFBFA] p-3",
-      pathname == "/dashboard/audit-logs" ? "hidden" : ""
+      pathname === "/dashboard/audit-logs" && "hidden"
     )}>
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
