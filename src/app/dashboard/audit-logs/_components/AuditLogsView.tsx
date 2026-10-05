@@ -3,20 +3,17 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 
-import AuditFilterDropdown from '@/app/dashboard/audit-logs/_components/AuditFilterDropdown'
+import AuditFilterDropdown from './AuditFilterDropdown'
+import AuditLogsTable from './AuditLogsTable'
+import PageTitle from '@/components/PageTitle'
 import { TablePagination } from '@/components/TablePagination'
-import Loading from '@/components/Loading'
 import { useAuditLogs, useUsers } from '@/hooks/useAuditLogs'
 import { Button } from '@/components/ui/button'
 import {
   AUDIT_LOG_ITEMS_PER_PAGE,
   auditActionFilterOptions,
-  auditLogTableColumns,
   auditModuleFilterOptions,
   auditRoleFilterOptions,
-  formatAuditDate,
-  getAuditAction,
-  getAuditModuleLabel,
   toUserFilterOptions,
 } from '@/lib/helpers/auditLogHelpers'
 
@@ -61,12 +58,7 @@ export default function AuditLogsView() {
   return (
     <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-white p-4 lg:p-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-medium tracking-tight text-[#121514]">Audit logs</h1>
-          <span className="rounded-md border border-[#DFE2E0] px-3 py-1 text-sm text-[#121514]">
-            {rows}
-          </span>
-        </div>
+        <PageTitle title="Audit logs" count={rows} />
 
         <div className="flex flex-wrap items-center gap-2">
           <AuditFilterDropdown
@@ -113,62 +105,7 @@ export default function AuditLogsView() {
       </div>
 
       <div className="mt-5 min-h-0 overflow-auto scrollbar-none">
-        <table className="w-full min-w-200 border-separate border-spacing-y-2 text-left">
-          <thead className="text-sm font-normal text-[#737A76]">
-            <tr>
-              {auditLogTableColumns.map((column) => (
-                <th className="px-3 pb-1 font-normal" key={column} scope="col">
-                  {column}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={auditLogTableColumns.length} className="px-3 py-4 text-center text-sm text-[#737A76]">
-                  <Loading />
-                </td>
-              </tr>
-            ) : error ? (
-              <tr>
-                <td colSpan={auditLogTableColumns.length} className="px-3 py-4 text-center text-sm text-red-500">
-                  {error instanceof Error ? error.message : 'Failed to load audit logs'}
-                </td>
-              </tr>
-            ) : logs.length === 0 ? (
-              <tr>
-                <td colSpan={auditLogTableColumns.length} className="px-3 py-4 text-center text-sm text-[#737A76]">
-                  {hasFilters ? 'No audit logs match these filters.' : 'No audit logs yet.'}
-                </td>
-              </tr>
-            ) : (
-              logs.map((log) => {
-                const { Icon, className, label } = getAuditAction(log.action)
-
-                return (
-                  <tr className="bg-[#FAFBFA] text-sm text-[#121514]" key={log.id}>
-                    <td className="rounded-l-xl px-3 py-4 whitespace-nowrap">{formatAuditDate(log.created_At)}</td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span className="font-medium capitalize">{log.userFullName}</span>
-                        {log.userRole && <span className="text-xs text-[#737A76]">{log.userRole}</span>}
-                      </div>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap">{getAuditModuleLabel(log.module)}</td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium ${className}`}>
-                        <Icon className="h-3.5 w-3.5" />
-                        {label}
-                      </span>
-                    </td>
-                    <td className="rounded-r-xl px-3 py-4">{log.message}</td>
-                  </tr>
-                )
-              })
-            )}
-          </tbody>
-        </table>
+        <AuditLogsTable logs={logs} isLoading={isLoading} error={error} hasFilters={hasFilters} />
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
