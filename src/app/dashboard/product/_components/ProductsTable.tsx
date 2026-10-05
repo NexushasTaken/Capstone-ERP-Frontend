@@ -1,9 +1,19 @@
-import Loading from '@/components/Loading'
+import DataTable, { type DataTableColumn } from '@/components/DataTable'
 import StatusAction from '@/components/StatusAction'
+import { TableCell, TableRow } from '@/components/ui/table'
 import { formatDate, formatPeso } from '@/lib/format'
 import type { ProductListItem } from '@/types/product'
 import type { StatusActionItem } from '@/types/statusAction'
-import { formatProductId, tableColumns } from '../_lib/productHelpers'
+import { formatProductId } from '../_lib/productHelpers'
+
+const columns: DataTableColumn[] = [
+  'Product ID',
+  'Category',
+  'Product Name',
+  'Price',
+  'Created At',
+  { label: 'Action', className: 'text-right' },
+]
 
 interface ProductsTableProps {
   products: ProductListItem[]
@@ -25,69 +35,45 @@ export default function ProductsTable({
   onDelete,
 }: ProductsTableProps) {
   return (
-    <table className="w-full min-w-235 border-separate border-spacing-y-2 text-left">
-      <thead className="text-sm font-normal text-[#737A76]">
-        <tr>
-          {tableColumns.map((column) => (
-            <th className="px-3 pb-1 font-normal" key={column} scope="col">
-              {column}
-            </th>
-          ))}
-          <th className="px-3 pb-1 font-normal text-right" scope="col">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {isLoading ? (
-          <tr>
-            <td colSpan={tableColumns.length + 1} className="px-3 py-4 text-center text-sm text-[#737A76]">
-              <Loading />
-            </td>
-          </tr>
-        ) : error ? (
-          <tr>
-            <td colSpan={tableColumns.length + 1} className="px-3 py-4 text-center text-sm text-red-500">
-              {error instanceof Error ? error.message : 'Failed to load products'}
-            </td>
-          </tr>
-        ) : products.length === 0 ? (
-          <tr>
-            <td colSpan={tableColumns.length + 1} className="px-3 py-4 text-center text-sm text-[#737A76]">
-              No products found.
-            </td>
-          </tr>
-        ) : (
-          products.map((product) => (
-            <tr className="bg-[#FAFBFA] text-sm text-[#121514]" key={product.id}>
-              <td className="rounded-l-xl px-3 py-5 font-medium">{formatProductId(product.id)}</td>
-              <td className="px-3 py-5 font-medium whitespace-nowrap capitalize">{product.categoryName ?? 'Uncategorized'}</td>
-              <td className="px-3 py-5 whitespace-nowrap capitalize">{product.name}</td>
-              <td className="px-3 py-5 font-medium whitespace-nowrap">{formatPeso(product.price)}</td>
-              <td className="px-3 py-5 whitespace-nowrap">{formatDate(product.created_At)}</td>
-              <td className="rounded-r-xl px-3 py-5">
-                <div className="flex items-center justify-end gap-2">
-                  <button
-                    className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
-                    type="button"
-                    onClick={() => onShowDetails(product)}
-                  >
-                    See more
-                  </button>
-                  {actions.length > 0 && (
-                    <StatusAction
-                      actions={actions}
-                      label={`More actions for product ${product.id}`}
-                      onAction={(action) => {
-                        if (action === 'edit') onEdit(product)
-                        if (action === 'delete') onDelete(product)
-                      }}
-                    />
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </table>
+    <DataTable
+      className="min-w-235"
+      columns={columns}
+      emptyMessage="No products found."
+      error={error}
+      errorMessage="Failed to load products"
+      isEmpty={products.length === 0}
+      isLoading={isLoading}
+    >
+      {products.map((product) => (
+        <TableRow key={product.id}>
+          <TableCell className="px-3 py-4 font-medium">{formatProductId(product.id)}</TableCell>
+          <TableCell className="px-3 py-4 font-medium capitalize">{product.categoryName ?? 'Uncategorized'}</TableCell>
+          <TableCell className="px-3 py-4 capitalize">{product.name}</TableCell>
+          <TableCell className="px-3 py-4 font-medium">{formatPeso(product.price)}</TableCell>
+          <TableCell className="px-3 py-4">{formatDate(product.created_At)}</TableCell>
+          <TableCell className="px-3 py-4">
+            <div className="flex items-center justify-end gap-2">
+              <button
+                className="cursor-pointer rounded-xl border border-[#DFE2E0] px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
+                type="button"
+                onClick={() => onShowDetails(product)}
+              >
+                See more
+              </button>
+              {actions.length > 0 && (
+                <StatusAction
+                  actions={actions}
+                  label={`More actions for product ${product.id}`}
+                  onAction={(action) => {
+                    if (action === 'edit') onEdit(product)
+                    if (action === 'delete') onDelete(product)
+                  }}
+                />
+              )}
+            </div>
+          </TableCell>
+        </TableRow>
+      ))}
+    </DataTable>
   )
 }

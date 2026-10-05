@@ -1,6 +1,7 @@
 import { ChevronDown } from 'lucide-react'
 import StatusAction from '@/components/StatusAction'
 import { Collapsible, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { formatDate, formatPeso } from '@/lib/format'
 import {
   formatOrderNumber,
@@ -12,19 +13,16 @@ import {
 import type { OrderGroup } from '@/types/order'
 import DetailItem from './DetailItem'
 
-// Shared with the header row in OrdersList so the columns line up.
-export const orderGridColumns =
-  'grid-cols-[120px_240px_140px_140px_200px_140px_140px_130px] lg:grid-cols-[120px_1.4fr_140px_140px_1fr_140px_140px_160px]'
-
 interface OrderRowProps {
   order: OrderGroup
+  columnCount: number
   statusOptions: { id: number; label: string }[]
   isExpanded: boolean
   onExpandedChange: (expanded: boolean) => void
   onChangeStatus: (orderStatusId: number) => void
 }
 
-export default function OrderRow({ order, statusOptions, isExpanded, onExpandedChange, onChangeStatus }: OrderRowProps) {
+export default function OrderRow({ order, columnCount, statusOptions, isExpanded, onExpandedChange, onChangeStatus }: OrderRowProps) {
   const statusLabel = normalizeOrderText(order.orderStatus)
   const isWalkinOrder = normalizeOrderText(order.orderType).toLowerCase() === 'walkin'
   const isShippedOrder = statusLabel.toLowerCase() === 'shipped'
@@ -40,43 +38,47 @@ export default function OrderRow({ order, statusOptions, isExpanded, onExpandedC
     .map((status) => ({ label: status.label, value: String(status.id) }))
 
   return (
-    <Collapsible
-      className="rounded-xl bg-[#FAFBFA] text-sm text-[#121514]"
-      open={isExpanded}
-      onOpenChange={onExpandedChange}
-    >
-      <div className={`grid ${orderGridColumns} items-center px-3 py-5`}>
-        <span className="font-medium">{formatOrderNumber(order.orderId)}</span>
-        <span className="truncate capitalize">{getOrderGroupProductSummary(order)}</span>
-        <span className="whitespace-nowrap capitalize">{normalizeOrderText(order.orderType)}</span>
-        <span className={`font-medium whitespace-nowrap capitalize ${orderStatusClass(order.orderStatus)}`}>
+    <Collapsible render={<TableBody />} open={isExpanded} onOpenChange={onExpandedChange}>
+      <TableRow>
+        <TableCell className="px-3 py-4 font-medium">{formatOrderNumber(order.orderId)}</TableCell>
+        <TableCell className="max-w-72 truncate px-3 py-4 capitalize">{getOrderGroupProductSummary(order)}</TableCell>
+        <TableCell className="px-3 py-4 capitalize">{normalizeOrderText(order.orderType)}</TableCell>
+        <TableCell className={`px-3 py-4 font-medium capitalize ${orderStatusClass(order.orderStatus)}`}>
           <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${orderStatusDotClass(order.orderStatus)}`} />
           {statusLabel}
-        </span>
-        <span className="truncate capitalize">{order.customerName}</span>
-        <span className="whitespace-nowrap">{formatDate(order.created_At)}</span>
-        <span className="font-medium whitespace-nowrap">{formatPeso(order.total)}</span>
-        <div className="ml-auto flex items-center gap-2">
-          <CollapsibleTrigger
-            className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#DFE2E0] bg-white px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
-            type="button"
-          >
-            View
-            <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-          </CollapsibleTrigger>
-          {statusLabel.trim().toLowerCase() !== 'cancelled' && (
-            <StatusAction
-              actions={statusActions}
-              label="Order actions"
-              onAction={(statusId) => {
-                if (statusId) onChangeStatus(Number(statusId))
-              }}
-            />
-          )}
-        </div>
-      </div>
+        </TableCell>
+        <TableCell className="max-w-56 truncate px-3 py-4 capitalize">{order.customerName}</TableCell>
+        <TableCell className="px-3 py-4">{formatDate(order.created_At)}</TableCell>
+        <TableCell className="px-3 py-4 font-medium">{formatPeso(order.total)}</TableCell>
+        <TableCell className="px-3 py-4">
+          <div className="flex items-center justify-end gap-2">
+            <CollapsibleTrigger
+              className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#DFE2E0] bg-white px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
+              type="button"
+            >
+              View
+              <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            {statusLabel.trim().toLowerCase() !== 'cancelled' && (
+              <StatusAction
+                actions={statusActions}
+                label="Order actions"
+                onAction={(statusId) => {
+                  if (statusId) onChangeStatus(Number(statusId))
+                }}
+              />
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
 
-      {isExpanded ? <OrderDetails order={order} /> : null}
+      {isExpanded ? (
+        <TableRow className="hover:bg-transparent">
+          <TableCell colSpan={columnCount} className="p-0 whitespace-normal">
+            <OrderDetails order={order} />
+          </TableCell>
+        </TableRow>
+      ) : null}
     </Collapsible>
   )
 }

@@ -1,11 +1,9 @@
-import Loading from '@/components/Loading'
-import {
-  auditLogTableColumns,
-  formatAuditDate,
-  getAuditAction,
-  getAuditModuleLabel,
-} from '@/lib/helpers/auditLogHelpers'
+import DataTable from '@/components/DataTable'
+import { TableCell, TableRow } from '@/components/ui/table'
+import { formatAuditDate, getAuditAction, getAuditModuleLabel } from '@/lib/helpers/auditLogHelpers'
 import type { AuditLogItem } from '@/types/auditLog'
+
+const columns = ['Date', 'User', 'Module', 'Action', 'Message']
 
 interface AuditLogsTableProps {
   logs: AuditLogItem[]
@@ -16,61 +14,38 @@ interface AuditLogsTableProps {
 
 export default function AuditLogsTable({ logs, isLoading, error, hasFilters }: AuditLogsTableProps) {
   return (
-    <table className="w-full min-w-200 border-separate border-spacing-y-2 text-left">
-      <thead className="text-sm font-normal text-[#737A76]">
-        <tr>
-          {auditLogTableColumns.map((column) => (
-            <th className="px-3 pb-1 font-normal" key={column} scope="col">
-              {column}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {isLoading ? (
-          <tr>
-            <td colSpan={auditLogTableColumns.length} className="px-3 py-4 text-center text-sm text-[#737A76]">
-              <Loading />
-            </td>
-          </tr>
-        ) : error ? (
-          <tr>
-            <td colSpan={auditLogTableColumns.length} className="px-3 py-4 text-center text-sm text-red-500">
-              {error instanceof Error ? error.message : 'Failed to load audit logs'}
-            </td>
-          </tr>
-        ) : logs.length === 0 ? (
-          <tr>
-            <td colSpan={auditLogTableColumns.length} className="px-3 py-4 text-center text-sm text-[#737A76]">
-              {hasFilters ? 'No audit logs match these filters.' : 'No audit logs yet.'}
-            </td>
-          </tr>
-        ) : (
-          logs.map((log) => {
-            const { Icon, className, label } = getAuditAction(log.action)
+    <DataTable
+      className="min-w-200"
+      columns={columns}
+      emptyMessage={hasFilters ? 'No audit logs match these filters.' : 'No audit logs yet.'}
+      error={error}
+      errorMessage="Failed to load audit logs"
+      isEmpty={logs.length === 0}
+      isLoading={isLoading}
+    >
+      {logs.map((log) => {
+        const { Icon, className, label } = getAuditAction(log.action)
 
-            return (
-              <tr className="bg-[#FAFBFA] text-sm text-[#121514]" key={log.id}>
-                <td className="rounded-l-xl px-3 py-4 whitespace-nowrap">{formatAuditDate(log.created_At)}</td>
-                <td className="px-3 py-4 whitespace-nowrap">
-                  <div className="flex flex-col">
-                    <span className="font-medium capitalize">{log.userFullName}</span>
-                    {log.userRole && <span className="text-xs text-[#737A76]">{log.userRole}</span>}
-                  </div>
-                </td>
-                <td className="px-3 py-4 whitespace-nowrap">{getAuditModuleLabel(log.module)}</td>
-                <td className="px-3 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium ${className}`}>
-                    <Icon className="h-3.5 w-3.5" />
-                    {label}
-                  </span>
-                </td>
-                <td className="rounded-r-xl px-3 py-4">{log.message}</td>
-              </tr>
-            )
-          })
-        )}
-      </tbody>
-    </table>
+        return (
+          <TableRow key={log.id}>
+            <TableCell className="px-3 py-4">{formatAuditDate(log.created_At)}</TableCell>
+            <TableCell className="px-3 py-4">
+              <div className="flex flex-col">
+                <span className="font-medium capitalize">{log.userFullName}</span>
+                {log.userRole && <span className="text-xs text-muted-foreground">{log.userRole}</span>}
+              </div>
+            </TableCell>
+            <TableCell className="px-3 py-4">{getAuditModuleLabel(log.module)}</TableCell>
+            <TableCell className="px-3 py-4">
+              <span className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium ${className}`}>
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </span>
+            </TableCell>
+            <TableCell className="px-3 py-4 whitespace-normal">{log.message}</TableCell>
+          </TableRow>
+        )
+      })}
+    </DataTable>
   )
 }

@@ -2,13 +2,6 @@ import type { CategoryListItem, CategorySortBy, CategorySortOption } from '@/typ
 
 export const ITEMS_PER_PAGE = 10
 
-export const tableColumns = [
-  'Id',
-  'Type',
-  'Created At',
-  'Action',
-]
-
 export const categorySortOptions: CategorySortOption[] = [
   { label: 'Latest added', value: 'createdAt', order: 'desc' },
   { label: 'Id', value: 'id', order: 'asc' },
