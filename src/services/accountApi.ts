@@ -2,6 +2,7 @@ import type {
   AccountListItem,
   CreateAccountPayload,
   CredentialsInfo,
+  FetchAccountsParams,
   ProfileInfo,
   UpdateCredentialsPayload,
 } from "@/types/account"
@@ -26,19 +27,39 @@ function mapAccount(item: RawAccountListItem): AccountListItem {
   }
 }
 
-export async function fetchAccounts(): Promise<AccountListItem[]> {
-  const response = await fetch("/api/User/accounts", {
+interface RawAccountPage {
+  accounts: RawAccountListItem[]
+  pageCount: number
+  rows: number
+}
+
+export async function fetchAccounts(
+  params: FetchAccountsParams = {},
+  signal?: AbortSignal,
+): Promise<{ items: AccountListItem[]; pageCount: number; rows: number }> {
+  const query = new URLSearchParams()
+  if (params.page !== undefined) query.set("page", String(params.page))
+  if (params.pageSize !== undefined) query.set("pageSize", String(params.pageSize))
+  if (params.name) query.set("name", params.name)
+  if (params.filter !== undefined) query.set("filter", String(params.filter))
+
+  const response = await fetch(`/api/User/accounts?${query.toString()}`, {
     method: "GET",
     credentials: "include",
+    signal,
   })
 
-  const data: ApiEnvelope<RawAccountListItem[]> = await response.json()
+  const data: ApiEnvelope<RawAccountPage> = await response.json()
 
   if (!response.ok || !data.success) {
     throw new Error(data.message || "Failed to fetch accounts")
   }
 
-  return data.content.map(mapAccount)
+  return {
+    items: data.content.accounts.map(mapAccount),
+    pageCount: data.content.pageCount,
+    rows: data.content.rows,
+  }
 }
 
 export async function createAccount(payload: CreateAccountPayload): Promise<void> {
