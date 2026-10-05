@@ -2,7 +2,10 @@ import type { AuditLogItem, UserOption } from '@/types/auditLog'
 import type { AuditLogListContent, FetchAuditLogsParams } from '@/types/auditLog'
 import { ApiEnvelope } from '@/types/api'
 
-export async function fetchAuditLogs(params: FetchAuditLogsParams = {}, signal?: AbortSignal): Promise<{
+export async function fetchAuditLogs(
+  params: FetchAuditLogsParams = {},
+  signal?: AbortSignal,
+): Promise<{
   items: AuditLogItem[]
   pageCount: number
   rows: number

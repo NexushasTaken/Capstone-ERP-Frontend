@@ -22,9 +22,7 @@ export default function MovementVelocity() {
   return (
     <article className="rounded-2xl border border-border bg-background p-5 shadow-sm flex flex-col h-96">
       <div className="flex w-full justify-between gap-4">
-        <h2 className="font-semibold text-foreground">
-          Movement Velocity
-        </h2>
+        <h2 className="font-semibold text-foreground">Movement Velocity</h2>
 
         <div className="flex gap-1">
           {dayOptions.map((days) => (
@@ -46,16 +44,17 @@ export default function MovementVelocity() {
         </div>
       </div>
 
-
       <div className="mt-5 min-h-0 flex-1 overflow-auto" aria-busy={isLoading}>
         {isLoading ? (
-          <div className='flex w-full h-96'>
+          <div className="flex w-full h-96">
             <Loading />
           </div>
         ) : isError ? (
           <div role="alert" className="space-y-2 text-sm text-destructive">
             <p>Unable to load movement velocity.</p>
-            <Button variant="outline" size="sm" onClick={() => void refetch()}>Retry</Button>
+            <Button variant="outline" size="sm" onClick={() => void refetch()}>
+              Retry
+            </Button>
           </div>
         ) : !data?.items.length ? (
           <p className="text-sm text-muted-foreground">No inventory movement found for this period.</p>
@@ -63,9 +62,15 @@ export default function MovementVelocity() {
           <table className="w-full text-left text-sm">
             <thead className="text-xs text-muted-foreground">
               <tr>
-                <th scope="col" className="pb-3 pr-3">Inventory</th>
-                <th scope="col" className="pb-3 pr-3">Warehouse</th>
-                <th scope="col" className="pb-3 pr-3">Classification</th>
+                <th scope="col" className="pb-3 pr-3">
+                  Inventory
+                </th>
+                <th scope="col" className="pb-3 pr-3">
+                  Warehouse
+                </th>
+                <th scope="col" className="pb-3 pr-3">
+                  Classification
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -82,8 +87,10 @@ export default function MovementVelocity() {
       </div>
       {!isLoading && !isError && data && (
         <div className="flex w-full mt-4 overflow-x-auto justify-between items-center">
-          <p className="text-xs text-muted-foreground flex">Showing {data.items.length.toLocaleString()} out of {data.rows.toLocaleString()} inventories</p>
-          <div className='flex'>
+          <p className="text-xs text-muted-foreground flex">
+            Showing {data.items.length.toLocaleString()} out of {data.rows.toLocaleString()} inventories
+          </p>
+          <div className="flex">
             {data.pageCount > 1 && (
               <TablePagination currentPage={currentPage} totalPages={data.pageCount} onPageChange={setCurrentPage} />
             )}

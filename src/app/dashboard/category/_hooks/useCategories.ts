@@ -58,7 +58,7 @@ export function useCategoryMutations(page: number) {
       ...shared,
       update: (current, { id, type }) => ({
         ...current,
-        items: current.items.map((category) => category.id === id ? { ...category, type } : category),
+        items: current.items.map((category) => (category.id === id ? { ...category, type } : category)),
       }),
       successMessage: 'Category updated successfully',
       errorMessage: 'Failed to update category',

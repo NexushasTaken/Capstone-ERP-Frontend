@@ -22,17 +22,9 @@ function makeQueryClient() {
   return client
 }
 
-export default function Providers({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function Providers({ children }: { children: React.ReactNode }) {
   // One client per browser session; useState keeps it stable across renders.
   const [queryClient] = useState(makeQueryClient)
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  )
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 }

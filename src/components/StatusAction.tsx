@@ -15,11 +15,7 @@ interface StatusActionProps {
   onAction: (action: StatusActionValue) => void
 }
 
-export default function StatusAction({
-  actions,
-  label,
-  onAction,
-}: StatusActionProps) {
+export default function StatusAction({ actions, label, onAction }: StatusActionProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger

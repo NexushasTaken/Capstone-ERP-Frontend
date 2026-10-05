@@ -86,8 +86,15 @@ export default function InventoryDetailsModal({ item, onClose }: InventoryDetail
                     <span className="text-sm font-medium text-foreground capitalize">{record.label}</span>
                     <span className="text-xs text-muted-foreground">{formatDate(record.created_At)}</span>
                   </div>
-                  <span className={record.quantity < 0 ? 'shrink-0 text-sm font-semibold text-destructive' : 'shrink-0 text-sm font-semibold text-green-700'}>
-                    {record.quantity > 0 ? '+' : ''}{formatNumber(record.quantity)} units
+                  <span
+                    className={
+                      record.quantity < 0
+                        ? 'shrink-0 text-sm font-semibold text-destructive'
+                        : 'shrink-0 text-sm font-semibold text-green-700'
+                    }
+                  >
+                    {record.quantity > 0 ? '+' : ''}
+                    {formatNumber(record.quantity)} units
                   </span>
                 </div>
               ))
@@ -106,7 +113,9 @@ export default function InventoryDetailsModal({ item, onClose }: InventoryDetail
               (damageRecords.data ?? []).map((record, index) => (
                 <div key={record.created_At + '-' + index} className="flex flex-col gap-2 p-2">
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm font-semibold text-destructive">{formatNumber(record.quantity)} units damaged</span>
+                    <span className="text-sm font-semibold text-destructive">
+                      {formatNumber(record.quantity)} units damaged
+                    </span>
                     <span className="text-xs text-muted-foreground">{formatDate(record.created_At)}</span>
                   </div>
                   <p className="whitespace-pre-wrap wrap-anywhere text-sm text-foreground">{record.reason}</p>
@@ -143,7 +152,10 @@ function SectionHeading({ children, className = '' }: { children: ReactNode; cla
 
 function HistoryMessage({ children }: { children: ReactNode }) {
   return (
-    <div role="status" className="flex min-h-24 w-full items-center justify-center rounded-xl bg-muted text-sm text-muted-foreground">
+    <div
+      role="status"
+      className="flex min-h-24 w-full items-center justify-center rounded-xl bg-muted text-sm text-muted-foreground"
+    >
       {children}
     </div>
   )
@@ -151,9 +163,14 @@ function HistoryMessage({ children }: { children: ReactNode }) {
 
 function HistoryError({ children, onRetry }: { children: ReactNode; onRetry: () => void }) {
   return (
-    <div role="alert" className="flex min-h-24 items-center justify-center gap-2 rounded-xl bg-muted p-4 text-sm text-destructive">
+    <div
+      role="alert"
+      className="flex min-h-24 items-center justify-center gap-2 rounded-xl bg-muted p-4 text-sm text-destructive"
+    >
       {children}
-      <button type="button" className="cursor-pointer underline" onClick={onRetry}>Retry</button>
+      <button type="button" className="cursor-pointer underline" onClick={onRetry}>
+        Retry
+      </button>
     </div>
   )
 }

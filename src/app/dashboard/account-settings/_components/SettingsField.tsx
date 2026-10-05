@@ -14,10 +14,7 @@ export function SettingsField({ label, onChange, ...inputProps }: SettingsFieldP
   return (
     <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-foreground`}>
       <span className="text-muted-foreground">{label}</span>
-      <Input
-        onChange={(event) => onChange(event.target.value)}
-        {...inputProps}
-      />
+      <Input onChange={(event) => onChange(event.target.value)} {...inputProps} />
     </label>
   )
 }

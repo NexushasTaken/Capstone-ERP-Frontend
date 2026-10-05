@@ -9,7 +9,7 @@ import type {
 
 export async function fetchSalesOverview(
   params: FetchSalesOverviewParams,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<SalesOverviewContent> {
   const query = new URLSearchParams({
     from: params.from,
@@ -57,13 +57,15 @@ export async function fetchDashboardInventory(signal?: AbortSignal): Promise<Das
 
 export async function fetchInventoryForecast(
   params: FetchInventoryForecastParams = {},
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<{
   items: InventoryForecastContent['forecastResults']
   pageCount: number
   rows: number
 }> {
-  const query = new URLSearchParams({ forceForecast: String(params.forceForecast ?? false) })
+  const query = new URLSearchParams({
+    forceForecast: String(params.forceForecast ?? false),
+  })
   if (params.page !== undefined) query.set('page', String(params.page))
   if (params.pageSize !== undefined) query.set('pageSize', String(params.pageSize))
   const response = await fetch(`/api/Dashboard/inventory/forecast?${query.toString()}`, {

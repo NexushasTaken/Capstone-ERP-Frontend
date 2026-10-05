@@ -44,13 +44,8 @@ export default function ProductFormModal({ product, disabled, onClose, onSubmit 
       sublabel: `ID: ${category.id}`,
     })),
   ]
-  const selectedCategoryName =
-    categories.find((category) => category.id === Number(form.categoryId))?.type ?? null
-  const canSubmit =
-    form.name.trim() !== '' &&
-    form.price.trim() !== '' &&
-    Number(form.price) > 0 &&
-    !disabled
+  const selectedCategoryName = categories.find((category) => category.id === Number(form.categoryId))?.type ?? null
+  const canSubmit = form.name.trim() !== '' && form.price.trim() !== '' && Number(form.price) > 0 && !disabled
 
   function updateField(field: keyof typeof form, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -90,7 +85,7 @@ export default function ProductFormModal({ product, disabled, onClose, onSubmit 
             options={categoryOptions}
             placeholder="No category"
             searchPlaceholder="Search categories..."
-            value={form.categoryId === '0' ? 'No category' : selectedCategoryName ?? ''}
+            value={form.categoryId === '0' ? 'No category' : (selectedCategoryName ?? '')}
           />
         </FormField>
 

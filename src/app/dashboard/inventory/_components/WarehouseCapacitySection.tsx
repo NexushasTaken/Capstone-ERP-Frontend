@@ -83,9 +83,7 @@ export default function WarehouseCapacitySection() {
             </span>
             <div>
               <h2 className="font-semibold text-foreground">Warehouse capacity</h2>
-              <p className="text-sm text-muted-foreground">
-                {formatNumber(chartWarehouses.length)} warehouses tracked
-              </p>
+              <p className="text-sm text-muted-foreground">{formatNumber(chartWarehouses.length)} warehouses tracked</p>
             </div>
           </div>
 
@@ -100,10 +98,7 @@ export default function WarehouseCapacitySection() {
             />
 
             {can(role, 'warehouse:add') && (
-              <Button
-                onClick={() => setModal({ type: 'add' })}
-                type="button"
-              >
+              <Button onClick={() => setModal({ type: 'add' })} type="button">
                 <Plus className="h-4 w-4" />
                 Add warehouse
               </Button>
@@ -134,12 +129,8 @@ export default function WarehouseCapacitySection() {
                 <div className="rounded-xl border border-border bg-background p-4" key={warehouse.id}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 flex-col">
-                      <h3 className="truncate text-sm font-semibold text-foreground capitalize">
-                        {warehouse.name}
-                      </h3>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {warehouse.address}
-                      </p>
+                      <h3 className="truncate text-sm font-semibold text-foreground capitalize">{warehouse.name}</h3>
+                      <p className="truncate text-xs text-muted-foreground">{warehouse.address}</p>
                     </div>
                     {warehouseActions.length > 0 && (
                       <StatusAction

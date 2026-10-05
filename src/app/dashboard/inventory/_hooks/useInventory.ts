@@ -62,7 +62,10 @@ export function useSelectableWarehouses(enabled: boolean) {
     queryFn: () => fetchWarehouses(),
     enabled,
   })
-  return { warehouses: (query.data ?? []).filter(isSelectableWarehouse), isLoading: query.isLoading }
+  return {
+    warehouses: (query.data ?? []).filter(isSelectableWarehouse),
+    isLoading: query.isLoading,
+  }
 }
 
 /** Stock movements and damage reports for one item, loaded only while its details are open. */
@@ -86,11 +89,29 @@ type WithWarehouseName<T> = T & { warehouseName: string | null }
 
 export function useInventoryMutations(listQueryKey: QueryKey) {
   const queryClient = useQueryClient()
-  const shared = { queryClient, queryKey: listQueryKey, scopeKey: ['inventories'] }
+  const shared = {
+    queryClient,
+    queryKey: listQueryKey,
+    scopeKey: ['inventories'],
+  }
 
   const addInventory = useMutation({
-    mutationFn: ({ name, quantity, productId, warehouseId, dateArrived, reorderPoint }: WithWarehouseName<InsertInventoryPayload> & { optimisticId: number }) =>
-      insertInventory({ name, quantity, productId, warehouseId, dateArrived, reorderPoint }),
+    mutationFn: ({
+      name,
+      quantity,
+      productId,
+      warehouseId,
+      dateArrived,
+      reorderPoint,
+    }: WithWarehouseName<InsertInventoryPayload> & { optimisticId: number }) =>
+      insertInventory({
+        name,
+        quantity,
+        productId,
+        warehouseId,
+        dateArrived,
+        reorderPoint,
+      }),
     ...optimisticUpdate<InventoriesResponse, WithWarehouseName<InsertInventoryPayload> & { optimisticId: number }>({
       ...shared,
       update: (current, payload) => {
@@ -105,7 +126,11 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
           status: 'pending',
           dateArrived: payload.dateArrived,
         }
-        return { ...current, items: [optimisticItem, ...current.items], rows: current.rows + 1 }
+        return {
+          ...current,
+          items: [optimisticItem, ...current.items],
+          rows: current.rows + 1,
+        }
       },
       successMessage: 'Inventory item added successfully.',
       errorMessage: 'Failed to add inventory item.',
@@ -129,7 +154,7 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
                 warehouseName: payload.warehouseName ?? item.warehouseName,
                 reorderPoint: payload.reorderPoint,
               }
-            : item
+            : item,
         ),
       }),
       successMessage: 'Inventory item updated successfully.',
@@ -157,23 +182,34 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
     mutationFn: markInventoryAsDamage,
     onMutate: async (payload: MarkInventoryAsDamagePayload) => {
       await queryClient.cancelQueries({ queryKey: ['inventories'] })
-      const previousQuantity = payload.damagedType === 1
-        ? queryClient.getQueryData<InventoriesResponse>(listQueryKey)
-          ?.items.find((item) => item.id === payload.id)?.quantity
-        : undefined
+      const previousQuantity =
+        payload.damagedType === 1
+          ? queryClient.getQueryData<InventoriesResponse>(listQueryKey)?.items.find((item) => item.id === payload.id)
+              ?.quantity
+          : undefined
       const damageKey = queryKeys.inventories.damageRecords(payload.id)
       const previousDamageRecords = queryClient.getQueryData<DamageRecords>(damageKey)
 
-      queryClient.setQueryData<InventoriesResponse>(listQueryKey, (current) => current && ({
-        ...current,
-        items: current.items.map((item) => item.id === payload.id && payload.damagedType === 1
-          ? { ...item, quantity: item.quantity - payload.quantity }
-          : item),
-      }))
+      queryClient.setQueryData<InventoriesResponse>(
+        listQueryKey,
+        (current) =>
+          current && {
+            ...current,
+            items: current.items.map((item) =>
+              item.id === payload.id && payload.damagedType === 1
+                ? { ...item, quantity: item.quantity - payload.quantity }
+                : item,
+            ),
+          },
+      )
       // Only extend loaded history so an incomplete history is never cached as complete.
       if (previousDamageRecords) {
         queryClient.setQueryData(damageKey, [
-          { quantity: payload.quantity, reason: payload.reason, created_At: payload.created_At },
+          {
+            quantity: payload.quantity,
+            reason: payload.reason,
+            created_At: payload.created_At,
+          },
           ...previousDamageRecords,
         ])
       }
@@ -182,10 +218,14 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
     onError: (error, payload, context) => {
       if (context?.previousQuantity !== undefined) {
         const quantity = context.previousQuantity
-        queryClient.setQueryData<InventoriesResponse>(listQueryKey, (current) => current && ({
-          ...current,
-          items: current.items.map((item) => item.id === payload.id ? { ...item, quantity } : item),
-        }))
+        queryClient.setQueryData<InventoriesResponse>(
+          listQueryKey,
+          (current) =>
+            current && {
+              ...current,
+              items: current.items.map((item) => (item.id === payload.id ? { ...item, quantity } : item)),
+            },
+        )
       }
       if (context?.previousDamageRecords) {
         queryClient.setQueryData(context.damageKey, context.previousDamageRecords)

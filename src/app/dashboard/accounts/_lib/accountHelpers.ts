@@ -23,7 +23,10 @@ export function formatAccountId(accountId: string | number) {
 
 export const ACCOUNT_ITEMS_PER_PAGE = 10
 
-export const roleOptions: Array<{ label: string; value: 'owner' | 'secretary' }> = [
+export const roleOptions: Array<{
+  label: string
+  value: 'owner' | 'secretary'
+}> = [
   { label: 'Owner', value: 'owner' },
   { label: 'Secretary', value: 'secretary' },
 ]
@@ -36,16 +39,17 @@ export function filterAndSortAccounts(
   accounts: AccountListItem[],
   search: string,
   sortBy: AccountSortBy,
-  sortOrder: 'asc' | 'desc'
+  sortOrder: 'asc' | 'desc',
 ) {
   const searchValue = search.trim().toLowerCase()
   const matched = searchValue
-    ? accounts.filter((account) =>
-        account.firstName.toLowerCase().includes(searchValue) ||
-        account.lastName.toLowerCase().includes(searchValue) ||
-        account.email.toLowerCase().includes(searchValue) ||
-        account.role.toLowerCase().includes(searchValue) ||
-        String(account.id).includes(searchValue)
+    ? accounts.filter(
+        (account) =>
+          account.firstName.toLowerCase().includes(searchValue) ||
+          account.lastName.toLowerCase().includes(searchValue) ||
+          account.email.toLowerCase().includes(searchValue) ||
+          account.role.toLowerCase().includes(searchValue) ||
+          String(account.id).includes(searchValue),
       )
     : accounts
   const direction = sortOrder === 'asc' ? 1 : -1

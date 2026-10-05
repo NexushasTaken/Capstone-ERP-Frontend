@@ -89,7 +89,9 @@ function SaleDetails({ sale }: { sale: Sale }) {
           <thead className="sticky top-0 bg-muted text-xs text-muted-foreground">
             <tr>
               {['Product', 'Quantity', 'Unit price', 'Amount'].map((column) => (
-                <th key={column} scope="col" className="px-3 py-2 font-normal">{column}</th>
+                <th key={column} scope="col" className="px-3 py-2 font-normal">
+                  {column}
+                </th>
               ))}
             </tr>
           </thead>
@@ -103,7 +105,11 @@ function SaleDetails({ sale }: { sale: Sale }) {
               </tr>
             ))}
             {sale.orders.length === 0 && (
-              <tr><td colSpan={4} className="px-3 py-3 text-muted-foreground">No products recorded.</td></tr>
+              <tr>
+                <td colSpan={4} className="px-3 py-3 text-muted-foreground">
+                  No products recorded.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

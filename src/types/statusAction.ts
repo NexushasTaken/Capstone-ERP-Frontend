@@ -8,4 +8,3 @@ export interface StatusActionItem {
   icon?: LucideIcon
   variant?: 'default' | 'destructive'
 }
-

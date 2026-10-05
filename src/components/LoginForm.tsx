@@ -24,24 +24,22 @@ export default function LoginForm() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch(
-        '/api/User/Login',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ email, password }),
-        },
-      )
+      const response = await fetch('/api/User/Login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      })
 
-      const payload: ApiEnvelope<RawCurrentUser> | { message?: string; title?: string } | null =
-        await response.json().catch(() => null)
+      const payload: ApiEnvelope<RawCurrentUser> | { message?: string; title?: string } | null = await response
+        .json()
+        .catch(() => null)
 
       if (!response.ok || !payload || !('success' in payload) || !payload.success) {
         const message =
           payload && 'title' in payload
-            ? payload.title ?? payload.message ?? 'Invalid email or password.'
-            : payload?.message ?? 'Invalid email or password.'
+            ? (payload.title ?? payload.message ?? 'Invalid email or password.')
+            : (payload?.message ?? 'Invalid email or password.')
         throw new Error(message)
       }
 
@@ -60,34 +58,63 @@ export default function LoginForm() {
 
   return (
     <div className="flex w-full h-screen p-4 bg-muted/50 items-center justify-center">
-        <div className="flex flex-col w-full sm:max-w-sm">
-            <div className="flex flex-col gap-2">
-                <span className="text-foreground text-4xl font-medium">Welcome Back</span>
-                <span className="text-foreground text-sm font-light">Please enter your details to sign in.</span>
-            </div>
-
-            <form className="flex flex-col mt-8" onSubmit={handleSubmit}>
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="email" className='text-sm text-foreground'>Email address</label>
-                    <div className="relative">
-                        <input id="email" name="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required className="pl-12 pr-4 py-4 outline-none border rounded-lg border-border w-full text-foreground" placeholder='Email address'/>
-                        <Mail className="text-foreground w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2" />
-                    </div>
-                </div>
-
-                <div className="flex flex-col mt-4 gap-2">
-                    <label htmlFor="password" className='text-sm text-foreground'>Password</label>
-                    <div className="relative">
-                        <input id="password" name="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required className="pl-12 pr-4 py-4 outline-none border rounded-lg border-border w-full text-foreground" placeholder='Password'/>
-                        <LockKeyhole className="text-foreground w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2" />
-                    </div>
-                </div>
-
-                <button aria-label='Sign In' type='submit' disabled={isSubmitting} className="bg-primary text-primary-foreground py-4 rounded-lg mt-8 transition-all hover:scale-105 duration-300 cursor-pointer text-center disabled:cursor-not-allowed disabled:opacity-60">
-                  {isSubmitting ? 'Signing in...' : 'Sign In'}
-                </button>
-            </form>
+      <div className="flex flex-col w-full sm:max-w-sm">
+        <div className="flex flex-col gap-2">
+          <span className="text-foreground text-4xl font-medium">Welcome Back</span>
+          <span className="text-foreground text-sm font-light">Please enter your details to sign in.</span>
         </div>
+
+        <form className="flex flex-col mt-8" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="email" className="text-sm text-foreground">
+              Email address
+            </label>
+            <div className="relative">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                autoComplete="email"
+                required
+                className="pl-12 pr-4 py-4 outline-none border rounded-lg border-border w-full text-foreground"
+                placeholder="Email address"
+              />
+              <Mail className="text-foreground w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2" />
+            </div>
+          </div>
+
+          <div className="flex flex-col mt-4 gap-2">
+            <label htmlFor="password" className="text-sm text-foreground">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                required
+                className="pl-12 pr-4 py-4 outline-none border rounded-lg border-border w-full text-foreground"
+                placeholder="Password"
+              />
+              <LockKeyhole className="text-foreground w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2" />
+            </div>
+          </div>
+
+          <button
+            aria-label="Sign In"
+            type="submit"
+            disabled={isSubmitting}
+            className="bg-primary text-primary-foreground py-4 rounded-lg mt-8 transition-all hover:scale-105 duration-300 cursor-pointer text-center disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+      </div>
     </div>
   )
 }

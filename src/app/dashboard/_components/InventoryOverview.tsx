@@ -7,11 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { fetchInventories } from '@/services/inventoryApi'
 import { fetchDashboardInventory } from '@/services/dashboardApi'
-import {
-  getInventoryStatusStyleFromLabel,
-  formatNumber,
-  capitalize,
-} from '@/lib/helpers/inventoryHelpers'
+import { getInventoryStatusStyleFromLabel, formatNumber, capitalize } from '@/lib/helpers/inventoryHelpers'
 import Loading from '@/components/Loading'
 import { TablePagination } from '@/components/TablePagination'
 import { queryKeys } from '@/lib/query/queryKeys'
@@ -20,8 +16,16 @@ const attentionItemsPerPage = 7
 
 export default function InventoryOverview() {
   const [attentionPage, setAttentionPage] = useState(1)
-  const inventoryQueryParams = { page: attentionPage, pageSize: attentionItemsPerPage, statusId: 3 }
-  const { data: inventoriesResponse, isLoading, isError } = useQuery({
+  const inventoryQueryParams = {
+    page: attentionPage,
+    pageSize: attentionItemsPerPage,
+    statusId: 3,
+  }
+  const {
+    data: inventoriesResponse,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: queryKeys.inventories.all(inventoryQueryParams),
     queryFn: () => fetchInventories(inventoryQueryParams),
   })
@@ -70,8 +74,14 @@ export default function InventoryOverview() {
             <WarehouseIcon size={18} className="text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Total warehouse capacity</span>
           </div>
-          <p className="mt-3 text-4xl font-semibold text-foreground">{isDashboardInventoryLoading || isDashboardInventoryError ? '-' : `${formatNumber(totalCapacity)} units`}</p>
-          {isDashboardInventoryError && <p role="alert" className="mt-1 text-xs text-destructive">Unable to load warehouse capacity.</p>}
+          <p className="mt-3 text-4xl font-semibold text-foreground">
+            {isDashboardInventoryLoading || isDashboardInventoryError ? '-' : `${formatNumber(totalCapacity)} units`}
+          </p>
+          {isDashboardInventoryError && (
+            <p role="alert" className="mt-1 text-xs text-destructive">
+              Unable to load warehouse capacity.
+            </p>
+          )}
         </div>
 
         <div className="min-w-0 flex-1 rounded-xl bg-background p-4">
@@ -102,10 +112,14 @@ export default function InventoryOverview() {
         <div className="mt-4 space-y-3">
           {isLoading ? (
             <div className="text-sm text-muted-foreground">
-              <span className='flex h-full'><Loading /></span>
+              <span className="flex h-full">
+                <Loading />
+              </span>
             </div>
           ) : isError ? (
-            <p role="alert" className="text-sm text-destructive">Unable to load inventory needing attention.</p>
+            <p role="alert" className="text-sm text-destructive">
+              Unable to load inventory needing attention.
+            </p>
           ) : attentionItems.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nothing needs attention right now.</p>
           ) : (
@@ -119,9 +133,7 @@ export default function InventoryOverview() {
                     <p className="text-xs text-muted-foreground capitalize">{item.warehouseName}</p>
                   </div>
 
-                  <span className={`text-xs font-medium ${statusStyle.labelClassName}`}>
-                    {capitalize(item.status)}
-                  </span>
+                  <span className={`text-xs font-medium ${statusStyle.labelClassName}`}>{capitalize(item.status)}</span>
                 </div>
               )
             })

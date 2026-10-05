@@ -37,7 +37,9 @@ export default function AuditLogsTable({ logs, isLoading, error, hasFilters }: A
             </TableCell>
             <TableCell className="px-3 py-4">{getAuditModuleLabel(log.module)}</TableCell>
             <TableCell className="px-3 py-4">
-              <span className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium ${className}`}>
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium ${className}`}
+              >
                 <Icon className="h-3.5 w-3.5" />
                 {label}
               </span>

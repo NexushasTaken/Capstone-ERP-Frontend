@@ -1,14 +1,8 @@
 export type PaginationPage = number | 'ellipsis'
 
-export function getPaginationPages(
-  currentPage: number,
-  totalPages: number
-): PaginationPage[] {
+export function getPaginationPages(currentPage: number, totalPages: number): PaginationPage[] {
   if (totalPages <= 7) {
-    return Array.from(
-      { length: totalPages },
-      (_, index) => index + 1
-    )
+    return Array.from({ length: totalPages }, (_, index) => index + 1)
   }
 
   const pages: PaginationPage[] = [1]

@@ -23,13 +23,15 @@ export default function WarehouseCapacityChart({ capacity }: WarehouseCapacityCh
       type: 'doughnut',
       data: {
         labels: ['Used capacity', 'Available capacity'],
-        datasets: [{
-          data: [capacity.used, capacity.total - capacity.used],
-          backgroundColor: [themeColor('--chart-5'), themeColor('--chart-1')],
-          borderWidth: 0,
-          borderRadius: 8,
-          spacing: 3,
-        }],
+        datasets: [
+          {
+            data: [capacity.used, capacity.total - capacity.used],
+            backgroundColor: [themeColor('--chart-5'), themeColor('--chart-1')],
+            borderWidth: 0,
+            borderRadius: 8,
+            spacing: 3,
+          },
+        ],
       },
       options: {
         cutout: '77%',
@@ -37,7 +39,9 @@ export default function WarehouseCapacityChart({ capacity }: WarehouseCapacityCh
         plugins: {
           legend: { display: false },
           tooltip: {
-            callbacks: { label: (context) => `${context.label}: ${formatNumber(context.parsed)}` },
+            callbacks: {
+              label: (context) => `${context.label}: ${formatNumber(context.parsed)}`,
+            },
           },
         },
       },
@@ -57,7 +61,8 @@ export default function WarehouseCapacityChart({ capacity }: WarehouseCapacityCh
         </div>
       </div>
       <p className="my-4 text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">{formatNumber(capacity.used)}</span> of {formatNumber(capacity.total)} units
+        <span className="font-medium text-foreground">{formatNumber(capacity.used)}</span> of{' '}
+        {formatNumber(capacity.total)} units
       </p>
     </div>
   )

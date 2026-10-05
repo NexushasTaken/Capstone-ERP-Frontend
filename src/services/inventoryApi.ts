@@ -97,7 +97,7 @@ export async function fetchInventories(params: FetchInventoriesParams = {}): Pro
 // INSERT
 export async function insertInventory(
   payload: InsertInventoryPayload,
-  existingId?: number
+  existingId?: number,
 ): Promise<ApiEnvelopeNoContent> {
   const query = existingId ? `?id=${existingId}` : ''
 
@@ -138,7 +138,10 @@ export async function updateInventory(payload: UpdateInventoryPayload): Promise<
 // PATCH
 export async function markInventoryAsDamage(payload: MarkInventoryAsDamagePayload): Promise<ApiEnvelopeNoContent> {
   const response = await fetch('/api/Inventory/markasdamage', {
-    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload),
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
   })
   const data: ApiEnvelopeNoContent = await response.json()
   if (!response.ok || !data.success) throw new Error(data.message || 'Failed to mark inventory as damaged')

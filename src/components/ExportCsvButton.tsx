@@ -31,7 +31,9 @@ export default function ExportCsvButton({ onExport, disabled = false }: ExportCs
           <Spinner data-icon="inline-start" />
           Cooldown
         </>
-      ) : 'Export to CSV'}
+      ) : (
+        'Export to CSV'
+      )}
     </Button>
   )
 }

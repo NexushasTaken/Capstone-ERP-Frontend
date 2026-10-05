@@ -23,7 +23,10 @@ interface RestockModalProps {
 
 // Stays open while saving; the parent closes it once the restock succeeds.
 export default function RestockModal({ item, isPending, onClose, onSubmit }: RestockModalProps) {
-  const [form, setForm] = useState<{ quantity: string; restockType: 1 | 2 }>({ quantity: '', restockType: 1 })
+  const [form, setForm] = useState<{ quantity: string; restockType: 1 | 2 }>({
+    quantity: '',
+    restockType: 1,
+  })
   const quantity = Number(form.quantity)
   const canSubmit = item.id > 0 && Number.isSafeInteger(quantity) && quantity > 0
   const close = () => {
@@ -33,23 +36,38 @@ export default function RestockModal({ item, isPending, onClose, onSubmit }: Res
   return (
     <AppModal open onClose={close} className="flex max-h-fit flex-col lg:max-w-lg">
       <ModalHeader subtitle={formatInventoryId(String(item.id))} title="Restock inventory" onClose={close} />
-      <form onSubmit={(event) => {
-        event.preventDefault()
-        if (!canSubmit || isPending) return
-        onSubmit({ id: item.id, quantity, restockType: form.restockType })
-      }}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          if (!canSubmit || isPending) return
+          onSubmit({ id: item.id, quantity, restockType: form.restockType })
+        }}
+      >
         <div className="flex flex-col gap-4 p-4">
-          <p className="text-sm text-muted-foreground">{item.name} · {formatNumber(item.quantity)} available.</p>
+          <p className="text-sm text-muted-foreground">
+            {item.name} · {formatNumber(item.quantity)} available.
+          </p>
           <div className="flex flex-col gap-1 text-sm text-foreground">
-            <label htmlFor="restock-type" className="text-xs text-muted-foreground">Restock type</label>
-            <Select items={restockTypeOptions} value={form.restockType} disabled={isPending} onValueChange={(value) => {
-              if (value === 1 || value === 2) setForm((previous) => ({ ...previous, restockType: value }))
-            }}>
+            <label htmlFor="restock-type" className="text-xs text-muted-foreground">
+              Restock type
+            </label>
+            <Select
+              items={restockTypeOptions}
+              value={form.restockType}
+              disabled={isPending}
+              onValueChange={(value) => {
+                if (value === 1 || value === 2) setForm((previous) => ({ ...previous, restockType: value }))
+              }}
+            >
               <SelectTrigger id="restock-type" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {restockTypeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                {restockTypeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -62,14 +80,28 @@ export default function RestockModal({ item, isPending, onClose, onSubmit }: Res
               step={1}
               disabled={isPending}
               value={form.quantity}
-              onChange={(event) => setForm((previous) => ({ ...previous, quantity: event.target.value }))}
+              onChange={(event) =>
+                setForm((previous) => ({
+                  ...previous,
+                  quantity: event.target.value,
+                }))
+              }
             />
           </label>
         </div>
         <div className="flex justify-end gap-2 border-t border-border p-4">
-          <Button type="button" variant="outline" disabled={isPending} onClick={close}>Cancel</Button>
+          <Button type="button" variant="outline" disabled={isPending} onClick={close}>
+            Cancel
+          </Button>
           <Button type="submit" disabled={!canSubmit || isPending}>
-            {isPending ? <><Spinner data-icon="inline-start" />Saving...</> : 'Restock'}
+            {isPending ? (
+              <>
+                <Spinner data-icon="inline-start" />
+                Saving...
+              </>
+            ) : (
+              'Restock'
+            )}
           </Button>
         </div>
       </form>

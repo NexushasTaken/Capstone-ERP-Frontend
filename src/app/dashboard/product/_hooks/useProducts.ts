@@ -62,7 +62,11 @@ export interface ProductValues {
 // Add/edit/delete for the products page. Each one updates the visible list in the cache straight away.
 export function useProductMutations(listQueryKey: QueryKey, filter: ProductCategoryFilter) {
   const queryClient = useQueryClient()
-  const shared = { queryClient, queryKey: listQueryKey, scopeKey: ['products'] }
+  const shared = {
+    queryClient,
+    queryKey: listQueryKey,
+    scopeKey: ['products'],
+  }
 
   const addProduct = useMutation({
     mutationFn: ({ categoryId, name, price }: ProductValues & { optimisticId: number }) =>
@@ -70,9 +74,7 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
     ...optimisticUpdate<ProductsResponse, ProductValues & { optimisticId: number }>({
       ...shared,
       update: (current, values) => {
-        const belongsToCurrentFilter = values.categoryId === 0
-          ? filter === 'Uncategorized'
-          : filter === 'Categorized'
+        const belongsToCurrentFilter = values.categoryId === 0 ? filter === 'Uncategorized' : filter === 'Categorized'
         if (!belongsToCurrentFilter) return current
 
         const optimisticProduct: ProductListItem = {
@@ -83,7 +85,11 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
           categoryName: values.categoryName,
           created_At: new Date().toISOString(),
         }
-        return { ...current, items: [optimisticProduct, ...current.items], rows: current.rows + 1 }
+        return {
+          ...current,
+          items: [optimisticProduct, ...current.items],
+          rows: current.rows + 1,
+        }
       },
       successMessage: 'Product added successfully',
       errorMessage: 'Failed to add product',
@@ -106,7 +112,7 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
                 price: values.price,
                 categoryName: values.categoryName,
               }
-            : product
+            : product,
         ),
       }),
       successMessage: 'Product updated successfully',

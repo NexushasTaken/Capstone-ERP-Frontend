@@ -1,14 +1,12 @@
 import type { StatusCount } from '@/types/statusCount'
-import type {
-  OrderGroup,
-  OrderRider,
-  OrderStatus,
-  OrderType,
-} from '@/types/order'
+import type { OrderGroup, OrderRider, OrderStatus, OrderType } from '@/types/order'
 import { ApiEnvelope, ApiEnvelopeNoContent } from '@/types/api'
 import type { FetchOrdersParams, OrderListContent, InsertOrderPayload, UpdateOrderStatusPayload } from '@/types/order'
 
-export async function fetchOrders(params: FetchOrdersParams = {}, signal?: AbortSignal): Promise<{
+export async function fetchOrders(
+  params: FetchOrdersParams = {},
+  signal?: AbortSignal,
+): Promise<{
   items: OrderGroup[]
   pageCount: number
   rows: number

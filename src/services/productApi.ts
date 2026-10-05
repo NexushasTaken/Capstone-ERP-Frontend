@@ -1,8 +1,11 @@
-import type {
-  ProductListItem,
-} from '@/types/product'
+import type { ProductListItem } from '@/types/product'
 import { ApiEnvelope, ApiEnvelopeNoContent } from '@/types/api'
-import type { FetchProductsParams, ProductListContent, InsertProductPayload, UpdateProductPayload } from '@/types/product'
+import type {
+  FetchProductsParams,
+  ProductListContent,
+  InsertProductPayload,
+  UpdateProductPayload,
+} from '@/types/product'
 
 // GET
 export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
@@ -39,10 +42,7 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
 }
 
 // INSERT
-export async function insertProduct(
-  payload: InsertProductPayload,
-  existingId?: number
-): Promise<ApiEnvelopeNoContent> {
+export async function insertProduct(payload: InsertProductPayload, existingId?: number): Promise<ApiEnvelopeNoContent> {
   const query = existingId ? `?id=${existingId}` : ''
 
   const response = await fetch(`/api/Product/insert${query}`, {
@@ -96,4 +96,3 @@ export async function deleteProduct(id: number): Promise<ApiEnvelopeNoContent> {
 
   return data
 }
-

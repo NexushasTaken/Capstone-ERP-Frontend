@@ -22,11 +22,7 @@ export default function WarehouseFormModal({ warehouse, disabled, onClose, onSub
     capacity: warehouse ? String(warehouse.capacity) : '',
   })
   const isEdit = warehouse !== null
-  const canSubmit =
-    !disabled &&
-    form.name.trim() !== '' &&
-    form.address.trim() !== '' &&
-    Number(form.capacity) > 0
+  const canSubmit = !disabled && form.name.trim() !== '' && form.address.trim() !== '' && Number(form.capacity) > 0
 
   function updateField(field: keyof typeof form, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -34,13 +30,25 @@ export default function WarehouseFormModal({ warehouse, disabled, onClose, onSub
 
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open>
-      <ModalHeader subtitle="Warehouse capacity" title={isEdit ? 'Edit warehouse' : 'Add warehouse'} onClose={onClose} />
+      <ModalHeader
+        subtitle="Warehouse capacity"
+        title={isEdit ? 'Edit warehouse' : 'Add warehouse'}
+        onClose={onClose}
+      />
       <ModalBody>
         <FormField label="Warehouse name">
-          <FormInput className="capitalize" onChange={(event) => updateField('name', event.target.value)} value={form.name} />
+          <FormInput
+            className="capitalize"
+            onChange={(event) => updateField('name', event.target.value)}
+            value={form.name}
+          />
         </FormField>
         <FormField label="Address">
-          <FormInput className="capitalize" onChange={(event) => updateField('address', event.target.value)} value={form.address} />
+          <FormInput
+            className="capitalize"
+            onChange={(event) => updateField('address', event.target.value)}
+            value={form.address}
+          />
         </FormField>
         <FormField label="Maximum capacity">
           <FormInput
@@ -55,7 +63,11 @@ export default function WarehouseFormModal({ warehouse, disabled, onClose, onSub
         onCancel={onClose}
         onConfirm={() =>
           canSubmit &&
-          onSubmit({ name: form.name.trim(), address: form.address.trim(), capicity: Number(form.capacity) })
+          onSubmit({
+            name: form.name.trim(),
+            address: form.address.trim(),
+            capicity: Number(form.capacity),
+          })
         }
         confirmLabel={isEdit ? 'Save changes' : 'Add warehouse'}
         confirmIcon={isEdit ? undefined : Plus}

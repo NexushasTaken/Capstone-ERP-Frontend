@@ -35,23 +35,30 @@ export default function DataTable({
   children,
   rowGroups = false,
 }: DataTableProps) {
-  const status = isLoading
-    ? <Loading />
-    : error
-      ? <span className="text-destructive">{error instanceof Error ? error.message : errorMessage}</span>
-      : isEmpty
-        ? emptyMessage
-        : null
+  const status = isLoading ? (
+    <Loading />
+  ) : error ? (
+    <span className="text-destructive">{error instanceof Error ? error.message : errorMessage}</span>
+  ) : isEmpty ? (
+    emptyMessage
+  ) : null
 
   return (
     <Table className={cn('text-left', className)}>
       <TableHeader>
         <TableRow className="hover:bg-transparent">
           {columns.map((column) => {
-            const { label, className: columnClassName, srOnly } =
-              typeof column === 'string' ? { label: column, className: undefined, srOnly: false } : column
+            const {
+              label,
+              className: columnClassName,
+              srOnly,
+            } = typeof column === 'string' ? { label: column, className: undefined, srOnly: false } : column
             return (
-              <TableHead className={cn('px-3 font-normal text-muted-foreground', columnClassName)} key={label} scope="col">
+              <TableHead
+                className={cn('px-3 font-normal text-muted-foreground', columnClassName)}
+                key={label}
+                scope="col"
+              >
                 {srOnly ? <span className="sr-only">{label}</span> : label}
               </TableHead>
             )

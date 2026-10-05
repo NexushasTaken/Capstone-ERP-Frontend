@@ -1,4 +1,4 @@
-import { getPaginationPages } from "@/lib/helpers/paginationHelpers"
+import { getPaginationPages } from '@/lib/helpers/paginationHelpers'
 import {
   Pagination,
   PaginationContent,
@@ -7,7 +7,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
+} from '@/components/ui/pagination'
 
 interface TablePaginationProps {
   currentPage: number
@@ -15,17 +15,13 @@ interface TablePaginationProps {
   onPageChange: (page: number) => void
 }
 
-export function TablePagination({
-    currentPage,
-    totalPages,
-    onPageChange
-}: TablePaginationProps) {
+export function TablePagination({ currentPage, totalPages, onPageChange }: TablePaginationProps) {
   return (
     <Pagination>
       <PaginationContent>
         <PaginationItem>
-          <PaginationPrevious 
-            href="#" 
+          <PaginationPrevious
+            href="#"
             className="rounded-lg"
             onClick={(e) => {
               e.preventDefault()
@@ -33,33 +29,34 @@ export function TablePagination({
               if (currentPage > 1) {
                 onPageChange(currentPage - 1)
               }
-            }}/>
+            }}
+          />
         </PaginationItem>
 
-       {getPaginationPages(currentPage, totalPages).map((page, index) => {
-        if (page === "ellipsis") {
+        {getPaginationPages(currentPage, totalPages).map((page, index) => {
+          if (page === 'ellipsis') {
             return (
-            <PaginationItem key={`ellipsis-${index}`}>
+              <PaginationItem key={`ellipsis-${index}`}>
                 <PaginationEllipsis />
-            </PaginationItem>
+              </PaginationItem>
             )
-        }
+          }
 
-        return (
+          return (
             <PaginationItem key={page}>
-            <PaginationLink
+              <PaginationLink
                 href="#"
                 isActive={currentPage === page}
                 className="rounded-lg"
                 onClick={(e) => {
-                e.preventDefault()
-                onPageChange(page)
+                  e.preventDefault()
+                  onPageChange(page)
                 }}
-            >
+              >
                 {page}
-            </PaginationLink>
+              </PaginationLink>
             </PaginationItem>
-        )
+          )
         })}
 
         <PaginationItem>

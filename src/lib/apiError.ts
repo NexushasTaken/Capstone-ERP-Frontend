@@ -1,7 +1,10 @@
 // An error from the backend that keeps the HTTP status, so callers can tell
 // a rejected input (400) apart from other failures.
 export class ApiError extends Error {
-  constructor(message: string, public readonly status: number) {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
     super(message)
     this.name = 'ApiError'
   }

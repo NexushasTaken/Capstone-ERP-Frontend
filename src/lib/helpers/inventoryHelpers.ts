@@ -1,7 +1,4 @@
-import type {
-  InventorySortBy,
-  WarehouseCapacity,
-} from '@/types/inventory'
+import type { InventorySortBy, WarehouseCapacity } from '@/types/inventory'
 import { WarehouseListItem } from '@/types/warehouseCapacity'
 
 export function formatInventoryId(inventoryId: string) {
@@ -45,17 +42,49 @@ export function getInventoryStatusStyleFromLabel(status: string) {
 
 export function formatDateForApi(isoDateString: string): string {
   const date = new Date(isoDateString)
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 }
 
 export const inventorySortOptions = [
-  { label: 'Latest added', value: 'latest' as InventorySortBy, order: 'asc' as const },
-  { label: 'Name (A to Z)', value: 'name' as InventorySortBy, order: 'asc' as const },
-  { label: 'Name (Z to A)', value: 'name' as InventorySortBy, order: 'desc' as const },
-  { label: 'Quantity (High to Low)', value: 'quantity' as InventorySortBy, order: 'desc' as const },
-  { label: 'Quantity (Low to High)', value: 'quantity' as InventorySortBy, order: 'asc' as const },
-  { label: 'Reorder point (Ascending)', value: 'reorderPoint' as InventorySortBy, order: 'asc' as const },
-  { label: 'Warehouse ID (Ascending)', value: 'warehouseId' as InventorySortBy, order: 'asc' as const },
+  {
+    label: 'Latest added',
+    value: 'latest' as InventorySortBy,
+    order: 'asc' as const,
+  },
+  {
+    label: 'Name (A to Z)',
+    value: 'name' as InventorySortBy,
+    order: 'asc' as const,
+  },
+  {
+    label: 'Name (Z to A)',
+    value: 'name' as InventorySortBy,
+    order: 'desc' as const,
+  },
+  {
+    label: 'Quantity (High to Low)',
+    value: 'quantity' as InventorySortBy,
+    order: 'desc' as const,
+  },
+  {
+    label: 'Quantity (Low to High)',
+    value: 'quantity' as InventorySortBy,
+    order: 'asc' as const,
+  },
+  {
+    label: 'Reorder point (Ascending)',
+    value: 'reorderPoint' as InventorySortBy,
+    order: 'asc' as const,
+  },
+  {
+    label: 'Warehouse ID (Ascending)',
+    value: 'warehouseId' as InventorySortBy,
+    order: 'asc' as const,
+  },
 ]
 
 export function getInventoryFilter(value: { value: InventorySortBy; order: 'asc' | 'desc' }) {

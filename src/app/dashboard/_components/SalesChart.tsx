@@ -18,7 +18,19 @@ import {
 import { useEffect, useRef } from 'react'
 import { themeColor } from '@/lib/cssColor'
 
-Chart.register(ArcElement, BarController, BarElement, CategoryScale, Legend, LinearScale, LineController, LineElement, PieController, PointElement, Tooltip)
+Chart.register(
+  ArcElement,
+  BarController,
+  BarElement,
+  CategoryScale,
+  Legend,
+  LinearScale,
+  LineController,
+  LineElement,
+  PieController,
+  PointElement,
+  Tooltip,
+)
 
 // The pie keeps its own multi-colour palette: the theme's --chart-1..5 are greys, too few to tell slices apart.
 const salesPieColors = [
@@ -83,9 +95,7 @@ export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
             label: 'Sales',
             data: values,
             borderColor: lineColor,
-            backgroundColor: type === 'pie'
-              ? pieColors
-              : themeColor('--chart-5', 0.12),
+            backgroundColor: type === 'pie' ? pieColors : themeColor('--chart-5', 0.12),
             borderWidth: 3,
             borderRadius: type === 'bar' ? 4 : undefined,
             borderSkipped: type === 'bar' ? false : undefined,
@@ -117,9 +127,7 @@ export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
             },
             onHover: (_event, item, legend) => {
               const dataset = legend.chart.data.datasets[0]
-              dataset.backgroundColor = pieColors.map((color, index) =>
-                index === item.index ? color : `${color}4D`
-              )
+              dataset.backgroundColor = pieColors.map((color, index) => (index === item.index ? color : `${color}4D`))
               legend.chart.update('none')
             },
             onLeave: (_event, _item, legend) => {
@@ -133,25 +141,28 @@ export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
             },
           },
         },
-        scales: type === 'pie' ? undefined : {
-          x: {
-            border: { display: false },
-            grid: { display: false },
-            ticks: {
-              color: labelColor,
-              font: { size: 12, weight: 500 },
-            },
-          },
-          y: {
-            beginAtZero: true,
-            border: { display: false },
-            grid: { color: themeColor('--border') },
-            ticks: {
-              color: labelColor,
-              callback: (value) => `${Number(value) / 1000}K`,
-            },
-          },
-        },
+        scales:
+          type === 'pie'
+            ? undefined
+            : {
+                x: {
+                  border: { display: false },
+                  grid: { display: false },
+                  ticks: {
+                    color: labelColor,
+                    font: { size: 12, weight: 500 },
+                  },
+                },
+                y: {
+                  beginAtZero: true,
+                  border: { display: false },
+                  grid: { color: themeColor('--border') },
+                  ticks: {
+                    color: labelColor,
+                    callback: (value) => `${Number(value) / 1000}K`,
+                  },
+                },
+              },
       },
     }
 

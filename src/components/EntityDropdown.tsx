@@ -3,12 +3,7 @@
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown, Plus, Search } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import Loading from '@/components/Loading'
 import { Input } from '@/components/ui/input'
 
@@ -78,9 +73,7 @@ export default function EntityDropdown({
     const query = searchQuery.trim().toLowerCase()
     if (!query) return options
 
-    return options.filter((option) =>
-      `${option.label} ${option.sublabel ?? ''}`.toLowerCase().includes(query)
-    )
+    return options.filter((option) => `${option.label} ${option.sublabel ?? ''}`.toLowerCase().includes(query))
   }, [options, searchQuery])
 
   return (
@@ -153,9 +146,7 @@ export default function EntityDropdown({
               <DropdownMenuItem key={option.id} onClick={() => onSelect(option.id)}>
                 <div className="flex flex-col">
                   <span className="capitalize">{option.label}</span>
-                  {option.sublabel && (
-                    <span className="text-xs text-muted-foreground">{option.sublabel}</span>
-                  )}
+                  {option.sublabel && <span className="text-xs text-muted-foreground">{option.sublabel}</span>}
                 </div>
               </DropdownMenuItem>
             ))

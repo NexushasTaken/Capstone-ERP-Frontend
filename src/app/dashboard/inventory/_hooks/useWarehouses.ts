@@ -16,7 +16,11 @@ export function useWarehouses() {
 
 export function useWarehouseMutations() {
   const queryClient = useQueryClient()
-  const shared = { queryClient, queryKey: queryKeys.warehouses.all, scopeKey: queryKeys.warehouses.all }
+  const shared = {
+    queryClient,
+    queryKey: queryKeys.warehouses.all,
+    scopeKey: queryKeys.warehouses.all,
+  }
   // Warehouse changes also affect the inventory list (warehouse names, stock).
   const refetchAll = () => {
     invalidateWarehouses(queryClient)
@@ -29,7 +33,13 @@ export function useWarehouseMutations() {
     ...optimisticUpdate<WarehouseListItem[], InsertWarehousePayload & { optimisticId: number }>({
       ...shared,
       update: (current, payload) => [
-        { id: payload.optimisticId, name: payload.name, address: payload.address, capacity: payload.capicity, stocks: 0 },
+        {
+          id: payload.optimisticId,
+          name: payload.name,
+          address: payload.address,
+          capacity: payload.capicity,
+          stocks: 0,
+        },
         ...current,
       ],
       successMessage: 'Warehouse added successfully.',
@@ -42,11 +52,17 @@ export function useWarehouseMutations() {
     mutationFn: updateWarehouse,
     ...optimisticUpdate<WarehouseListItem[], UpdateWarehousePayload>({
       ...shared,
-      update: (current, payload) => current.map((warehouse) =>
-        warehouse.id === payload.id
-          ? { ...warehouse, name: payload.name, address: payload.address, capacity: payload.capicity }
-          : warehouse
-      ),
+      update: (current, payload) =>
+        current.map((warehouse) =>
+          warehouse.id === payload.id
+            ? {
+                ...warehouse,
+                name: payload.name,
+                address: payload.address,
+                capacity: payload.capicity,
+              }
+            : warehouse,
+        ),
       successMessage: 'Warehouse updated successfully.',
       errorMessage: 'Failed to update warehouse.',
     }),
