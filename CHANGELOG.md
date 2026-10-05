@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-10-05
+
+### Added
+
+- Every list (products, categories, warehouses, inventory items, orders, sales, drivers, accounts and audit logs) has a Rows dropdown to show 10, 25 or 50 rows per page. Each list remembers its choice in the browser.
+
+### Changed
+
+- Table column headers stay at the top while scrolling a long list.
+- A table's horizontal scrollbar stays at the bottom of the visible area instead of below the last row.
+- The pagination footer stays at the bottom of the page on every list.
+
 ## [1.8.1] - 2026-10-05
 
 ### Fixed

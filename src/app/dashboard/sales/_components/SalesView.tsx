@@ -5,7 +5,9 @@ import ExportCsvButton from "@/components/ExportCsvButton"
 import ListHeader from "@/components/ListHeader"
 import OrderTypeFilterSelect from "@/components/OrderTypeFilterSelect"
 import SearchInput from "@/components/SearchInput"
+import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
+import { usePageSize } from "@/hooks/usePageSize"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { exportToCSV } from "@/lib/exportToCsv"
 import { formatDate } from "@/lib/format"
@@ -21,18 +23,17 @@ import type { Sale } from "@/types/sale"
 import { useSales } from "../_hooks/useSales"
 import SalesTable from "./SalesTable"
 
-const PAGE_SIZE = 10
-
 export default function SalesView() {
   const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState("")
   const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim())
+  const [pageSize, setPageSize] = usePageSize("sales")
 
   const { data, isLoading, isFetching, error } = useSales({
     page: currentPage,
-    pageSize: PAGE_SIZE,
+    pageSize,
     name: debouncedSearch || undefined,
     orderTypeId: selectedOrderTypeFilter ? Number(selectedOrderTypeFilter) : 0,
   })
@@ -75,7 +76,7 @@ export default function SalesView() {
         }
       />
 
-      <div className="mt-5 min-h-0 flex-1 overflow-auto">
+      <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <SalesTable
           sales={sales}
           isLoading={isLoading}
@@ -86,10 +87,19 @@ export default function SalesView() {
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
-        <span className="text-sm text-muted-foreground">
-          Showing {sales.length} of {rows} sales
-          {isFetching ? " - Updating..." : ""}
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">
+            Showing {sales.length} of {rows} sales
+            {isFetching ? " - Updating..." : ""}
+          </span>
+          <PageSizeSelect
+            value={pageSize}
+            onChange={(size) => {
+              setPageSize(size)
+              goToPage(1)
+            }}
+          />
+        </div>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={goToPage} />
         </div>

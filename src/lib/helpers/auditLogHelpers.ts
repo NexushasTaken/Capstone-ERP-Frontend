@@ -1,7 +1,6 @@
 import { CircleDot, PackageMinus, PackagePlus, PackageX, Pencil, Plus, RefreshCw, Trash2, Undo2 } from "lucide-react"
 import type { AuditActionOption, AuditFilterOption, AuditModuleOption, UserOption } from "@/types/auditLog"
 
-export const AUDIT_LOG_ITEMS_PER_PAGE = 10
 export const AUDIT_LOG_SIDEBAR_LIMIT = 10
 
 // Values match the backend enums (AuditActionEnum / AuditModuleEnum).

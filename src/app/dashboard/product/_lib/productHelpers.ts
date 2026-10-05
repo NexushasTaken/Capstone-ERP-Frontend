@@ -1,7 +1,5 @@
 import type { ProductCategoryFilter, ProductSortBy, ProductSortOption } from "@/types/product"
 
-export const ITEMS_PER_PAGE = 10
-
 export const productFilters: ProductCategoryFilter[] = ["Categorized", "Uncategorized"]
 
 export const categoryPresentByFilter: Record<ProductCategoryFilter, 0 | 1> = {

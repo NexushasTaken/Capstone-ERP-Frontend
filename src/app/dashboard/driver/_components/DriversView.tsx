@@ -6,15 +6,16 @@ import DeleteConfirmModal from "@/components/DeleteConfirmModal"
 import ListHeader from "@/components/ListHeader"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
+import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
+import { usePageSize } from "@/hooks/usePageSize"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { allowedActions, can } from "@/lib/permissions"
 import type { DriverListItem, DriverSortBy } from "@/types/driver"
 import { useDriverMutations, useDrivers } from "../_hooks/useDrivers"
 import {
-  DRIVER_ITEMS_PER_PAGE,
   driverActionOptions,
   driverSortOptions,
   formatDriverId,
@@ -39,10 +40,11 @@ export default function DriversView() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [modal, setModal] = useState<ModalState>(null)
   const debouncedSearch = useDebouncedValue(search.trim())
+  const [pageSize, setPageSize] = usePageSize("driver")
 
   const { data, isLoading, isFetching, error } = useDrivers({
     page: currentPage,
-    pageSize: DRIVER_ITEMS_PER_PAGE,
+    pageSize,
     name: debouncedSearch || undefined,
     filter: getDriverFilter({ value: sortBy, order: sortOrder, label: "" }),
   })
@@ -70,7 +72,7 @@ export default function DriversView() {
   }
 
   return (
-    <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
+    <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Drivers"
         count={rows}
@@ -106,7 +108,7 @@ export default function DriversView() {
         }
       />
 
-      <div className="mt-5 min-h-0 overflow-auto scrollbar-none">
+      <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <DriversTable
           drivers={drivers}
           isLoading={isLoading}
@@ -118,10 +120,19 @@ export default function DriversView() {
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
-        <span className="text-sm text-muted-foreground">
-          Showing {drivers.length} of {rows} drivers
-          {isFetching ? " - Updating..." : ""}
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">
+            Showing {drivers.length} of {rows} drivers
+            {isFetching ? " - Updating..." : ""}
+          </span>
+          <PageSizeSelect
+            value={pageSize}
+            onChange={(size) => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
+          />
+        </div>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
         </div>

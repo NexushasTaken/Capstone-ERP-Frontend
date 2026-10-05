@@ -11,19 +11,19 @@ import type {
   UpdateWarehousePayload,
   WarehouseListItem,
 } from "@/types/warehouse"
-import { ITEMS_PER_PAGE } from "../_lib/warehouseHelpers"
 
 type WarehousesResponse = Awaited<ReturnType<typeof fetchWarehouses>>
 
 export interface WarehousesQuery {
   page: number
+  pageSize: number
   search: string
   /** Sort code, see getWarehouseFilter. */
   sort: number
 }
 
-function warehousesParams({ page, search, sort }: WarehousesQuery): FetchWarehousesParams {
-  return { page, pageSize: ITEMS_PER_PAGE, name: search || undefined, filter: sort }
+function warehousesParams({ page, pageSize, search, sort }: WarehousesQuery): FetchWarehousesParams {
+  return { page, pageSize, name: search || undefined, filter: sort }
 }
 
 export function useWarehouses(query: WarehousesQuery) {
@@ -64,7 +64,7 @@ export function useWarehouseMutations(query: WarehousesQuery) {
         }
         return {
           ...current,
-          items: [tempWarehouse, ...current.items].slice(0, ITEMS_PER_PAGE),
+          items: [tempWarehouse, ...current.items].slice(0, query.pageSize),
           rows: current.rows + 1,
         }
       },

@@ -8,10 +8,12 @@ import ExportCsvButton from "@/components/ExportCsvButton"
 import ListHeader from "@/components/ListHeader"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
+import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
 import { DatePickerSimple } from "@/components/DatePicker"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
+import { usePageSize } from "@/hooks/usePageSize"
 import { exportToCSV } from "@/lib/exportToCsv"
 import { formatDate } from "@/lib/format"
 import { formatInventoryId, getInventoryFilter, inventorySortOptions, titleCase } from "@/lib/helpers/inventoryHelpers"
@@ -33,8 +35,6 @@ import InventoryTable from "./InventoryTable"
 import MarkDamageModal from "./MarkDamageModal"
 import QuantityRangeFilter from "./QuantityRangeFilter"
 import RestockModal from "./RestockModal"
-
-const ITEMS_PER_PAGE = 10
 
 const inventoryStatusIds: Record<string, number> = {
   All: 0,
@@ -72,6 +72,7 @@ export default function InventoryItemsSection() {
     setSyncedUrlSearch(urlSearch)
     setSearch(urlSearch)
   }
+  const [pageSize, setPageSize] = usePageSize("inventory")
   const [modal, setModal] = useState<ModalState>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   // Bumped after a successful add to clear the add form.
@@ -87,7 +88,7 @@ export default function InventoryItemsSection() {
 
   const listParams = {
     page: currentPage,
-    pageSize: ITEMS_PER_PAGE,
+    pageSize,
     name: urlSearch || undefined,
     statusId: inventoryStatusIds[selectedFilter] ?? 0,
     filter: getInventoryFilter({ value: sortBy, order: sortOrder }),
@@ -251,7 +252,8 @@ export default function InventoryItemsSection() {
         }
       />
 
-      <div className="mt-5 min-h-0 overflow-auto">
+      {/* Capped so a long page scrolls inside the widget, keeping the header and horizontal scrollbar in view. */}
+      <div className="mt-5 max-h-[75dvh] min-h-0 overflow-auto scrollbar-x-only">
         <InventoryTable
           items={inventories}
           isLoading={isLoading}
@@ -262,10 +264,19 @@ export default function InventoryItemsSection() {
         />
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-0 w-full justify-between items-center">
-        <span className="text-sm text-muted-foreground">
-          Showing {inventories.length} of {rows} inventory items
-        </span>
+      <div className="mt-4 flex flex-col lg:flex-row gap-4 lg:gap-0 w-full justify-between items-center">
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">
+            Showing {inventories.length} of {rows} inventory items
+          </span>
+          <PageSizeSelect
+            value={pageSize}
+            onChange={(size) => {
+              setPageSize(size)
+              update({ page: 1 })
+            }}
+          />
+        </div>
         <div className="flex">
           <TablePagination
             currentPage={currentPage}

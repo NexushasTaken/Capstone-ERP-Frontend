@@ -6,8 +6,10 @@ import DeleteConfirmModal from "@/components/DeleteConfirmModal"
 import ListHeader from "@/components/ListHeader"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
+import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
+import { usePageSize } from "@/hooks/usePageSize"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
@@ -37,8 +39,14 @@ export default function WarehousesView() {
   const [modal, setModal] = useState<ModalState>(null)
 
   const debouncedSearch = useDebouncedValue(search.trim())
+  const [pageSize, setPageSize] = usePageSize("warehouse")
 
-  const warehousesQuery = { page: currentPage, search: debouncedSearch, sort: getWarehouseFilter(sortBy, sortOrder) }
+  const warehousesQuery = {
+    page: currentPage,
+    pageSize,
+    search: debouncedSearch,
+    sort: getWarehouseFilter(sortBy, sortOrder),
+  }
   const { data: warehousesResponse, isLoading, error } = useWarehouses(warehousesQuery)
   const mutations = useWarehouseMutations(warehousesQuery)
 
@@ -64,7 +72,7 @@ export default function WarehousesView() {
   }
 
   return (
-    <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
+    <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Warehouses"
         count={rows}
@@ -100,7 +108,7 @@ export default function WarehousesView() {
         }
       />
 
-      <div className="mt-5 min-h-0 overflow-auto scrollbar-none">
+      <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <WarehousesTable
           warehouses={warehouses}
           isLoading={isLoading}
@@ -112,9 +120,18 @@ export default function WarehousesView() {
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
-        <span className="text-sm text-muted-foreground">
-          Showing {warehouses.length} of {rows} warehouses
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">
+            Showing {warehouses.length} of {rows} warehouses
+          </span>
+          <PageSizeSelect
+            value={pageSize}
+            onChange={(size) => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
+          />
+        </div>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
         </div>

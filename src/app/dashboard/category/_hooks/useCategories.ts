@@ -5,19 +5,19 @@ import { deleteCategory, fetchCategories, insertCategory, updateCategory } from 
 import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
 import { queryKeys } from "@/lib/query/queryKeys"
 import type { CategoryListItem, FetchCategoriesParams } from "@/types/category"
-import { ITEMS_PER_PAGE } from "../_lib/categoryHelpers"
 
 type CategoriesResponse = Awaited<ReturnType<typeof fetchCategories>>
 
 export interface CategoriesQuery {
   page: number
+  pageSize: number
   search: string
   /** Sort code, see getCategoryFilter. */
   sort: number
 }
 
-function categoriesParams({ page, search, sort }: CategoriesQuery): FetchCategoriesParams {
-  return { page, pageSize: ITEMS_PER_PAGE, name: search || undefined, filter: sort }
+function categoriesParams({ page, pageSize, search, sort }: CategoriesQuery): FetchCategoriesParams {
+  return { page, pageSize, name: search || undefined, filter: sort }
 }
 
 export function useCategories(query: CategoriesQuery) {
@@ -50,7 +50,7 @@ export function useCategoryMutations(query: CategoriesQuery) {
         }
         return {
           ...current,
-          items: [tempCategory, ...current.items].slice(0, ITEMS_PER_PAGE),
+          items: [tempCategory, ...current.items].slice(0, query.pageSize),
           rows: current.rows + 1,
         }
       },

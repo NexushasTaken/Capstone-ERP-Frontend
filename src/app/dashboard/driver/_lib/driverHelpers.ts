@@ -35,5 +35,3 @@ export function getDriverFilter(value: DriverSortOption) {
 
   return value.order === "asc" ? 1 : 2
 }
-
-export const DRIVER_ITEMS_PER_PAGE = 10
