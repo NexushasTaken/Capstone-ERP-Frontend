@@ -81,7 +81,7 @@ export default function DriversView() {
               setSearch(value)
               setCurrentPage(1)
             }}
-            placeholder="Search drivers"
+            placeholder="Search by name or ID"
           />
 
           {can(role, "driver:add") && (

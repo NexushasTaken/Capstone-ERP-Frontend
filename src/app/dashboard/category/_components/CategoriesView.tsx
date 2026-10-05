@@ -75,7 +75,7 @@ export default function CategoriesView() {
               setSearch(value)
               setCurrentPage(1)
             }}
-            placeholder="Search categories"
+            placeholder="Search by type or ID"
           />
 
           {can(role, "category:add") && (

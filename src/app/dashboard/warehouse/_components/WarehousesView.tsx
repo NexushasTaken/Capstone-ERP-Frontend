@@ -75,7 +75,7 @@ export default function WarehousesView() {
               setSearch(value)
               setCurrentPage(1)
             }}
-            placeholder="Search warehouses"
+            placeholder="Search by name, address or ID"
           />
 
           {can(role, "warehouse:add") && (

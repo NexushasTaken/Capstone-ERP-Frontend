@@ -87,7 +87,7 @@ export default function AccountsView() {
               setSearch(value)
               setCurrentPage(1)
             }}
-            placeholder="Search accounts"
+            placeholder="Search by name, email, role or ID"
           />
 
           {can(role, "account:create") && (

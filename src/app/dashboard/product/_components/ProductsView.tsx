@@ -91,7 +91,7 @@ export default function ProductsView() {
                 setSearch(value)
                 setCurrentPage(1)
               }}
-              placeholder="Search products"
+              placeholder="Search by name, category or ID"
             />
           ) : null}
           <ToggleGroup

@@ -155,7 +155,7 @@ export default function InventoryItemsSection() {
               setSearch(value)
               setCurrentPage(1)
             }}
-            placeholder="Search inventory"
+            placeholder="Search by name, warehouse, status or ID"
           />
 
           <ExportCsvButton onExport={() => exportInventory(inventories)} />
