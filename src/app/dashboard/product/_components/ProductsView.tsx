@@ -9,6 +9,7 @@ import SearchInput from '@/components/SearchInput'
 import SortPopover from '@/components/SortPopover'
 import { TablePagination } from '@/components/TablePagination'
 import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { exportToCSV } from '@/lib/exportToCsv'
@@ -28,6 +29,9 @@ import {
 import ProductDetailsModal from './ProductDetailsModal'
 import ProductFormModal from './ProductFormModal'
 import ProductsTable from './ProductsTable'
+
+// The selected filter keeps a solid fill; the stock pressed state (bg-muted) is too faint here.
+const selectedFilterClass = 'aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90'
 
 // Which modal is open, and for which product.
 type ModalState =
@@ -99,24 +103,24 @@ export default function ProductsView() {
               placeholder="Search products"
             />
           ) : null}
-          {productFilters.map((filter) => (
-            <button
-              className={`cursor-pointer rounded-xl border px-3 py-2 text-sm whitespace-nowrap transition-colors ${
-                selectedFilter === filter
-                  ? 'border-foreground bg-primary text-primary-foreground'
-                  : 'border-border bg-background text-foreground hover:bg-accent'
-              }`}
-              key={filter}
-              type="button"
-              onClick={() => {
-                setSelectedFilter(filter)
-                setCurrentPage(1)
-                if (filter === 'Uncategorized') setSearch('')
-              }}
-            >
-              {filter} <span className="ml-1">{countByFilter[filter]}</span>
-            </button>
-          ))}
+          <ToggleGroup
+            aria-label="Filter products"
+            value={[selectedFilter]}
+            variant="outline"
+            onValueChange={([filter]) => {
+              // Clicking the selected filter again would clear it; keep one selected.
+              if (!filter) return
+              setSelectedFilter(filter as ProductCategoryFilter)
+              setCurrentPage(1)
+              if (filter === 'Uncategorized') setSearch('')
+            }}
+          >
+            {productFilters.map((filter) => (
+              <ToggleGroupItem className={selectedFilterClass} key={filter} value={filter}>
+                {filter} <span className="ml-1">{countByFilter[filter]}</span>
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
           <ExportCsvButton onExport={() => exportProducts(displayedProducts)} />
           {can(role, 'product:add') && (
             <Button
