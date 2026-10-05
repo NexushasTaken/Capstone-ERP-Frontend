@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   fetchOrderRiders,
@@ -19,7 +19,7 @@ export function useOrders(params: FetchOrdersParams) {
     queryKey: queryKeys.orders.all(params),
     queryFn: ({ signal }) => fetchOrders(params, signal),
     staleTime: 0,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
 }
 

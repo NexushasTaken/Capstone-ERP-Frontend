@@ -12,7 +12,7 @@ import { ArrowUpDown, MoveDownRight, MoveUpRight } from 'lucide-react'
 import { Check } from 'lucide-react'
 import { useState } from 'react'
 import type { DateRange } from 'react-day-picker'
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query/queryKeys'
 import { DatePickerSimple } from '@/components/DatePicker'
 import { format } from 'date-fns'
@@ -51,7 +51,7 @@ export default function SalesOverviewCard() {
   } = useQuery({
     queryKey: queryKeys.dashboard.salesOverview(salesOverviewParams),
     queryFn: ({ signal }) => fetchSalesOverview(salesOverviewParams, signal),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
   const salesChartValues = salesOverview?.data.map((item) => item.data) ?? []
   const salesChartLabels = getDateRangeMonthLabels(salesDateRange, salesChartValues.length)

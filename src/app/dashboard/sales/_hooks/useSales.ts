@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { fetchSales } from '@/services/saleApi'
 import { queryKeys } from '@/lib/query/queryKeys'
 import type { FetchSalesParams } from '@/types/sale'
@@ -10,6 +10,6 @@ export function useSales(params: FetchSalesParams) {
     queryKey: queryKeys.sales.all(params),
     queryFn: ({ signal }) => fetchSales(params, signal),
     staleTime: 0,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
 }

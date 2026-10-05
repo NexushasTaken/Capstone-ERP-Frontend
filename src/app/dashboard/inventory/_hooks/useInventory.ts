@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query'
+import { keepPreviousData, type QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   deleteInventory,
@@ -34,7 +34,7 @@ export function useInventories(params: FetchInventoriesParams) {
   return useQuery({
     queryKey: queryKeys.inventories.all(params),
     queryFn: () => fetchInventories(params),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
 }
 

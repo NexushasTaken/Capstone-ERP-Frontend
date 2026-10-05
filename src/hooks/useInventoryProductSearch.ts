@@ -14,7 +14,7 @@ export function useInventoryProductSearch(enabled: boolean) {
 
   return {
     products,
-    isLoading: query.isInitialLoading,
+    isLoading: query.isLoading,
     error: query.error,
   }
 }

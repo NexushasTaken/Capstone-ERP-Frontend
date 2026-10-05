@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query'
+import { keepPreviousData, type QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { deleteProduct, fetchProducts, insertProduct, updateProduct } from '@/services/productApi'
 import { optimisticUpdate } from '@/lib/query/optimisticUpdate'
 import { queryKeys } from '@/lib/query/queryKeys'
@@ -13,7 +13,7 @@ function useProductsQuery(params: FetchProductsParams) {
   return useQuery({
     queryKey: queryKeys.products.all(params),
     queryFn: () => fetchProducts(params),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
 }
 
