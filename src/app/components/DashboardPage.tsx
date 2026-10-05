@@ -10,12 +10,10 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/popover'
-// import { Lottie } from 'lottie-react'
 import { ArrowUpDown, MoveDownRight, MoveUpRight } from 'lucide-react'
 import { Check } from 'lucide-react'
 import { useState } from 'react'
 import type { DateRange } from 'react-day-picker'
-// import animatedRobot from "@/app/assets/json/animatedRobot.json"
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/app/utils/query/queryKeys'
 import { DatePickerSimple } from '@/app/components/date-picker/BasicDatePicker'
@@ -211,30 +209,6 @@ export default function DashboardPage() {
       {/* Orders */}
       <div className="flex flex-col xl:flex-row gap-4 w-full">
         <div className="flex flex-col w-full h-full gap-4">
-          {/* AI KUNO NAMED STEVEN */}
-          {/* <div
-            className='flex w-full'
-            // onBlur={() => setIsRobotAnimationPlaying(false)}
-            // onFocus={() => setIsRobotAnimationPlaying(true)}
-            // onMouseEnter={() => setIsRobotAnimationPlaying(true)}
-            // onMouseLeave={() => setIsRobotAnimationPlaying(false)}
-            // tabIndex={0}
-          >
-            <Lottie
-              src={animatedRobot}
-              //autoplay={isRobotAnimationPlaying}
-              autoplay
-              loop
-              style={{ width: 160, height: 160 }}
-            />
-
-            <div className="flex w-full h-full rounded-lg bg-[#EBF3ED] py-4 px-6">
-              <div className='rounded-lg flex w-full h-full bg-white'>
-                  
-              </div>
-            </div>
-          </div> */}
-
           <PredictedStockouts />
         </div>
 
