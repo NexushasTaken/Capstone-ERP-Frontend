@@ -36,7 +36,6 @@ export default function WarehouseChartPicker({ warehouses, selectedIds, onToggle
       <DropdownMenuTrigger
         render={
           <Button
-            className="rounded-xl cursor-pointer border-border px-3 py-2 text-sm"
             type="button"
             variant="outline"
           />
@@ -54,7 +53,7 @@ export default function WarehouseChartPicker({ warehouses, selectedIds, onToggle
           <div className="px-1.5 pb-2">
             {/* Stop the menu from treating typing and clicks in the search box as menu navigation. */}
             <Input
-              className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
+              className="h-9 w-full rounded-lg"
               onChange={(event) => setSearch(event.target.value)}
               onClick={(event) => event.stopPropagation()}
               onKeyDown={(event) => event.stopPropagation()}

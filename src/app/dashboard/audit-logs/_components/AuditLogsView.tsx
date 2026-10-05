@@ -92,7 +92,7 @@ export default function AuditLogsView() {
           />
           {hasFilters && (
             <Button
-              className="rounded-xl cursor-pointer px-3 py-2 text-sm text-muted-foreground"
+              className="text-muted-foreground"
               onClick={clearFilters}
               type="button"
               variant="ghost"

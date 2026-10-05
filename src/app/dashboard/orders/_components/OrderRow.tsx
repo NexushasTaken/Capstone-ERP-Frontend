@@ -1,5 +1,6 @@
 import { ChevronDown } from 'lucide-react'
 import StatusAction from '@/components/StatusAction'
+import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { formatDate, formatPeso } from '@/lib/format'
@@ -52,10 +53,7 @@ export default function OrderRow({ order, columnCount, statusOptions, isExpanded
         <TableCell className="px-3 py-4 font-medium">{formatPeso(order.total)}</TableCell>
         <TableCell className="px-3 py-4">
           <div className="flex items-center justify-end gap-2">
-            <CollapsibleTrigger
-              className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-accent"
-              type="button"
-            >
+            <CollapsibleTrigger render={<Button size="sm" type="button" variant="outline" />}>
               View
               <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>

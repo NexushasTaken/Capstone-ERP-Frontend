@@ -18,7 +18,7 @@ export default function ExportCsvButton({ onExport, disabled = false }: ExportCs
   return (
     <Button
       variant="outline"
-      className={`h-auto rounded-xl border border-border px-3 py-2 text-sm whitespace-nowrap transition-colors ${cooldown.isActive ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'hover:bg-accent cursor-pointer text-foreground'}`}
+      className="whitespace-nowrap"
       disabled={cooldown.isActive || disabled}
       type="button"
       onClick={() => {

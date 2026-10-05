@@ -1,16 +1,14 @@
 import { X } from 'lucide-react'
-import React from 'react'
+import { Button } from '@/components/ui/button'
 
 interface CloseButtonProps {
   onClick: () => void
 }
 
-export default function CloseButton({
-    onClick
-}: CloseButtonProps) {
+export default function CloseButton({ onClick }: CloseButtonProps) {
   return (
-    <button aria-label='Close Button' type='button' onClick={onClick}>
-        <X className='text-gray-500 w-5 h-5 transition-all hover:text-foreground cursor-pointer'/>
-    </button>
+    <Button aria-label="Close" onClick={onClick} size="icon-sm" type="button" variant="ghost">
+      <X className="size-5 text-muted-foreground" />
+    </Button>
   )
 }

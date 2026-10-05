@@ -60,7 +60,6 @@ export default function PredictedStockouts() {
             </span>
           )}
           <Button
-            className="rounded-xl px-3 py-2 text-sm"
             disabled={forceForecastMutation.isPending}
             onClick={() => forceForecastMutation.mutate()}
             type="button"

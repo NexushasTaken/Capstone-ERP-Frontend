@@ -98,7 +98,6 @@ export default function ConfirmOrderModal({
 
       <div className="flex justify-end gap-2 border-t border-border p-5">
         <Button
-          className="rounded-xl border-border px-3 py-2 text-sm"
           onClick={onBack}
           type="button"
           variant="outline"
@@ -106,7 +105,6 @@ export default function ConfirmOrderModal({
           Back
         </Button>
         <Button
-          className="rounded-xl px-3 py-2 text-sm"
           disabled={disabled}
           onClick={onConfirm}
           type="button"

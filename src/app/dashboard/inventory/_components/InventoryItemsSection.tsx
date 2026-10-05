@@ -175,7 +175,6 @@ export default function InventoryItemsSection() {
 
           {can(role, 'inventory:add') && (
             <Button
-              className="rounded-xl cursor-pointer px-3 py-2 text-sm"
               onClick={() => setIsAddModalOpen(true)}
               type="button"
             >

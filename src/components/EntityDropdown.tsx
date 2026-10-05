@@ -124,8 +124,7 @@ export default function EntityDropdown({
             onKeyDownCapture={stopDropdownKeyboardNavigation}
             onKeyUp={stopDropdownKeyboardNavigation}
             onKeyUpCapture={stopDropdownKeyboardNavigation}
-            className="h-8 border-0 bg-transparent px-0 text-sm outline-none 
-            placeholder:text-muted-foreground focus-visible:border-0 focus-visible:ring-0"
+            className="h-8 border-0 bg-transparent px-0 focus-visible:border-0 focus-visible:ring-0"
           />
         </div>
 

@@ -76,7 +76,6 @@ export default function CategoriesView() {
 
           {can(role, 'category:add') && (
             <Button
-              className="rounded-xl cursor-pointer px-3 py-2 text-sm"
               onClick={() => setModal({ type: 'add' })}
               type="button"
             >

@@ -55,7 +55,7 @@ export default function OrderLinesEditor({
           <span className="text-sm text-muted-foreground">Add one or more products to this order.</span>
         </div>
         <Button
-          className="w-full rounded-xl px-3 py-2 text-sm sm:w-auto"
+          className="w-full sm:w-auto"
           onClick={() => onChange([...lines, { productId: '', quantity: '1' }])}
           type="button"
           variant="outline"
@@ -107,7 +107,7 @@ export default function OrderLinesEditor({
                 <TableCell className="text-center text-foreground">{formatPeso(line.unitPrice)}</TableCell>
                 <TableCell>
                   <Input
-                    className="mx-auto h-10 w-28 rounded-xl border border-border bg-background px-3 text-center text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
+                    className="mx-auto w-28 text-center"
                     min={1}
                     onChange={(event) => updateLine(index, 'quantity', event.target.value)}
                     type="number"

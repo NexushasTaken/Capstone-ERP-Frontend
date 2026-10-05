@@ -18,7 +18,7 @@ export default function RoleSelect({ value, onChange, disabled }: RoleSelectProp
         if (next) onChange(next)
       }}
     >
-      <SelectTrigger className="h-10 w-full rounded-xl border-border bg-background px-3 text-sm">
+      <SelectTrigger className="w-full">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
