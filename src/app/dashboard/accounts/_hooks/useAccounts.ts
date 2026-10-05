@@ -1,0 +1,39 @@
+'use client'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { createAccount, fetchAccounts, updateAccountRole } from '@/services/accountApi'
+import { invalidateAccounts } from '@/lib/query/queryInvalidation'
+import { queryKeys } from '@/lib/query/queryKeys'
+import type { AccountListItem } from '@/types/account'
+
+export function useAccounts() {
+  return useQuery({
+    queryKey: queryKeys.accounts.all,
+    queryFn: fetchAccounts,
+  })
+}
+
+export function useAccountMutations() {
+  const queryClient = useQueryClient()
+
+  const createAccountMutation = useMutation({
+    mutationFn: createAccount,
+    onSuccess: () => toast.success('Account created successfully'),
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to create account'),
+    onSettled: () => invalidateAccounts(queryClient),
+  })
+
+  const updateRole = useMutation({
+    mutationFn: ({ id, role }: { id: number; role: AccountListItem['role'] }) => updateAccountRole(id, role),
+    onSuccess: () => toast.success('Account updated successfully'),
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to update account'),
+    onSettled: () => invalidateAccounts(queryClient),
+  })
+
+  return {
+    createAccount: createAccountMutation,
+    updateRole,
+    isSubmitting: createAccountMutation.isPending || updateRole.isPending,
+  }
+}
