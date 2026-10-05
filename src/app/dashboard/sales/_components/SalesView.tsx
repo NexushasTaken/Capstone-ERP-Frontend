@@ -2,16 +2,10 @@
 
 import { useState } from 'react'
 import ExportCsvButton from '@/components/ExportCsvButton'
+import OrderTypeFilterSelect from '@/components/OrderTypeFilterSelect'
 import PageTitle from '@/components/PageTitle'
 import SearchInput from '@/components/SearchInput'
 import { TablePagination } from '@/components/TablePagination'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { exportToCSV } from '@/lib/exportToCsv'
 import { formatDate } from '@/lib/format'
@@ -24,7 +18,7 @@ import {
   getSaleStatusLabel,
 } from '@/lib/helpers/saleHelpers'
 import type { Sale } from '@/types/sale'
-import { useOrderTypes, useSales } from '../_hooks/useSales'
+import { useSales } from '../_hooks/useSales'
 import SalesTable from './SalesTable'
 
 const PAGE_SIZE = 10
@@ -42,18 +36,10 @@ export default function SalesView() {
     name: debouncedSearch || undefined,
     orderTypeId: selectedOrderTypeFilter ? Number(selectedOrderTypeFilter) : 0,
   })
-  const { data: orderTypes = [], isLoading: orderTypesLoading } = useOrderTypes()
 
   const sales = data?.items ?? []
   const rows = data?.rows ?? 0
   const pageCount = Math.max(1, data?.pageCount ?? 1)
-  const orderTypeFilterSelectItems = [
-    { value: 'all', label: 'All types' },
-    ...orderTypes.map((orderType) => ({
-      value: String(orderType.id),
-      label: normalizeOrderText(orderType.type),
-    })),
-  ]
 
   function goToPage(page: number) {
     setCurrentPage(page)
@@ -75,29 +61,13 @@ export default function SalesView() {
             placeholder="Search sales"
           />
 
-          <div className="w-48">
-            <Select
-              disabled={orderTypesLoading}
-              items={orderTypeFilterSelectItems}
-              onValueChange={(value) => {
-                setSelectedOrderTypeFilter(value === 'all' ? '' : String(value ?? ''))
-                setCurrentPage(1)
-              }}
-              value={selectedOrderTypeFilter || 'all'}
-            >
-              <SelectTrigger className="h-10 w-full rounded-xl border-[#DFE2E0] bg-white px-3 text-sm focus-visible:border-[#121514] focus-visible:ring-[#121514]/20">
-                <SelectValue placeholder="All types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                {orderTypes.map((orderType) => (
-                  <SelectItem key={orderType.id} value={String(orderType.id)} className="capitalize">
-                    {normalizeOrderText(orderType.type)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <OrderTypeFilterSelect
+            value={selectedOrderTypeFilter}
+            onChange={(orderTypeId) => {
+              setSelectedOrderTypeFilter(orderTypeId)
+              setCurrentPage(1)
+            }}
+          />
 
           <ExportCsvButton
             disabled={isFetching || !!error || sales.length === 0}
