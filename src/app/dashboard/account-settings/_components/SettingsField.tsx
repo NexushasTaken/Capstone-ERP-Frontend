@@ -1,4 +1,5 @@
 import type { ComponentProps, ReactNode } from "react"
+import PasswordInput from "@/components/PasswordInput"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -11,11 +12,15 @@ interface SettingsFieldProps extends ComponentProps<typeof Input> {
   error?: string
 }
 
-export function SettingsField({ label, error, ...inputProps }: SettingsFieldProps) {
+export function SettingsField({ label, error, type, ...inputProps }: SettingsFieldProps) {
   return (
     <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-foreground`}>
       <span className="text-muted-foreground">{label}</span>
-      <Input aria-invalid={!!error} {...inputProps} />
+      {type === "password" ? (
+        <PasswordInput aria-invalid={!!error} {...inputProps} />
+      ) : (
+        <Input type={type} aria-invalid={!!error} {...inputProps} />
+      )}
       {error && <span className="col-start-2 text-xs text-destructive">{error}</span>}
     </label>
   )
