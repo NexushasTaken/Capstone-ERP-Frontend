@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Check, CheckSquare } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useState } from "react"
+import { Check, CheckSquare } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,10 +10,10 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import type { WarehouseListItem } from '@/types/warehouseCapacity'
-import { MAX_SELECTED_WAREHOUSES } from '../_lib/warehouseCapacityHelpers'
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import type { WarehouseListItem } from "@/types/warehouseCapacity"
+import { MAX_SELECTED_WAREHOUSES } from "../_lib/warehouseCapacityHelpers"
 
 interface WarehouseChartPickerProps {
   warehouses: WarehouseListItem[]
@@ -23,11 +23,11 @@ interface WarehouseChartPickerProps {
 
 // "Select charts" dropdown: choose up to MAX_SELECTED_WAREHOUSES warehouses to chart.
 export default function WarehouseChartPicker({ warehouses, selectedIds, onToggle }: WarehouseChartPickerProps) {
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState("")
   const searchValue = search.toLowerCase()
   const filteredWarehouses = warehouses.filter(
     (warehouse) =>
-      search === '' ||
+      search === "" ||
       warehouse.name.toLowerCase().includes(searchValue) ||
       warehouse.address.toLowerCase().includes(searchValue),
   )

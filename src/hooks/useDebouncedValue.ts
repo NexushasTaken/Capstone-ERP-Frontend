@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react"
 
 // Returns `value` once it has stopped changing for `delayMs`, e.g. to avoid a request per keystroke.
 export function useDebouncedValue<T>(value: T, delayMs = 400): T {

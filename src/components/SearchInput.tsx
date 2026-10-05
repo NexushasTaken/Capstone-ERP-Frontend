@@ -1,5 +1,5 @@
-import { Search, X } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { Search, X } from "lucide-react"
+import { Input } from "@/components/ui/input"
 
 interface SearchInputProps {
   value: string
@@ -21,7 +21,7 @@ export default function SearchInput({ value, onChange, placeholder }: SearchInpu
       {value ? (
         <button
           type="button"
-          onClick={() => onChange('')}
+          onClick={() => onChange("")}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer transition-colors hover:text-foreground"
         >
           <X className="h-5 w-5" />

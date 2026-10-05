@@ -1,11 +1,11 @@
-import type { ProductListItem } from '@/types/product'
-import { ApiEnvelope, ApiEnvelopeNoContent } from '@/types/api'
+import type { ProductListItem } from "@/types/product"
+import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
 import type {
   FetchProductsParams,
   ProductListContent,
   InsertProductPayload,
   UpdateProductPayload,
-} from '@/types/product'
+} from "@/types/product"
 
 // GET
 export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
@@ -14,14 +14,14 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
   rows: number
 }> {
   const query = new URLSearchParams()
-  if (params.page) query.set('page', String(params.page))
-  if (params.pageSize) query.set('pageSize', String(params.pageSize))
-  if (params.name) query.set('name', params.name)
-  if (params.categoryPresent !== undefined) query.set('categoryPresent', String(params.categoryPresent))
+  if (params.page) query.set("page", String(params.page))
+  if (params.pageSize) query.set("pageSize", String(params.pageSize))
+  if (params.name) query.set("name", params.name)
+  if (params.categoryPresent !== undefined) query.set("categoryPresent", String(params.categoryPresent))
 
   const response = await fetch(`/api/Product/all?${query.toString()}`, {
-    method: 'GET',
-    credentials: 'include',
+    method: "GET",
+    credentials: "include",
   })
 
   if (!response.ok) {
@@ -31,7 +31,7 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
   const data: ApiEnvelope<ProductListContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || 'Failed to fetch products')
+    throw new Error(data.message || "Failed to fetch products")
   }
 
   return {
@@ -43,19 +43,19 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
 
 // INSERT
 export async function insertProduct(payload: InsertProductPayload, existingId?: number): Promise<ApiEnvelopeNoContent> {
-  const query = existingId ? `?id=${existingId}` : ''
+  const query = existingId ? `?id=${existingId}` : ""
 
   const response = await fetch(`/api/Product/insert${query}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(payload),
   })
 
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || 'Failed to add product')
+    throw new Error(data.message || "Failed to add product")
   }
 
   return data
@@ -63,17 +63,17 @@ export async function insertProduct(payload: InsertProductPayload, existingId?: 
 
 // PATCH
 export async function updateProduct(payload: UpdateProductPayload): Promise<ApiEnvelopeNoContent> {
-  const response = await fetch('/api/Product/patch', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+  const response = await fetch("/api/Product/patch", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(payload),
   })
 
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || 'Failed to update product')
+    throw new Error(data.message || "Failed to update product")
   }
 
   return data
@@ -84,14 +84,14 @@ export async function deleteProduct(id: number): Promise<ApiEnvelopeNoContent> {
   const query = new URLSearchParams({ id: String(id) })
 
   const response = await fetch(`/api/Product/delete?${query.toString()}`, {
-    method: 'DELETE',
-    credentials: 'include',
+    method: "DELETE",
+    credentials: "include",
   })
 
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || 'Failed to delete product')
+    throw new Error(data.message || "Failed to delete product")
   }
 
   return data

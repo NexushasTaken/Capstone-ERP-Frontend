@@ -1,11 +1,11 @@
-'use client'
+"use client"
 
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { deleteCategory, fetchCategories, insertCategory, updateCategory } from '@/services/categoryApi'
-import { optimisticUpdate } from '@/lib/query/optimisticUpdate'
-import { queryKeys } from '@/lib/query/queryKeys'
-import type { CategoryListItem } from '@/types/category'
-import { ITEMS_PER_PAGE } from '../_lib/categoryHelpers'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { deleteCategory, fetchCategories, insertCategory, updateCategory } from "@/services/categoryApi"
+import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
+import { queryKeys } from "@/lib/query/queryKeys"
+import type { CategoryListItem } from "@/types/category"
+import { ITEMS_PER_PAGE } from "../_lib/categoryHelpers"
 
 type CategoriesResponse = Awaited<ReturnType<typeof fetchCategories>>
 
@@ -28,7 +28,7 @@ export function useCategoryMutations(page: number) {
   const shared = {
     queryClient,
     queryKey: queryKeys.categories.all(categoriesParams(page)),
-    scopeKey: ['categories'],
+    scopeKey: ["categories"],
   }
 
   const addCategory = useMutation({
@@ -47,8 +47,8 @@ export function useCategoryMutations(page: number) {
           rows: current.rows + 1,
         }
       },
-      successMessage: 'Category added successfully',
-      errorMessage: 'Failed to add category',
+      successMessage: "Category added successfully",
+      errorMessage: "Failed to add category",
     }),
   })
 
@@ -60,8 +60,8 @@ export function useCategoryMutations(page: number) {
         ...current,
         items: current.items.map((category) => (category.id === id ? { ...category, type } : category)),
       }),
-      successMessage: 'Category updated successfully',
-      errorMessage: 'Failed to update category',
+      successMessage: "Category updated successfully",
+      errorMessage: "Failed to update category",
     }),
   })
 
@@ -74,8 +74,8 @@ export function useCategoryMutations(page: number) {
         items: current.items.filter((category) => category.id !== categoryId),
         rows: Math.max(0, current.rows - 1),
       }),
-      successMessage: 'Category deleted successfully',
-      errorMessage: 'Failed to delete category',
+      successMessage: "Category deleted successfully",
+      errorMessage: "Failed to delete category",
     }),
   })
 

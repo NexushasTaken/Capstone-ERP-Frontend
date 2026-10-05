@@ -1,6 +1,6 @@
-import type { AuditLogItem, UserOption } from '@/types/auditLog'
-import type { AuditLogListContent, FetchAuditLogsParams } from '@/types/auditLog'
-import { ApiEnvelope } from '@/types/api'
+import type { AuditLogItem, UserOption } from "@/types/auditLog"
+import type { AuditLogListContent, FetchAuditLogsParams } from "@/types/auditLog"
+import { ApiEnvelope } from "@/types/api"
 
 export async function fetchAuditLogs(
   params: FetchAuditLogsParams = {},
@@ -11,17 +11,17 @@ export async function fetchAuditLogs(
   rows: number
 }> {
   const query = new URLSearchParams()
-  if (params.page) query.set('page', String(params.page))
-  if (params.pageSize) query.set('pageSize', String(params.pageSize))
-  if (params.userId) query.set('userId', String(params.userId))
-  if (params.action) query.set('action', String(params.action))
-  if (params.module) query.set('module', String(params.module))
-  if (params.role) query.set('role', params.role)
+  if (params.page) query.set("page", String(params.page))
+  if (params.pageSize) query.set("pageSize", String(params.pageSize))
+  if (params.userId) query.set("userId", String(params.userId))
+  if (params.action) query.set("action", String(params.action))
+  if (params.module) query.set("module", String(params.module))
+  if (params.role) query.set("role", params.role)
 
   const response = await fetch(`/api/AuditLog/all?${query.toString()}`, {
     signal,
-    method: 'GET',
-    credentials: 'include',
+    method: "GET",
+    credentials: "include",
   })
 
   if (!response.ok) {
@@ -31,7 +31,7 @@ export async function fetchAuditLogs(
   const data: ApiEnvelope<AuditLogListContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || 'Failed to fetch audit logs')
+    throw new Error(data.message || "Failed to fetch audit logs")
   }
 
   return {
@@ -42,10 +42,10 @@ export async function fetchAuditLogs(
 }
 
 export async function fetchUsers(signal?: AbortSignal): Promise<UserOption[]> {
-  const response = await fetch('/api/User/all', {
+  const response = await fetch("/api/User/all", {
     signal,
-    method: 'GET',
-    credentials: 'include',
+    method: "GET",
+    credentials: "include",
   })
 
   if (!response.ok) {
@@ -55,7 +55,7 @@ export async function fetchUsers(signal?: AbortSignal): Promise<UserOption[]> {
   const data: ApiEnvelope<UserOption[]> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || 'Failed to fetch users')
+    throw new Error(data.message || "Failed to fetch users")
   }
 
   return data.content

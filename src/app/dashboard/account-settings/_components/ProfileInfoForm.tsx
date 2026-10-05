@@ -1,12 +1,12 @@
-'use client'
+"use client"
 
-import { useState, type FormEvent } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { updateProfileInfo } from '@/services/accountApi'
-import { queryKeys } from '@/lib/query/queryKeys'
-import type { CurrentUser } from '@/types/profile'
-import { SaveButton, SettingsField, SettingsHeading } from './SettingsField'
+import { useState, type FormEvent } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+import { updateProfileInfo } from "@/services/accountApi"
+import { queryKeys } from "@/lib/query/queryKeys"
+import type { CurrentUser } from "@/types/profile"
+import { SaveButton, SettingsField, SettingsHeading } from "./SettingsField"
 
 export default function ProfileInfoForm({ currentUser }: { currentUser: CurrentUser }) {
   const queryClient = useQueryClient()
@@ -27,13 +27,13 @@ export default function ProfileInfoForm({ currentUser }: { currentUser: CurrentU
             }
           : current,
       )
-      toast.success('Profile information updated successfully')
+      toast.success("Profile information updated successfully")
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to update profile information'),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to update profile information"),
   })
 
   const changed = form.firstName.trim() !== currentUser.firstName || form.lastName.trim() !== currentUser.lastName
-  const canSubmit = form.firstName.trim() !== '' && form.lastName.trim() !== '' && changed
+  const canSubmit = form.firstName.trim() !== "" && form.lastName.trim() !== "" && changed
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()

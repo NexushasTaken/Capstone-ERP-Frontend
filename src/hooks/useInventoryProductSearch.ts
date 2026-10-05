@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { useQuery } from '@tanstack/react-query'
-import { fetchInventoryProducts } from '@/services/inventoryApi'
-import { queryKeys } from '@/lib/query/queryKeys'
+import { useQuery } from "@tanstack/react-query"
+import { fetchInventoryProducts } from "@/services/inventoryApi"
+import { queryKeys } from "@/lib/query/queryKeys"
 
 export function useInventoryProductSearch(enabled: boolean) {
   const query = useQuery({

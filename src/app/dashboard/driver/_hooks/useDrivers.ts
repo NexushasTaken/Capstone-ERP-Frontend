@@ -1,11 +1,11 @@
-'use client'
+"use client"
 
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { deleteDriver, fetchDrivers, insertDriver, updateDriver } from '@/services/driverApi'
-import { invalidateDrivers } from '@/lib/query/queryInvalidation'
-import { queryKeys } from '@/lib/query/queryKeys'
-import type { FetchDriversParams } from '@/types/driver'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+import { deleteDriver, fetchDrivers, insertDriver, updateDriver } from "@/services/driverApi"
+import { invalidateDrivers } from "@/lib/query/queryInvalidation"
+import { queryKeys } from "@/lib/query/queryKeys"
+import type { FetchDriversParams } from "@/types/driver"
 
 export function useDrivers(params: FetchDriversParams) {
   return useQuery({
@@ -29,15 +29,15 @@ export function useDriverMutations() {
 
   const addDriver = useMutation({
     mutationFn: insertDriver,
-    ...callbacks('Driver added successfully', 'Failed to add driver'),
+    ...callbacks("Driver added successfully", "Failed to add driver"),
   })
   const updateDriverMutation = useMutation({
     mutationFn: updateDriver,
-    ...callbacks('Driver updated successfully', 'Failed to update driver'),
+    ...callbacks("Driver updated successfully", "Failed to update driver"),
   })
   const deleteDriverMutation = useMutation({
     mutationFn: deleteDriver,
-    ...callbacks('Driver deleted successfully', 'Failed to delete driver'),
+    ...callbacks("Driver deleted successfully", "Failed to delete driver"),
   })
 
   return {

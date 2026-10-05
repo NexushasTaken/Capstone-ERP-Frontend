@@ -1,17 +1,17 @@
-import DataTable, { type DataTableColumn } from '@/components/DataTable'
-import StatusAction from '@/components/StatusAction'
-import { TableCell, TableRow } from '@/components/ui/table'
-import type { AccountListItem } from '@/types/account'
-import type { StatusActionItem } from '@/types/statusAction'
-import { formatAccountId } from '../_lib/accountHelpers'
+import DataTable, { type DataTableColumn } from "@/components/DataTable"
+import StatusAction from "@/components/StatusAction"
+import { TableCell, TableRow } from "@/components/ui/table"
+import type { AccountListItem } from "@/types/account"
+import type { StatusActionItem } from "@/types/statusAction"
+import { formatAccountId } from "../_lib/accountHelpers"
 
 const columns: DataTableColumn[] = [
-  'Id',
-  'Role',
-  'First Name',
-  'Last Name',
-  'Email',
-  { label: 'Action', className: 'text-right' },
+  "Id",
+  "Role",
+  "First Name",
+  "Last Name",
+  "Email",
+  { label: "Action", className: "text-right" },
 ]
 
 interface AccountsTableProps {
@@ -47,7 +47,7 @@ export default function AccountsTable({ accounts, isLoading, error, actions, onE
                   actions={actions}
                   label={`More actions for account ${account.id}`}
                   onAction={(action) => {
-                    if (action === 'edit') onEdit(account)
+                    if (action === "edit") onEdit(account)
                   }}
                 />
               )}

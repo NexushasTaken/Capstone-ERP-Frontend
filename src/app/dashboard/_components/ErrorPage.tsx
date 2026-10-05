@@ -1,6 +1,6 @@
-import { TriangleAlert } from 'lucide-react'
-import Link from 'next/link'
-import React from 'react'
+import { TriangleAlert } from "lucide-react"
+import Link from "next/link"
+import React from "react"
 
 export default function ErrorPage() {
   return (

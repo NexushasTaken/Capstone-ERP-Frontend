@@ -1,7 +1,7 @@
 let isExportOnCooldown = false
 
 function escapeCSVValue(value: unknown): string {
-  if (value === null || value === undefined) return ''
+  if (value === null || value === undefined) return ""
 
   return `"${String(value).replace(/"/g, '""')}"`
 }
@@ -13,23 +13,23 @@ export interface CSVColumn<T> {
 
 export function exportToCSV<T>(rows: T[], columns: CSVColumn<T>[], filename: string): void {
   if (isExportOnCooldown) {
-    console.warn('Export is on cooldown.')
+    console.warn("Export is on cooldown.")
     return
   }
 
   isExportOnCooldown = true
 
   const csvContent = [
-    columns.map((col) => escapeCSVValue(col.header)).join(','),
+    columns.map((col) => escapeCSVValue(col.header)).join(","),
 
-    ...rows.map((row) => columns.map((col) => escapeCSVValue(col.value(row))).join(',')),
-  ].join('\n')
+    ...rows.map((row) => columns.map((col) => escapeCSVValue(col.value(row))).join(",")),
+  ].join("\n")
 
-  const blob = new Blob(['\uFEFF', csvContent], {
-    type: 'text/csv;charset=utf-8;',
+  const blob = new Blob(["\uFEFF", csvContent], {
+    type: "text/csv;charset=utf-8;",
   })
 
-  const link = document.createElement('a')
+  const link = document.createElement("a")
   const url = URL.createObjectURL(blob)
 
   link.href = url

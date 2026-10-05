@@ -1,12 +1,12 @@
-'use client'
+"use client"
 
-import { Button } from '@/components/ui/button'
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { TablePagination } from '@/components/TablePagination'
-import { fetchInventoryVelocity } from '@/services/inventoryApi'
-import { queryKeys } from '@/lib/query/queryKeys'
-import Loading from '@/components/Loading'
+import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { TablePagination } from "@/components/TablePagination"
+import { fetchInventoryVelocity } from "@/services/inventoryApi"
+import { queryKeys } from "@/lib/query/queryKeys"
+import Loading from "@/components/Loading"
 
 const dayOptions = [7, 14, 21, 30]
 
@@ -30,7 +30,7 @@ export default function MovementVelocity() {
               key={days}
               type="button"
               size="xs"
-              variant={selectedDays === days ? 'default' : 'outline'}
+              variant={selectedDays === days ? "default" : "outline"}
               onClick={() => {
                 setSelectedDays(days)
                 setCurrentPage(1)

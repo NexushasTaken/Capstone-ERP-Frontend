@@ -1,10 +1,10 @@
-import AppModal, { ModalTitle } from '@/components/AppModal'
-import CloseButton from '@/components/CloseButton'
-import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { formatPeso } from '@/lib/format'
-import type { getOrderLineRows } from '@/lib/helpers/orderHelpers'
-import DetailItem from './DetailItem'
+import AppModal, { ModalTitle } from "@/components/AppModal"
+import CloseButton from "@/components/CloseButton"
+import { Button } from "@/components/ui/button"
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { formatPeso } from "@/lib/format"
+import type { getOrderLineRows } from "@/lib/helpers/orderHelpers"
+import DetailItem from "./DetailItem"
 
 interface ConfirmOrderModalProps {
   open: boolean
@@ -64,8 +64,8 @@ export default function ConfirmOrderModal({
                   <TableCell className="text-center font-medium text-foreground">{index + 1}</TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium capitalize text-foreground">{line.product?.name ?? '-'}</span>
-                      <span className="text-xs text-muted-foreground">ID: {line.product?.id ?? '-'}</span>
+                      <span className="font-medium capitalize text-foreground">{line.product?.name ?? "-"}</span>
+                      <span className="text-xs text-muted-foreground">ID: {line.product?.id ?? "-"}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-center text-foreground">{formatPeso(line.unitPrice)}</TableCell>

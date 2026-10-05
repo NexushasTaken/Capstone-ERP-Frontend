@@ -1,12 +1,12 @@
-import DataTable, { type DataTableColumn } from '@/components/DataTable'
-import StatusAction from '@/components/StatusAction'
-import { TableCell, TableRow } from '@/components/ui/table'
-import { formatDate } from '@/lib/format'
-import type { CategoryListItem } from '@/types/category'
-import type { StatusActionItem } from '@/types/statusAction'
-import { formatCategoryId } from '../_lib/categoryHelpers'
+import DataTable, { type DataTableColumn } from "@/components/DataTable"
+import StatusAction from "@/components/StatusAction"
+import { TableCell, TableRow } from "@/components/ui/table"
+import { formatDate } from "@/lib/format"
+import type { CategoryListItem } from "@/types/category"
+import type { StatusActionItem } from "@/types/statusAction"
+import { formatCategoryId } from "../_lib/categoryHelpers"
 
-const columns: DataTableColumn[] = ['Id', 'Type', 'Created At', { label: 'Action', className: 'text-right' }]
+const columns: DataTableColumn[] = ["Id", "Type", "Created At", { label: "Action", className: "text-right" }]
 
 interface CategoriesTableProps {
   categories: CategoryListItem[]
@@ -47,8 +47,8 @@ export default function CategoriesTable({
                   actions={actions}
                   label={`More actions for category ${category.id}`}
                   onAction={(action) => {
-                    if (action === 'edit') onEdit(category)
-                    if (action === 'delete') onDelete(category)
+                    if (action === "edit") onEdit(category)
+                    if (action === "delete") onDelete(category)
                   }}
                 />
               )}

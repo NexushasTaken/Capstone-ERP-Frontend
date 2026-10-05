@@ -1,18 +1,18 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Plus } from 'lucide-react'
-import DeleteConfirmModal from '@/components/DeleteConfirmModal'
-import PageTitle from '@/components/PageTitle'
-import SearchInput from '@/components/SearchInput'
-import SortPopover from '@/components/SortPopover'
-import { TablePagination } from '@/components/TablePagination'
-import { Button } from '@/components/ui/button'
-import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { allowedActions, can } from '@/lib/permissions'
-import type { DriverListItem, DriverSortBy } from '@/types/driver'
-import { useDriverMutations, useDrivers } from '../_hooks/useDrivers'
+import { useState } from "react"
+import { Plus } from "lucide-react"
+import DeleteConfirmModal from "@/components/DeleteConfirmModal"
+import PageTitle from "@/components/PageTitle"
+import SearchInput from "@/components/SearchInput"
+import SortPopover from "@/components/SortPopover"
+import { TablePagination } from "@/components/TablePagination"
+import { Button } from "@/components/ui/button"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
+import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { allowedActions, can } from "@/lib/permissions"
+import type { DriverListItem, DriverSortBy } from "@/types/driver"
+import { useDriverMutations, useDrivers } from "../_hooks/useDrivers"
 import {
   DRIVER_ITEMS_PER_PAGE,
   driverActionOptions,
@@ -20,23 +20,23 @@ import {
   formatDriverId,
   getDriverFilter,
   getDriverFullName,
-} from '../_lib/driverHelpers'
-import DriverFormModal from './DriverFormModal'
-import DriversTable from './DriversTable'
+} from "../_lib/driverHelpers"
+import DriverFormModal from "./DriverFormModal"
+import DriversTable from "./DriversTable"
 
 // Which modal is open, and for which driver.
 type ModalState =
-  { type: 'add' } | { type: 'update'; driver: DriverListItem } | { type: 'delete'; driver: DriverListItem } | null
+  { type: "add" } | { type: "update"; driver: DriverListItem } | { type: "delete"; driver: DriverListItem } | null
 
 export default function DriversView() {
   const { data: currentUser } = useCurrentUser()
   const role = currentUser?.role
-  const driverActions = allowedActions(role, 'driver', driverActionOptions)
+  const driverActions = allowedActions(role, "driver", driverActionOptions)
 
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<DriverSortBy>('createdAt')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [sortBy, setSortBy] = useState<DriverSortBy>("createdAt")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [modal, setModal] = useState<ModalState>(null)
   const debouncedSearch = useDebouncedValue(search.trim())
 
@@ -44,7 +44,7 @@ export default function DriversView() {
     page: currentPage,
     pageSize: DRIVER_ITEMS_PER_PAGE,
     name: debouncedSearch || undefined,
-    filter: getDriverFilter({ value: sortBy, order: sortOrder, label: '' }),
+    filter: getDriverFilter({ value: sortBy, order: sortOrder, label: "" }),
   })
   const mutations = useDriverMutations()
 
@@ -54,7 +54,7 @@ export default function DriversView() {
   const closeModal = () => setModal(null)
 
   function handleSubmitDriver(values: { firstName: string; lastName: string }) {
-    if (modal?.type === 'update') {
+    if (modal?.type === "update") {
       mutations.updateDriver.mutate({ id: modal.driver.id, ...values })
     } else {
       mutations.addDriver.mutate(values)
@@ -64,7 +64,7 @@ export default function DriversView() {
   }
 
   function handleDeleteDriver() {
-    if (modal?.type !== 'delete') return
+    if (modal?.type !== "delete") return
     mutations.deleteDriver.mutate(modal.driver.id)
     closeModal()
   }
@@ -84,8 +84,8 @@ export default function DriversView() {
             placeholder="Search drivers"
           />
 
-          {can(role, 'driver:add') && (
-            <Button onClick={() => setModal({ type: 'add' })} type="button">
+          {can(role, "driver:add") && (
+            <Button onClick={() => setModal({ type: "add" })} type="button">
               <Plus className="h-4 w-4" />
               Add driver
             </Button>
@@ -109,24 +109,24 @@ export default function DriversView() {
           isLoading={isLoading}
           error={error}
           actions={driverActions}
-          onUpdate={(driver) => setModal({ type: 'update', driver })}
-          onDelete={(driver) => setModal({ type: 'delete', driver })}
+          onUpdate={(driver) => setModal({ type: "update", driver })}
+          onDelete={(driver) => setModal({ type: "delete", driver })}
         />
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-muted-foreground">
           Showing {drivers.length} of {rows} drivers
-          {isFetching ? ' - Updating...' : ''}
+          {isFetching ? " - Updating..." : ""}
         </span>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
         </div>
       </div>
 
-      {(modal?.type === 'add' || modal?.type === 'update') && (
+      {(modal?.type === "add" || modal?.type === "update") && (
         <DriverFormModal
-          driver={modal.type === 'update' ? modal.driver : null}
+          driver={modal.type === "update" ? modal.driver : null}
           disabled={mutations.isSubmitting}
           onClose={closeModal}
           onSubmit={handleSubmitDriver}
@@ -134,12 +134,12 @@ export default function DriversView() {
       )}
 
       <DeleteConfirmModal
-        open={modal?.type === 'delete'}
+        open={modal?.type === "delete"}
         onClose={closeModal}
         onConfirm={handleDeleteDriver}
         entityName="driver"
-        subtitle={modal?.type === 'delete' ? formatDriverId(modal.driver.id) : ''}
-        itemLabel={modal?.type === 'delete' ? getDriverFullName(modal.driver) : ''}
+        subtitle={modal?.type === "delete" ? formatDriverId(modal.driver.id) : ""}
+        itemLabel={modal?.type === "delete" ? getDriverFullName(modal.driver) : ""}
         disabled={mutations.isSubmitting}
       />
     </section>

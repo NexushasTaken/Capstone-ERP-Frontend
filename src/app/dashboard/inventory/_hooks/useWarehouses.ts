@@ -1,11 +1,11 @@
-'use client'
+"use client"
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { deleteWarehouse, fetchWarehouses, insertWarehouse, updateWarehouse } from '@/services/warehouseApi'
-import { optimisticUpdate } from '@/lib/query/optimisticUpdate'
-import { invalidateInventories, invalidateWarehouses } from '@/lib/query/queryInvalidation'
-import { queryKeys } from '@/lib/query/queryKeys'
-import type { InsertWarehousePayload, UpdateWarehousePayload, WarehouseListItem } from '@/types/warehouseCapacity'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { deleteWarehouse, fetchWarehouses, insertWarehouse, updateWarehouse } from "@/services/warehouseApi"
+import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
+import { invalidateInventories, invalidateWarehouses } from "@/lib/query/queryInvalidation"
+import { queryKeys } from "@/lib/query/queryKeys"
+import type { InsertWarehousePayload, UpdateWarehousePayload, WarehouseListItem } from "@/types/warehouseCapacity"
 
 export function useWarehouses() {
   return useQuery({
@@ -42,8 +42,8 @@ export function useWarehouseMutations() {
         },
         ...current,
       ],
-      successMessage: 'Warehouse added successfully.',
-      errorMessage: 'Failed to add warehouse.',
+      successMessage: "Warehouse added successfully.",
+      errorMessage: "Failed to add warehouse.",
     }),
     onSettled: refetchAll,
   })
@@ -63,8 +63,8 @@ export function useWarehouseMutations() {
               }
             : warehouse,
         ),
-      successMessage: 'Warehouse updated successfully.',
-      errorMessage: 'Failed to update warehouse.',
+      successMessage: "Warehouse updated successfully.",
+      errorMessage: "Failed to update warehouse.",
     }),
     onSettled: refetchAll,
   })
@@ -74,8 +74,8 @@ export function useWarehouseMutations() {
     ...optimisticUpdate<WarehouseListItem[], number>({
       ...shared,
       update: (current, warehouseId) => current.filter((warehouse) => warehouse.id !== warehouseId),
-      successMessage: 'Warehouse deleted successfully.',
-      errorMessage: 'Failed to delete warehouse.',
+      successMessage: "Warehouse deleted successfully.",
+      errorMessage: "Failed to delete warehouse.",
     }),
     onSettled: refetchAll,
   })

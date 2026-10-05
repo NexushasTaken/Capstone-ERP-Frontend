@@ -1,24 +1,24 @@
-import { Pencil, Trash2 } from 'lucide-react'
-import type { DriverSortOption } from '@/types/driver'
-import type { StatusActionItem } from '@/types/statusAction'
+import { Pencil, Trash2 } from "lucide-react"
+import type { DriverSortOption } from "@/types/driver"
+import type { StatusActionItem } from "@/types/statusAction"
 
 export const driverSortOptions: DriverSortOption[] = [
-  { label: 'Latest added', value: 'createdAt', order: 'desc' },
-  { label: 'Name (A to Z)', value: 'name', order: 'asc' },
-  { label: 'Name (Z to A)', value: 'name', order: 'desc' },
+  { label: "Latest added", value: "createdAt", order: "desc" },
+  { label: "Name (A to Z)", value: "name", order: "asc" },
+  { label: "Name (Z to A)", value: "name", order: "desc" },
 ]
 
 export const driverActionOptions: StatusActionItem[] = [
   {
-    label: 'Update',
-    value: 'update',
+    label: "Update",
+    value: "update",
     icon: Pencil,
   },
   {
-    label: 'Delete',
-    value: 'delete',
+    label: "Delete",
+    value: "delete",
     icon: Trash2,
-    variant: 'destructive',
+    variant: "destructive",
   },
 ]
 
@@ -31,9 +31,9 @@ export function getDriverFullName(driver: { firstName: string; lastName: string 
 }
 
 export function getDriverFilter(value: DriverSortOption) {
-  if (value.value !== 'name') return 0
+  if (value.value !== "name") return 0
 
-  return value.order === 'asc' ? 1 : 2
+  return value.order === "asc" ? 1 : 2
 }
 
 export const DRIVER_ITEMS_PER_PAGE = 10

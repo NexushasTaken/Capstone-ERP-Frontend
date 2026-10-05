@@ -1,5 +1,5 @@
-import type { QueryClient, QueryKey, UseMutationOptions } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import type { QueryClient, QueryKey, UseMutationOptions } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 interface OptimisticUpdateOptions<TData, TVariables> {
   queryClient: QueryClient
@@ -27,7 +27,7 @@ export function optimisticUpdate<TData, TVariables>({
   errorMessage,
 }: OptimisticUpdateOptions<TData, TVariables>): Pick<
   UseMutationOptions<unknown, unknown, TVariables, { previous?: TData }>,
-  'onMutate' | 'onError' | 'onSuccess' | 'onSettled'
+  "onMutate" | "onError" | "onSuccess" | "onSettled"
 > {
   return {
     onMutate: async (variables) => {

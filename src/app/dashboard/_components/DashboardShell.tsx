@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import Sidebar from '@/app/dashboard/_components/Sidebar'
-import { Menu } from 'lucide-react'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import Sidebar from "@/app/dashboard/_components/Sidebar"
+import { Menu } from "lucide-react"
+import { type ReactNode, useEffect, useRef, useState } from "react"
 
 interface DashboardShellProps {
   children: ReactNode
@@ -32,27 +32,27 @@ export default function DashboardShell({ children }: DashboardShellProps) {
 
     hideAfterDelay()
 
-    document.addEventListener('scroll', showMenuTemporarily, {
+    document.addEventListener("scroll", showMenuTemporarily, {
       capture: true,
       passive: true,
     })
-    document.addEventListener('pointerdown', showMenuTemporarily, {
+    document.addEventListener("pointerdown", showMenuTemporarily, {
       capture: true,
       passive: true,
     })
-    document.addEventListener('touchstart', showMenuTemporarily, {
+    document.addEventListener("touchstart", showMenuTemporarily, {
       capture: true,
       passive: true,
     })
 
     return () => {
-      document.removeEventListener('scroll', showMenuTemporarily, {
+      document.removeEventListener("scroll", showMenuTemporarily, {
         capture: true,
       })
-      document.removeEventListener('pointerdown', showMenuTemporarily, {
+      document.removeEventListener("pointerdown", showMenuTemporarily, {
         capture: true,
       })
-      document.removeEventListener('touchstart', showMenuTemporarily, {
+      document.removeEventListener("touchstart", showMenuTemporarily, {
         capture: true,
       })
 
@@ -73,7 +73,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
           cursor-pointer rounded-full border border-border
           bg-primary p-2 text-primary-foreground xl:hidden
           transition-all duration-300 ease-out
-          ${showMenuButton ? 'translate-y-0 opacity-100' : '-translate-y-3 pointer-events-none opacity-0'}
+          ${showMenuButton ? "translate-y-0 opacity-100" : "-translate-y-3 pointer-events-none opacity-0"}
         `}
         onClick={() => setIsSidebarOpen(true)}
         type="button"

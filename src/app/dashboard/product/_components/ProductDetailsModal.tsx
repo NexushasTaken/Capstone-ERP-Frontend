@@ -1,10 +1,10 @@
-import { Layers, Tag } from 'lucide-react'
-import CloseButton from '@/components/CloseButton'
-import { ModalTitle } from '@/components/AppModal'
-import SeeMoreModal from '@/components/SeeMoreModal'
-import { formatDate, formatPeso } from '@/lib/format'
-import type { ProductListItem } from '@/types/product'
-import { formatProductId } from '../_lib/productHelpers'
+import { Layers, Tag } from "lucide-react"
+import CloseButton from "@/components/CloseButton"
+import { ModalTitle } from "@/components/AppModal"
+import SeeMoreModal from "@/components/SeeMoreModal"
+import { formatDate, formatPeso } from "@/lib/format"
+import type { ProductListItem } from "@/types/product"
+import { formatProductId } from "../_lib/productHelpers"
 
 interface ProductDetailsModalProps {
   product: ProductListItem | null
@@ -18,7 +18,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
       <div className="flex w-full items-center justify-between gap-2 border-b border-border p-4">
         <div className="flex flex-col justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs">{product ? formatProductId(product.id) : ''}</span>
+            <span className="text-xs">{product ? formatProductId(product.id) : ""}</span>
           </div>
           <ModalTitle className="text-xl font-medium text-foreground capitalize">{product?.name}</ModalTitle>
         </div>
@@ -34,7 +34,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
             <div className="flex min-w-0 flex-col">
               <span className="text-xs">Category</span>
               <span className="truncate text-base font-semibold capitalize">
-                {product?.categoryName ?? 'Uncategorized'}
+                {product?.categoryName ?? "Uncategorized"}
               </span>
             </div>
           </div>
@@ -45,7 +45,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
             </span>
             <div className="flex min-w-0 flex-col">
               <span className="text-xs">Price</span>
-              <span className="truncate text-base font-semibold">{product ? formatPeso(product.price) : ''}</span>
+              <span className="truncate text-base font-semibold">{product ? formatPeso(product.price) : ""}</span>
             </div>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="block text-xs text-muted-foreground">Created at</span>
-              <span className="font-semibold text-foreground">{product ? formatDate(product.created_At) : ''}</span>
+              <span className="font-semibold text-foreground">{product ? formatDate(product.created_At) : ""}</span>
             </div>
             {/* createdBy / updatedBy / updatedAt dto */}
           </div>

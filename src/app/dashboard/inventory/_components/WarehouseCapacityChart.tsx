@@ -1,10 +1,10 @@
-'use client'
+"use client"
 
-import { ArcElement, Chart, DoughnutController, Tooltip, type ChartConfiguration } from 'chart.js'
-import { useEffect, useRef } from 'react'
-import { themeColor } from '@/lib/cssColor'
-import type { WarehouseCapacity } from '@/types/inventory'
-import { formatNumber, getCapacityPercentage } from '@/lib/helpers/inventoryHelpers'
+import { ArcElement, Chart, DoughnutController, Tooltip, type ChartConfiguration } from "chart.js"
+import { useEffect, useRef } from "react"
+import { themeColor } from "@/lib/cssColor"
+import type { WarehouseCapacity } from "@/types/inventory"
+import { formatNumber, getCapacityPercentage } from "@/lib/helpers/inventoryHelpers"
 
 Chart.register(ArcElement, DoughnutController, Tooltip)
 
@@ -19,14 +19,14 @@ export default function WarehouseCapacityChart({ capacity }: WarehouseCapacityCh
   useEffect(() => {
     if (!canvasRef.current) return
 
-    const config: ChartConfiguration<'doughnut'> = {
-      type: 'doughnut',
+    const config: ChartConfiguration<"doughnut"> = {
+      type: "doughnut",
       data: {
-        labels: ['Used capacity', 'Available capacity'],
+        labels: ["Used capacity", "Available capacity"],
         datasets: [
           {
             data: [capacity.used, capacity.total - capacity.used],
-            backgroundColor: [themeColor('--chart-5'), themeColor('--chart-1')],
+            backgroundColor: [themeColor("--chart-5"), themeColor("--chart-1")],
             borderWidth: 0,
             borderRadius: 8,
             spacing: 3,
@@ -34,7 +34,7 @@ export default function WarehouseCapacityChart({ capacity }: WarehouseCapacityCh
         ],
       },
       options: {
-        cutout: '77%',
+        cutout: "77%",
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
@@ -61,7 +61,7 @@ export default function WarehouseCapacityChart({ capacity }: WarehouseCapacityCh
         </div>
       </div>
       <p className="my-4 text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">{formatNumber(capacity.used)}</span> of{' '}
+        <span className="font-medium text-foreground">{formatNumber(capacity.used)}</span> of{" "}
         {formatNumber(capacity.total)} units
       </p>
     </div>

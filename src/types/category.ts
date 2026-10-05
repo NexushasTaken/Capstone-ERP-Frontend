@@ -4,12 +4,12 @@ export interface CategoryListItem {
   created_At: string
 }
 
-export type CategorySortBy = 'id' | 'createdAt' | 'name'
+export type CategorySortBy = "id" | "createdAt" | "name"
 
 export interface CategorySortOption {
   label: string
   value: CategorySortBy
-  order: 'asc' | 'desc'
+  order: "asc" | "desc"
 }
 
 // API request/response shapes

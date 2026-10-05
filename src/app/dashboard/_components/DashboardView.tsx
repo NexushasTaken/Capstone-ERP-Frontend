@@ -1,6 +1,6 @@
-import InventoryOverview from './InventoryOverview'
-import PredictedStockouts from './PredictedStockouts'
-import SalesOverviewCard from './SalesOverviewCard'
+import InventoryOverview from "./InventoryOverview"
+import PredictedStockouts from "./PredictedStockouts"
+import SalesOverviewCard from "./SalesOverviewCard"
 
 export default function DashboardView() {
   return (

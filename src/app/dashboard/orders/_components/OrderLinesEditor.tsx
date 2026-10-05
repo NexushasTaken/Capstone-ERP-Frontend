@@ -1,12 +1,12 @@
-import { Plus, Trash2 } from 'lucide-react'
-import EntityDropdown from '@/components/EntityDropdown'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { formatPeso } from '@/lib/format'
-import type { getOrderLineRows } from '@/lib/helpers/orderHelpers'
-import type { OrderLineForm } from '@/types/order'
-import type { ProductListItem } from '@/types/product'
+import { Plus, Trash2 } from "lucide-react"
+import EntityDropdown from "@/components/EntityDropdown"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { formatPeso } from "@/lib/format"
+import type { getOrderLineRows } from "@/lib/helpers/orderHelpers"
+import type { OrderLineForm } from "@/types/order"
+import type { ProductListItem } from "@/types/product"
 
 interface OrderLinesEditorProps {
   lines: OrderLineForm[]
@@ -48,7 +48,7 @@ export default function OrderLinesEditor({
         </div>
         <Button
           className="w-full sm:w-auto"
-          onClick={() => onChange([...lines, { productId: '', quantity: '1' }])}
+          onClick={() => onChange([...lines, { productId: "", quantity: "1" }])}
           type="button"
           variant="outline"
         >
@@ -76,9 +76,9 @@ export default function OrderLinesEditor({
                 <TableCell>
                   <div className="flex flex-col gap-1">
                     <EntityDropdown
-                      emptyLabel={productsError ? 'Failed to load products. Try searching again.' : 'No products found'}
+                      emptyLabel={productsError ? "Failed to load products. Try searching again." : "No products found"}
                       isLoading={productsLoading}
-                      onSelect={(productId) => updateLine(index, 'productId', String(productId))}
+                      onSelect={(productId) => updateLine(index, "productId", String(productId))}
                       // A product can only appear on one line.
                       options={productOptions.filter(
                         (product) =>
@@ -89,7 +89,7 @@ export default function OrderLinesEditor({
                       )}
                       placeholder="Select product"
                       searchPlaceholder="Search products..."
-                      value={line.product?.name ?? ''}
+                      value={line.product?.name ?? ""}
                     />
                     {line.product ? <span className="text-xs text-muted-foreground">ID: {line.product.id}</span> : null}
                   </div>
@@ -99,9 +99,9 @@ export default function OrderLinesEditor({
                   <Input
                     className="mx-auto w-28 text-center"
                     min={1}
-                    onChange={(event) => updateLine(index, 'quantity', event.target.value)}
+                    onChange={(event) => updateLine(index, "quantity", event.target.value)}
                     type="number"
-                    value={line.quantity || ''}
+                    value={line.quantity || ""}
                   />
                 </TableCell>
                 <TableCell className="text-center font-medium text-foreground">{formatPeso(line.subtotal)}</TableCell>

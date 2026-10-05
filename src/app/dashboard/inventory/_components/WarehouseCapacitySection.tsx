@@ -1,38 +1,38 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Plus, Warehouse } from 'lucide-react'
-import DeleteConfirmModal from '@/components/DeleteConfirmModal'
-import Loading from '@/components/Loading'
-import StatusAction from '@/components/StatusAction'
-import { Button } from '@/components/ui/button'
-import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { formatNumber, isSelectableWarehouse } from '@/lib/helpers/inventoryHelpers'
-import { editDeleteActions } from '@/lib/helpers/statusActionHelpers'
-import { allowedActions, can } from '@/lib/permissions'
-import type { InsertWarehousePayload, WarehouseListItem } from '@/types/warehouseCapacity'
-import { useWarehouseMutations, useWarehouses } from '../_hooks/useWarehouses'
+import { useState } from "react"
+import { Plus, Warehouse } from "lucide-react"
+import DeleteConfirmModal from "@/components/DeleteConfirmModal"
+import Loading from "@/components/Loading"
+import StatusAction from "@/components/StatusAction"
+import { Button } from "@/components/ui/button"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
+import { formatNumber, isSelectableWarehouse } from "@/lib/helpers/inventoryHelpers"
+import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
+import { allowedActions, can } from "@/lib/permissions"
+import type { InsertWarehousePayload, WarehouseListItem } from "@/types/warehouseCapacity"
+import { useWarehouseMutations, useWarehouses } from "../_hooks/useWarehouses"
 import {
   getTotalWarehouseCapacity,
   MAX_SELECTED_WAREHOUSES,
   toggleSelectedWarehouseId,
   toWarehouseCapacity,
-} from '../_lib/warehouseCapacityHelpers'
-import WarehouseCapacityChart from './WarehouseCapacityChart'
-import WarehouseChartPicker from './WarehouseChartPicker'
-import WarehouseFormModal from './WarehouseFormModal'
+} from "../_lib/warehouseCapacityHelpers"
+import WarehouseCapacityChart from "./WarehouseCapacityChart"
+import WarehouseChartPicker from "./WarehouseChartPicker"
+import WarehouseFormModal from "./WarehouseFormModal"
 
 // Which modal is open, and for which warehouse.
 type ModalState =
-  | { type: 'add' }
-  | { type: 'edit'; warehouse: WarehouseListItem }
-  | { type: 'delete'; warehouse: WarehouseListItem }
+  | { type: "add" }
+  | { type: "edit"; warehouse: WarehouseListItem }
+  | { type: "delete"; warehouse: WarehouseListItem }
   | null
 
 export default function WarehouseCapacitySection() {
   const { data: currentUser } = useCurrentUser()
   const role = currentUser?.role
-  const warehouseActions = allowedActions(role, 'warehouse', editDeleteActions)
+  const warehouseActions = allowedActions(role, "warehouse", editDeleteActions)
 
   const [selectedWarehouseIds, setSelectedWarehouseIds] = useState<number[]>([])
   const [hasCustomSelection, setHasCustomSelection] = useState(false)
@@ -59,7 +59,7 @@ export default function WarehouseCapacitySection() {
   const closeModal = () => setModal(null)
 
   function handleSubmitWarehouse(values: InsertWarehousePayload) {
-    if (modal?.type === 'edit') {
+    if (modal?.type === "edit") {
       mutations.updateWarehouse.mutate({ id: modal.warehouse.id, ...values })
     } else {
       mutations.addWarehouse.mutate({ ...values, optimisticId: -Date.now() })
@@ -68,7 +68,7 @@ export default function WarehouseCapacitySection() {
   }
 
   function handleDeleteWarehouse() {
-    if (modal?.type !== 'delete') return
+    if (modal?.type !== "delete") return
     mutations.deleteWarehouse.mutate(modal.warehouse.id)
     closeModal()
   }
@@ -97,8 +97,8 @@ export default function WarehouseCapacitySection() {
               }}
             />
 
-            {can(role, 'warehouse:add') && (
-              <Button onClick={() => setModal({ type: 'add' })} type="button">
+            {can(role, "warehouse:add") && (
+              <Button onClick={() => setModal({ type: "add" })} type="button">
                 <Plus className="h-4 w-4" />
                 Add warehouse
               </Button>
@@ -137,8 +137,8 @@ export default function WarehouseCapacitySection() {
                         actions={warehouseActions}
                         label={`More actions for warehouse ${warehouse.name}`}
                         onAction={(action) => {
-                          if (action === 'edit') setModal({ type: 'edit', warehouse })
-                          if (action === 'delete') setModal({ type: 'delete', warehouse })
+                          if (action === "edit") setModal({ type: "edit", warehouse })
+                          if (action === "delete") setModal({ type: "delete", warehouse })
                         }}
                       />
                     )}
@@ -150,9 +150,9 @@ export default function WarehouseCapacitySection() {
           </div>
         </div>
 
-        {(modal?.type === 'add' || modal?.type === 'edit') && (
+        {(modal?.type === "add" || modal?.type === "edit") && (
           <WarehouseFormModal
-            warehouse={modal.type === 'edit' ? modal.warehouse : null}
+            warehouse={modal.type === "edit" ? modal.warehouse : null}
             disabled={mutations.isSubmitting}
             onClose={closeModal}
             onSubmit={handleSubmitWarehouse}
@@ -160,12 +160,12 @@ export default function WarehouseCapacitySection() {
         )}
 
         <DeleteConfirmModal
-          open={modal?.type === 'delete'}
+          open={modal?.type === "delete"}
           onClose={closeModal}
           onConfirm={handleDeleteWarehouse}
           entityName="warehouse"
           subtitle="Warehouse capacity"
-          itemLabel={modal?.type === 'delete' ? modal.warehouse.name : null}
+          itemLabel={modal?.type === "delete" ? modal.warehouse.name : null}
           disabled={mutations.isSubmitting}
         />
       </article>

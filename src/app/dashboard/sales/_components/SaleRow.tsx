@@ -1,8 +1,8 @@
-import { ChevronDown } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Collapsible, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { TableBody, TableCell, TableRow } from '@/components/ui/table'
-import { formatDate, formatPeso } from '@/lib/format'
+import { ChevronDown } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { TableBody, TableCell, TableRow } from "@/components/ui/table"
+import { formatDate, formatPeso } from "@/lib/format"
 import {
   formatSaleId,
   getSaleCustomerName,
@@ -10,9 +10,9 @@ import {
   getSaleQuantity,
   getSaleStatusLabel,
   saleStatusDotClass,
-} from '@/lib/helpers/saleHelpers'
-import { normalizeOrderText } from '@/lib/helpers/orderHelpers'
-import type { Sale } from '@/types/sale'
+} from "@/lib/helpers/saleHelpers"
+import { normalizeOrderText } from "@/lib/helpers/orderHelpers"
+import type { Sale } from "@/types/sale"
 
 interface SaleRowProps {
   sale: Sale
@@ -42,10 +42,10 @@ export default function SaleRow({ sale, columnCount, isExpanded, onExpandedChang
         <TableCell className="px-3 py-4">
           <CollapsibleTrigger
             render={<Button size="sm" type="button" variant="outline" />}
-            aria-label={'View ' + formatSaleId(sale.id) + ' details'}
+            aria-label={"View " + formatSaleId(sale.id) + " details"}
           >
             View
-            <ChevronDown className={'h-4 w-4 transition-transform ' + (isExpanded ? 'rotate-180' : '')} />
+            <ChevronDown className={"h-4 w-4 transition-transform " + (isExpanded ? "rotate-180" : "")} />
           </CollapsibleTrigger>
         </TableCell>
       </TableRow>
@@ -62,15 +62,15 @@ export default function SaleRow({ sale, columnCount, isExpanded, onExpandedChang
 
 function SaleDetails({ sale }: { sale: Sale }) {
   const details = [
-    ['Customer', getSaleCustomerName(sale)],
-    ['Order type', normalizeOrderText(sale.orderType)],
-    ['Status', getSaleStatusLabel(sale)],
-    ['Driver', sale.driverName || 'Unassigned'],
-    ['Pickup address', sale.pickUpAddress || '-'],
-    ['Delivery address', sale.deliveryAddress || '-'],
-    ['Sale date', formatDate(sale.created_At)],
-    ['Quantity', getSaleQuantity(sale)],
-    ['Total amount', formatPeso(sale.total)],
+    ["Customer", getSaleCustomerName(sale)],
+    ["Order type", normalizeOrderText(sale.orderType)],
+    ["Status", getSaleStatusLabel(sale)],
+    ["Driver", sale.driverName || "Unassigned"],
+    ["Pickup address", sale.pickUpAddress || "-"],
+    ["Delivery address", sale.deliveryAddress || "-"],
+    ["Sale date", formatDate(sale.created_At)],
+    ["Quantity", getSaleQuantity(sale)],
+    ["Total amount", formatPeso(sale.total)],
   ]
 
   return (
@@ -88,7 +88,7 @@ function SaleDetails({ sale }: { sale: Sale }) {
           <caption className="sr-only">Sale products</caption>
           <thead className="sticky top-0 bg-muted text-xs text-muted-foreground">
             <tr>
-              {['Product', 'Quantity', 'Unit price', 'Amount'].map((column) => (
+              {["Product", "Quantity", "Unit price", "Amount"].map((column) => (
                 <th key={column} scope="col" className="px-3 py-2 font-normal">
                   {column}
                 </th>

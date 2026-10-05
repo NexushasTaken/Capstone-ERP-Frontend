@@ -1,19 +1,19 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 
-import { useAuditLogs } from '@/hooks/useAuditLogs'
+import { useAuditLogs } from "@/hooks/useAuditLogs"
 import {
   AUDIT_LOG_SIDEBAR_LIMIT,
   formatAuditDate,
   formatAuditRelativeTime,
   getAuditAction,
   getAuditModuleLabel,
-} from '@/lib/helpers/auditLogHelpers'
-import { cn } from '@/lib/utils'
-import { usePathname } from 'next/navigation'
+} from "@/lib/helpers/auditLogHelpers"
+import { cn } from "@/lib/utils"
+import { usePathname } from "next/navigation"
 
 const sidebarParams = { page: 1, pageSize: AUDIT_LOG_SIDEBAR_LIMIT }
 
@@ -36,8 +36,8 @@ export default function AuditLogSidebar({ onNavigate }: { onNavigate: () => void
   return (
     <section
       className={cn(
-        'flex w-full min-h-96 flex-col overflow-hidden rounded-2xl border border-border bg-muted/50 p-3',
-        pathname === '/dashboard/audit-logs' && 'hidden',
+        "flex w-full min-h-96 flex-col overflow-hidden rounded-2xl border border-border bg-muted/50 p-3",
+        pathname === "/dashboard/audit-logs" && "hidden",
       )}
     >
       <div className="flex items-center justify-between">

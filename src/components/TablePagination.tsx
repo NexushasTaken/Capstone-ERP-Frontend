@@ -1,4 +1,4 @@
-import { getPaginationPages } from '@/lib/helpers/paginationHelpers'
+import { getPaginationPages } from "@/lib/helpers/paginationHelpers"
 import {
   Pagination,
   PaginationContent,
@@ -7,7 +7,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination'
+} from "@/components/ui/pagination"
 
 interface TablePaginationProps {
   currentPage: number
@@ -34,7 +34,7 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
         </PaginationItem>
 
         {getPaginationPages(currentPage, totalPages).map((page, index) => {
-          if (page === 'ellipsis') {
+          if (page === "ellipsis") {
             return (
               <PaginationItem key={`ellipsis-${index}`}>
                 <PaginationEllipsis />

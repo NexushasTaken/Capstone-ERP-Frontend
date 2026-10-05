@@ -1,17 +1,17 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import AppModal, { ModalHeader } from '@/components/AppModal'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { formatInventoryId, formatNumber } from '@/lib/helpers/inventoryHelpers'
-import type { InventoryListItem, MarkInventoryAsDamagePayload } from '@/types/inventory'
+import { useState } from "react"
+import AppModal, { ModalHeader } from "@/components/AppModal"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { formatInventoryId, formatNumber } from "@/lib/helpers/inventoryHelpers"
+import type { InventoryListItem, MarkInventoryAsDamagePayload } from "@/types/inventory"
 
 const damageTypeOptions = [
-  { value: 1, label: 'Current Item' },
-  { value: 2, label: 'Return Item' },
+  { value: 1, label: "Current Item" },
+  { value: 2, label: "Return Item" },
 ]
 
 interface MarkDamageModalProps {
@@ -28,8 +28,8 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
     reason: string
     damagedType: 1 | 2
   }>({
-    quantity: '',
-    reason: '',
+    quantity: "",
+    reason: "",
     damagedType: 1,
   })
   const quantity = Number(form.quantity)
@@ -38,7 +38,7 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
     Number.isSafeInteger(quantity) &&
     quantity > 0 &&
     (form.damagedType === 2 || quantity <= item.quantity) &&
-    form.reason.trim() !== ''
+    form.reason.trim() !== ""
   const close = () => {
     if (!isPending) onClose()
   }
@@ -61,10 +61,10 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
       >
         <div className="flex flex-col gap-4 p-4">
           <p className="text-sm text-muted-foreground">
-            {item.name} · {formatNumber(item.quantity)} available.{' '}
+            {item.name} · {formatNumber(item.quantity)} available.{" "}
             {form.damagedType === 1
-              ? 'Damaged quantity will be deducted from stock.'
-              : 'Returned damage does not change current stock.'}
+              ? "Damaged quantity will be deducted from stock."
+              : "Returned damage does not change current stock."}
           </p>
           <div className="flex flex-col gap-1 text-sm text-foreground">
             <label htmlFor="damage-type" className="text-xs text-muted-foreground">
@@ -129,7 +129,7 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
             Cancel
           </Button>
           <Button type="submit" variant="destructive" disabled={!canSubmit || isPending}>
-            {isPending ? 'Saving...' : 'Mark as damage'}
+            {isPending ? "Saving..." : "Mark as damage"}
           </Button>
         </div>
       </form>

@@ -1,32 +1,32 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import ExportCsvButton from '@/components/ExportCsvButton'
-import OrderTypeFilterSelect from '@/components/OrderTypeFilterSelect'
-import PageTitle from '@/components/PageTitle'
-import SearchInput from '@/components/SearchInput'
-import { TablePagination } from '@/components/TablePagination'
-import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { exportToCSV } from '@/lib/exportToCsv'
-import { formatDate } from '@/lib/format'
-import { normalizeOrderText } from '@/lib/helpers/orderHelpers'
+import { useState } from "react"
+import ExportCsvButton from "@/components/ExportCsvButton"
+import OrderTypeFilterSelect from "@/components/OrderTypeFilterSelect"
+import PageTitle from "@/components/PageTitle"
+import SearchInput from "@/components/SearchInput"
+import { TablePagination } from "@/components/TablePagination"
+import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { exportToCSV } from "@/lib/exportToCsv"
+import { formatDate } from "@/lib/format"
+import { normalizeOrderText } from "@/lib/helpers/orderHelpers"
 import {
   formatSaleId,
   getSaleCustomerName,
   getSaleProductName,
   getSaleQuantity,
   getSaleStatusLabel,
-} from '@/lib/helpers/saleHelpers'
-import type { Sale } from '@/types/sale'
-import { useSales } from '../_hooks/useSales'
-import SalesTable from './SalesTable'
+} from "@/lib/helpers/saleHelpers"
+import type { Sale } from "@/types/sale"
+import { useSales } from "../_hooks/useSales"
+import SalesTable from "./SalesTable"
 
 const PAGE_SIZE = 10
 
 export default function SalesView() {
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState('')
+  const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState("")
   const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim())
 
@@ -86,7 +86,7 @@ export default function SalesView() {
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-muted-foreground">
           Showing {sales.length} of {rows} sales
-          {isFetching ? ' - Updating...' : ''}
+          {isFetching ? " - Updating..." : ""}
         </span>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={goToPage} />
@@ -100,18 +100,18 @@ function exportSales(sales: Sale[]) {
   exportToCSV(
     sales,
     [
-      { header: 'Sale ID', value: (sale) => formatSaleId(sale.id) },
-      { header: 'Product', value: (sale) => getSaleProductName(sale) },
+      { header: "Sale ID", value: (sale) => formatSaleId(sale.id) },
+      { header: "Product", value: (sale) => getSaleProductName(sale) },
       {
-        header: 'Order type',
+        header: "Order type",
         value: (sale) => normalizeOrderText(sale.orderType),
       },
-      { header: 'Customer', value: (sale) => getSaleCustomerName(sale) },
-      { header: 'Quantity', value: (sale) => getSaleQuantity(sale) },
-      { header: 'Total amount', value: (sale) => sale.total },
-      { header: 'Sale date', value: (sale) => formatDate(sale.created_At) },
-      { header: 'Status', value: (sale) => getSaleStatusLabel(sale) },
+      { header: "Customer", value: (sale) => getSaleCustomerName(sale) },
+      { header: "Quantity", value: (sale) => getSaleQuantity(sale) },
+      { header: "Total amount", value: (sale) => sale.total },
+      { header: "Sale date", value: (sale) => formatDate(sale.created_At) },
+      { header: "Status", value: (sale) => getSaleStatusLabel(sale) },
     ],
-    'sales',
+    "sales",
   )
 }

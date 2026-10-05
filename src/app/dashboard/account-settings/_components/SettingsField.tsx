@@ -1,11 +1,11 @@
-import type { ComponentProps, ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import type { ComponentProps, ReactNode } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 // Label on the left, input on the right. `SettingsRow` lines other content up with the inputs.
-const fieldLabelColumn = 'grid-cols-[150px_1fr]'
+const fieldLabelColumn = "grid-cols-[150px_1fr]"
 
-interface SettingsFieldProps extends Omit<ComponentProps<typeof Input>, 'onChange'> {
+interface SettingsFieldProps extends Omit<ComponentProps<typeof Input>, "onChange"> {
   label: string
   onChange: (value: string) => void
 }

@@ -1,35 +1,35 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Plus } from 'lucide-react'
-import AppModal, { ModalTitle } from '@/components/AppModal'
-import CloseButton from '@/components/CloseButton'
-import EntityDropdown from '@/components/EntityDropdown'
-import { FormField, FormInput } from '@/components/FormField'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useInventoryProductSearch } from '@/hooks/useInventoryProductSearch'
-import { useOrderTypes } from '@/hooks/useOrderTypes'
+import { useState } from "react"
+import { Plus } from "lucide-react"
+import AppModal, { ModalTitle } from "@/components/AppModal"
+import CloseButton from "@/components/CloseButton"
+import EntityDropdown from "@/components/EntityDropdown"
+import { FormField, FormInput } from "@/components/FormField"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useInventoryProductSearch } from "@/hooks/useInventoryProductSearch"
+import { useOrderTypes } from "@/hooks/useOrderTypes"
 import {
   getOrderLineAmountTotal,
   getOrderLineQuantityTotal,
   getOrderLineRows,
   normalizeOrderText,
-} from '@/lib/helpers/orderHelpers'
-import type { InsertOrderPayload, OrderLineForm } from '@/types/order'
-import { useOrderRiders } from '../_hooks/useOrders'
-import ConfirmOrderModal from './ConfirmOrderModal'
-import OrderLinesEditor from './OrderLinesEditor'
+} from "@/lib/helpers/orderHelpers"
+import type { InsertOrderPayload, OrderLineForm } from "@/types/order"
+import { useOrderRiders } from "../_hooks/useOrders"
+import ConfirmOrderModal from "./ConfirmOrderModal"
+import OrderLinesEditor from "./OrderLinesEditor"
 
 const emptyOrderForm = {
-  orderTypeId: '',
-  deliveryRiderId: '',
-  customerName: '',
-  pickUpAddress: '',
-  deliveryAddress: '',
+  orderTypeId: "",
+  deliveryRiderId: "",
+  customerName: "",
+  pickUpAddress: "",
+  deliveryAddress: "",
 }
-const emptyOrderLines: OrderLineForm[] = [{ productId: '', quantity: '1' }]
+const emptyOrderLines: OrderLineForm[] = [{ productId: "", quantity: "1" }]
 
 interface CreateOrderModalProps {
   open: boolean
@@ -61,12 +61,12 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
   }))
   const selectedOrderTypeLabel = orderTypeOptions.find((type) => type.id === Number(form.orderTypeId))?.label
   // Walk-in orders have no rider and no addresses.
-  const isWalkin = selectedOrderTypeLabel?.toLowerCase() === 'walkin'
+  const isWalkin = selectedOrderTypeLabel?.toLowerCase() === "walkin"
   const riderOptions = riders.map((rider) => ({
     id: rider.id,
     label: `${rider.firstName} ${rider.lastName}`,
   }))
-  const selectedRiderLabel = riderOptions.find((rider) => rider.id === Number(form.deliveryRiderId))?.label ?? ''
+  const selectedRiderLabel = riderOptions.find((rider) => rider.id === Number(form.deliveryRiderId))?.label ?? ""
 
   const lineRows = getOrderLineRows(lines, products)
   const totalQuantity = getOrderLineQuantityTotal(lineRows)
@@ -74,12 +74,12 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
   const canSubmit =
     !disabled &&
     Number(form.orderTypeId) > 0 &&
-    form.customerName.trim() !== '' &&
+    form.customerName.trim() !== "" &&
     (isWalkin ||
-      (form.deliveryRiderId.trim() !== '' &&
+      (form.deliveryRiderId.trim() !== "" &&
         Number(form.deliveryRiderId) >= 0 &&
-        form.pickUpAddress.trim() !== '' &&
-        form.deliveryAddress.trim() !== '')) &&
+        form.pickUpAddress.trim() !== "" &&
+        form.deliveryAddress.trim() !== "")) &&
     lines.every((line) => Number(line.productId) > 0 && Number(line.quantity) > 0)
 
   function updateField(field: keyof typeof emptyOrderForm, value: string) {
@@ -93,8 +93,8 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
       orderTypeId: Number(form.orderTypeId),
       deliveryRiderId: isWalkin ? 0 : Number(form.deliveryRiderId),
       customerName: form.customerName.trim(),
-      pickUpAddress: isWalkin ? '' : form.pickUpAddress.trim(),
-      deliveryAddress: isWalkin ? '' : form.deliveryAddress.trim(),
+      pickUpAddress: isWalkin ? "" : form.pickUpAddress.trim(),
+      deliveryAddress: isWalkin ? "" : form.deliveryAddress.trim(),
       orderLines: lines.map((line) => ({
         productId: Number(line.productId),
         quantity: Number(line.quantity),
@@ -106,15 +106,15 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
   }
 
   const reviewDetails = [
-    { label: 'Order type', value: selectedOrderTypeLabel ?? '-' },
-    ...(isWalkin ? [] : [{ label: 'Delivery rider', value: selectedRiderLabel || '-' }]),
-    { label: 'Customer', value: form.customerName || '-' },
-    { label: 'Quantity', value: totalQuantity },
+    { label: "Order type", value: selectedOrderTypeLabel ?? "-" },
+    ...(isWalkin ? [] : [{ label: "Delivery rider", value: selectedRiderLabel || "-" }]),
+    { label: "Customer", value: form.customerName || "-" },
+    { label: "Quantity", value: totalQuantity },
     ...(isWalkin
       ? []
       : [
-          { label: 'Pickup address', value: form.pickUpAddress || '-' },
-          { label: 'Delivery address', value: form.deliveryAddress || '-' },
+          { label: "Pickup address", value: form.pickUpAddress || "-" },
+          { label: "Delivery address", value: form.deliveryAddress || "-" },
         ]),
   ]
 
@@ -139,7 +139,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
               <Select
                 disabled={orderTypesLoading}
                 items={orderTypeSelectItems}
-                onValueChange={(value) => updateField('orderTypeId', value ?? '')}
+                onValueChange={(value) => updateField("orderTypeId", value ?? "")}
                 value={form.orderTypeId}
               >
                 <SelectTrigger className="w-full">
@@ -160,7 +160,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
                 <EntityDropdown
                   emptyLabel="No riders found."
                   isLoading={ridersLoading}
-                  onSelect={(riderId) => updateField('deliveryRiderId', String(riderId))}
+                  onSelect={(riderId) => updateField("deliveryRiderId", String(riderId))}
                   options={riderOptions}
                   placeholder="Select delivery rider"
                   searchPlaceholder="Search riders..."
@@ -172,7 +172,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
             <FormField label="Customer name">
               <FormInput
                 className="capitalize"
-                onChange={(event) => updateField('customerName', event.target.value)}
+                onChange={(event) => updateField("customerName", event.target.value)}
                 value={form.customerName}
               />
             </FormField>
@@ -187,13 +187,13 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
             <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
               <FormField label="Pick up address">
                 <FormInput
-                  onChange={(event) => updateField('pickUpAddress', event.target.value)}
+                  onChange={(event) => updateField("pickUpAddress", event.target.value)}
                   value={form.pickUpAddress}
                 />
               </FormField>
               <FormField label="Delivery address">
                 <FormInput
-                  onChange={(event) => updateField('deliveryAddress', event.target.value)}
+                  onChange={(event) => updateField("deliveryAddress", event.target.value)}
                   value={form.deliveryAddress}
                 />
               </FormField>

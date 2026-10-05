@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useOrderStatusCounts } from '../_hooks/useOrders'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useOrderStatusCounts } from "../_hooks/useOrders"
 
 interface OrderStatusFilterSelectProps {
   /** Selected status id as a string, or '' for "All statuses". */
@@ -20,14 +20,14 @@ export default function OrderStatusFilterSelect({
 }: OrderStatusFilterSelectProps) {
   const { data: statusCounts, isError: statusCountsError } = useOrderStatusCounts()
   const items = [
-    { value: 'all', label: 'All statuses' },
+    { value: "all", label: "All statuses" },
     ...statusOptions
-      .filter((status) => status.label.toLowerCase() !== 'completed')
+      .filter((status) => status.label.toLowerCase() !== "completed")
       .map((status) => ({ value: String(status.id), label: status.label })),
   ]
 
   function countFor(label: string) {
-    if (!statusCounts || statusCountsError) return '-'
+    if (!statusCounts || statusCountsError) return "-"
     const match = statusCounts.find((item) => item.status.trim().toLowerCase() === label.toLowerCase())
     return (match?.count ?? 0).toLocaleString()
   }
@@ -37,8 +37,8 @@ export default function OrderStatusFilterSelect({
       <Select
         disabled={disabled}
         items={items}
-        onValueChange={(next) => onChange(next === 'all' ? '' : String(next ?? ''))}
-        value={value || 'all'}
+        onValueChange={(next) => onChange(next === "all" ? "" : String(next ?? ""))}
+        value={value || "all"}
       >
         <SelectTrigger aria-label="Filter orders by status" className="w-full">
           <SelectValue placeholder="All statuses" />
@@ -48,7 +48,7 @@ export default function OrderStatusFilterSelect({
             <SelectItem key={status.value} value={status.value} className="capitalize">
               <span className="flex items-center gap-3 w-full justify-between">
                 <span>{status.label}</span>
-                {status.value !== 'all' && (
+                {status.value !== "all" && (
                   <span className="shrink-0 text-right text-xs tabular-nums text-muted-foreground">
                     {countFor(status.label)}
                   </span>

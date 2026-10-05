@@ -1,17 +1,17 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import AppModal, { ModalActions, ModalBody, ModalHeader } from '@/components/AppModal'
-import { FormField } from '@/components/FormField'
-import type { AccountListItem } from '@/types/account'
-import { formatAccountId, LOCKED_ACCOUNT_ID } from '../_lib/accountHelpers'
-import RoleSelect from './RoleSelect'
+import { useState } from "react"
+import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
+import { FormField } from "@/components/FormField"
+import type { AccountListItem } from "@/types/account"
+import { formatAccountId, LOCKED_ACCOUNT_ID } from "../_lib/accountHelpers"
+import RoleSelect from "./RoleSelect"
 
 interface EditAccountRoleModalProps {
   account: AccountListItem
   disabled: boolean
   onClose: () => void
-  onSubmit: (role: AccountListItem['role']) => void
+  onSubmit: (role: AccountListItem["role"]) => void
 }
 
 export default function EditAccountRoleModal({ account, disabled, onClose, onSubmit }: EditAccountRoleModalProps) {

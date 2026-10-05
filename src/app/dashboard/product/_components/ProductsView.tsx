@@ -1,23 +1,23 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Plus } from 'lucide-react'
-import DeleteConfirmModal from '@/components/DeleteConfirmModal'
-import ExportCsvButton from '@/components/ExportCsvButton'
-import PageTitle from '@/components/PageTitle'
-import SearchInput from '@/components/SearchInput'
-import SortPopover from '@/components/SortPopover'
-import { TablePagination } from '@/components/TablePagination'
-import { Button } from '@/components/ui/button'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { exportToCSV } from '@/lib/exportToCsv'
-import { formatDate } from '@/lib/format'
-import { editDeleteActions } from '@/lib/helpers/statusActionHelpers'
-import { allowedActions, can } from '@/lib/permissions'
-import type { ProductCategoryFilter, ProductListItem, ProductSortBy } from '@/types/product'
-import { useProductMutations, useProducts, type ProductValues } from '../_hooks/useProducts'
+import { useState } from "react"
+import { Plus } from "lucide-react"
+import DeleteConfirmModal from "@/components/DeleteConfirmModal"
+import ExportCsvButton from "@/components/ExportCsvButton"
+import PageTitle from "@/components/PageTitle"
+import SearchInput from "@/components/SearchInput"
+import SortPopover from "@/components/SortPopover"
+import { TablePagination } from "@/components/TablePagination"
+import { Button } from "@/components/ui/button"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
+import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { exportToCSV } from "@/lib/exportToCsv"
+import { formatDate } from "@/lib/format"
+import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
+import { allowedActions, can } from "@/lib/permissions"
+import type { ProductCategoryFilter, ProductListItem, ProductSortBy } from "@/types/product"
+import { useProductMutations, useProducts, type ProductValues } from "../_hooks/useProducts"
 import {
   formatProductId,
   ITEMS_PER_PAGE,
@@ -25,33 +25,33 @@ import {
   productFilters,
   productSortOptions,
   sortProducts,
-} from '../_lib/productHelpers'
-import ProductDetailsModal from './ProductDetailsModal'
-import ProductFormModal from './ProductFormModal'
-import ProductsTable from './ProductsTable'
+} from "../_lib/productHelpers"
+import ProductDetailsModal from "./ProductDetailsModal"
+import ProductFormModal from "./ProductFormModal"
+import ProductsTable from "./ProductsTable"
 
 // The selected filter keeps a solid fill; the stock pressed state (bg-muted) is too faint here.
 const selectedFilterClass =
-  'aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90'
+  "aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90"
 
 // Which modal is open, and for which product.
 type ModalState =
-  | { type: 'add' }
-  | { type: 'edit'; product: ProductListItem }
-  | { type: 'delete'; product: ProductListItem }
-  | { type: 'details'; product: ProductListItem }
+  | { type: "add" }
+  | { type: "edit"; product: ProductListItem }
+  | { type: "delete"; product: ProductListItem }
+  | { type: "details"; product: ProductListItem }
   | null
 
 export default function ProductsView() {
   const { data: currentUser } = useCurrentUser()
   const role = currentUser?.role
-  const productActions = allowedActions(role, 'product', editDeleteActions)
+  const productActions = allowedActions(role, "product", editDeleteActions)
 
-  const [search, setSearch] = useState('')
-  const [selectedFilter, setSelectedFilter] = useState<ProductCategoryFilter>('Categorized')
+  const [search, setSearch] = useState("")
+  const [selectedFilter, setSelectedFilter] = useState<ProductCategoryFilter>("Categorized")
   const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<ProductSortBy>('createdAt')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [sortBy, setSortBy] = useState<ProductSortBy>("createdAt")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [modal, setModal] = useState<ModalState>(null)
   const debouncedSearch = useDebouncedValue(search)
 
@@ -63,13 +63,13 @@ export default function ProductsView() {
   const pageCount = Math.max(1, Math.ceil(displayedProducts.length / ITEMS_PER_PAGE))
   const paginatedProducts = displayedProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
   const countByFilter: Record<ProductCategoryFilter, number> = {
-    Categorized: categorizedItems?.filter((product) => matchesFilter(product, 'Categorized')).length ?? 0,
-    Uncategorized: uncategorizedItems?.filter((product) => matchesFilter(product, 'Uncategorized')).length ?? 0,
+    Categorized: categorizedItems?.filter((product) => matchesFilter(product, "Categorized")).length ?? 0,
+    Uncategorized: uncategorizedItems?.filter((product) => matchesFilter(product, "Uncategorized")).length ?? 0,
   }
   const closeModal = () => setModal(null)
 
   function handleSubmitProduct(values: ProductValues) {
-    if (modal?.type === 'edit') {
+    if (modal?.type === "edit") {
       mutations.updateProduct.mutate({ id: modal.product.id, ...values })
     } else {
       setCurrentPage(1)
@@ -79,7 +79,7 @@ export default function ProductsView() {
   }
 
   function handleDeleteProduct() {
-    if (modal?.type !== 'delete') return
+    if (modal?.type !== "delete") return
     mutations.deleteProduct.mutate(modal.product.id)
     closeModal()
   }
@@ -91,7 +91,7 @@ export default function ProductsView() {
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Search only applies to categorized products. */}
-          {selectedFilter !== 'Uncategorized' ? (
+          {selectedFilter !== "Uncategorized" ? (
             <SearchInput
               value={search}
               onChange={(value) => {
@@ -110,7 +110,7 @@ export default function ProductsView() {
               if (!filter) return
               setSelectedFilter(filter as ProductCategoryFilter)
               setCurrentPage(1)
-              if (filter === 'Uncategorized') setSearch('')
+              if (filter === "Uncategorized") setSearch("")
             }}
           >
             {productFilters.map((filter) => (
@@ -120,8 +120,8 @@ export default function ProductsView() {
             ))}
           </ToggleGroup>
           <ExportCsvButton onExport={() => exportProducts(displayedProducts)} />
-          {can(role, 'product:add') && (
-            <Button onClick={() => setModal({ type: 'add' })} type="button">
+          {can(role, "product:add") && (
+            <Button onClick={() => setModal({ type: "add" })} type="button">
               <Plus className="h-4 w-4" />
               Add product
             </Button>
@@ -145,9 +145,9 @@ export default function ProductsView() {
           isLoading={list.isLoading}
           error={list.error}
           actions={productActions}
-          onShowDetails={(product) => setModal({ type: 'details', product })}
-          onEdit={(product) => setModal({ type: 'edit', product })}
-          onDelete={(product) => setModal({ type: 'delete', product })}
+          onShowDetails={(product) => setModal({ type: "details", product })}
+          onEdit={(product) => setModal({ type: "edit", product })}
+          onDelete={(product) => setModal({ type: "delete", product })}
         />
       </div>
 
@@ -160,11 +160,11 @@ export default function ProductsView() {
         </div>
       </div>
 
-      <ProductDetailsModal product={modal?.type === 'details' ? modal.product : null} onClose={closeModal} />
+      <ProductDetailsModal product={modal?.type === "details" ? modal.product : null} onClose={closeModal} />
 
-      {(modal?.type === 'add' || modal?.type === 'edit') && (
+      {(modal?.type === "add" || modal?.type === "edit") && (
         <ProductFormModal
-          product={modal.type === 'edit' ? modal.product : null}
+          product={modal.type === "edit" ? modal.product : null}
           disabled={mutations.isSubmitting}
           onClose={closeModal}
           onSubmit={handleSubmitProduct}
@@ -172,12 +172,12 @@ export default function ProductsView() {
       )}
 
       <DeleteConfirmModal
-        open={modal?.type === 'delete'}
+        open={modal?.type === "delete"}
         onClose={closeModal}
         onConfirm={handleDeleteProduct}
         entityName="product"
-        subtitle={modal?.type === 'delete' ? formatProductId(modal.product.id) : ''}
-        itemLabel={modal?.type === 'delete' ? modal.product.name : null}
+        subtitle={modal?.type === "delete" ? formatProductId(modal.product.id) : ""}
+        itemLabel={modal?.type === "delete" ? modal.product.name : null}
         disabled={mutations.isSubmitting}
       />
     </section>
@@ -188,18 +188,18 @@ function exportProducts(products: ProductListItem[]) {
   exportToCSV(
     products,
     [
-      { header: 'Product ID', value: (product) => formatProductId(product.id) },
+      { header: "Product ID", value: (product) => formatProductId(product.id) },
       {
-        header: 'Category',
-        value: (product) => product.categoryName ?? 'Uncategorized',
+        header: "Category",
+        value: (product) => product.categoryName ?? "Uncategorized",
       },
-      { header: 'Product name', value: (product) => product.name },
-      { header: 'Price', value: (product) => product.price },
+      { header: "Product name", value: (product) => product.name },
+      { header: "Price", value: (product) => product.price },
       {
-        header: 'Created at',
+        header: "Created at",
         value: (product) => formatDate(product.created_At),
       },
     ],
-    'products',
+    "products",
   )
 }

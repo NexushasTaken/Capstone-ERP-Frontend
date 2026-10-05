@@ -1,17 +1,17 @@
-import DataTable, { type DataTableColumn } from '@/components/DataTable'
-import { getOrderGroupKey } from '@/lib/helpers/orderHelpers'
-import type { OrderGroup } from '@/types/order'
-import OrderRow from './OrderRow'
+import DataTable, { type DataTableColumn } from "@/components/DataTable"
+import { getOrderGroupKey } from "@/lib/helpers/orderHelpers"
+import type { OrderGroup } from "@/types/order"
+import OrderRow from "./OrderRow"
 
 const columns: DataTableColumn[] = [
-  'Order ID',
-  'Product',
-  'Order Type',
-  'Order Status',
-  'Customer',
-  'Order Date',
-  'Amount',
-  { label: 'Action', className: 'text-right' },
+  "Order ID",
+  "Product",
+  "Order Type",
+  "Order Status",
+  "Customer",
+  "Order Date",
+  "Amount",
+  { label: "Action", className: "text-right" },
 ]
 
 interface OrdersListProps {

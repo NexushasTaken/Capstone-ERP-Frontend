@@ -1,17 +1,17 @@
-import DataTable, { type DataTableColumn } from '@/components/DataTable'
-import StatusAction from '@/components/StatusAction'
-import { TableCell, TableRow } from '@/components/ui/table'
-import { formatDate } from '@/lib/format'
-import type { DriverListItem } from '@/types/driver'
-import type { StatusActionItem } from '@/types/statusAction'
-import { formatDriverId } from '../_lib/driverHelpers'
+import DataTable, { type DataTableColumn } from "@/components/DataTable"
+import StatusAction from "@/components/StatusAction"
+import { TableCell, TableRow } from "@/components/ui/table"
+import { formatDate } from "@/lib/format"
+import type { DriverListItem } from "@/types/driver"
+import type { StatusActionItem } from "@/types/statusAction"
+import { formatDriverId } from "../_lib/driverHelpers"
 
 const columns: DataTableColumn[] = [
-  'Id',
-  'First Name',
-  'Last Name',
-  'Created At',
-  { label: 'Action', className: 'text-right' },
+  "Id",
+  "First Name",
+  "Last Name",
+  "Created At",
+  { label: "Action", className: "text-right" },
 ]
 
 interface DriversTableProps {
@@ -47,8 +47,8 @@ export default function DriversTable({ drivers, isLoading, error, actions, onUpd
                   actions={actions}
                   label={`More actions for driver ${driver.id}`}
                   onAction={(action) => {
-                    if (action === 'update') onUpdate(driver)
-                    if (action === 'delete') onDelete(driver)
+                    if (action === "update") onUpdate(driver)
+                    if (action === "delete") onDelete(driver)
                   }}
                 />
               )}

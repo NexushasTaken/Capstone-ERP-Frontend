@@ -1,4 +1,4 @@
-export type PaginationPage = number | 'ellipsis'
+export type PaginationPage = number | "ellipsis"
 
 export function getPaginationPages(currentPage: number, totalPages: number): PaginationPage[] {
   if (totalPages <= 7) {
@@ -8,7 +8,7 @@ export function getPaginationPages(currentPage: number, totalPages: number): Pag
   const pages: PaginationPage[] = [1]
 
   if (currentPage > 4) {
-    pages.push('ellipsis')
+    pages.push("ellipsis")
   }
 
   const startPage = Math.max(2, currentPage - 1)
@@ -19,7 +19,7 @@ export function getPaginationPages(currentPage: number, totalPages: number): Pag
   }
 
   if (currentPage < totalPages - 3) {
-    pages.push('ellipsis')
+    pages.push("ellipsis")
   }
 
   pages.push(totalPages)

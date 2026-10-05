@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import {
   fetchOrderRiders,
   fetchOrders,
@@ -9,10 +9,10 @@ import {
   fetchOrderStatuses,
   insertOrder,
   updateOrderStatus,
-} from '@/services/orderApi'
-import { invalidateOrders } from '@/lib/query/queryInvalidation'
-import { queryKeys } from '@/lib/query/queryKeys'
-import type { FetchOrdersParams } from '@/types/order'
+} from "@/services/orderApi"
+import { invalidateOrders } from "@/lib/query/queryInvalidation"
+import { queryKeys } from "@/lib/query/queryKeys"
+import type { FetchOrdersParams } from "@/types/order"
 
 export function useOrders(params: FetchOrdersParams) {
   return useQuery({
@@ -50,22 +50,22 @@ export function useOrderMutations() {
   const addOrder = useMutation({
     mutationFn: insertOrder,
     onSuccess: () => {
-      toast.success('Order added successfully')
+      toast.success("Order added successfully")
       invalidateOrders(queryClient)
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : 'Failed to add order')
+      toast.error(err instanceof Error ? err.message : "Failed to add order")
     },
   })
 
   const updateStatus = useMutation({
     mutationFn: updateOrderStatus,
     onSuccess: () => {
-      toast.success('Order status updated successfully')
+      toast.success("Order status updated successfully")
       invalidateOrders(queryClient)
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : 'Failed to update order status')
+      toast.error(err instanceof Error ? err.message : "Failed to update order status")
     },
   })
 

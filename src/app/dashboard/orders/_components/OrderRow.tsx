@@ -1,18 +1,18 @@
-import { ChevronDown } from 'lucide-react'
-import StatusAction from '@/components/StatusAction'
-import { Button } from '@/components/ui/button'
-import { Collapsible, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { TableBody, TableCell, TableRow } from '@/components/ui/table'
-import { formatDate, formatPeso } from '@/lib/format'
+import { ChevronDown } from "lucide-react"
+import StatusAction from "@/components/StatusAction"
+import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { TableBody, TableCell, TableRow } from "@/components/ui/table"
+import { formatDate, formatPeso } from "@/lib/format"
 import {
   formatOrderNumber,
   getOrderGroupProductSummary,
   normalizeOrderText,
   orderStatusClass,
   orderStatusDotClass,
-} from '@/lib/helpers/orderHelpers'
-import type { OrderGroup } from '@/types/order'
-import DetailItem from './DetailItem'
+} from "@/lib/helpers/orderHelpers"
+import type { OrderGroup } from "@/types/order"
+import DetailItem from "./DetailItem"
 
 interface OrderRowProps {
   order: OrderGroup
@@ -32,13 +32,13 @@ export default function OrderRow({
   onChangeStatus,
 }: OrderRowProps) {
   const statusLabel = normalizeOrderText(order.orderStatus)
-  const isWalkinOrder = normalizeOrderText(order.orderType).toLowerCase() === 'walkin'
-  const isShippedOrder = statusLabel.toLowerCase() === 'shipped'
+  const isWalkinOrder = normalizeOrderText(order.orderType).toLowerCase() === "walkin"
+  const isShippedOrder = statusLabel.toLowerCase() === "shipped"
   // Walk-in orders can't be shipped, and shipped orders can't go back to processing.
   const statusActions = statusOptions
     .filter((status) => {
       const actionStatus = status.label.toLowerCase()
-      return !((isWalkinOrder && actionStatus === 'shipped') || (isShippedOrder && actionStatus === 'processing'))
+      return !((isWalkinOrder && actionStatus === "shipped") || (isShippedOrder && actionStatus === "processing"))
     })
     .map((status) => ({ label: status.label, value: String(status.id) }))
 
@@ -59,9 +59,9 @@ export default function OrderRow({
           <div className="flex items-center justify-end gap-2">
             <CollapsibleTrigger render={<Button size="sm" type="button" variant="outline" />}>
               View
-              <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
             </CollapsibleTrigger>
-            {statusLabel.trim().toLowerCase() !== 'cancelled' && (
+            {statusLabel.trim().toLowerCase() !== "cancelled" && (
               <StatusAction
                 actions={statusActions}
                 label="Order actions"
@@ -89,11 +89,11 @@ function OrderDetails({ order }: { order: OrderGroup }) {
   return (
     <div className="border-t border-border bg-background p-4">
       <div className="grid gap-4 grid-cols-4">
-        <DetailItem label="Driver" value={order.driverName || 'Unassigned'} />
+        <DetailItem label="Driver" value={order.driverName || "Unassigned"} />
         <DetailItem label="Total" value={formatPeso(order.total)} />
         <DetailItem label="Created at" value={formatDate(order.created_At)} />
-        <DetailItem label="Pickup address" value={order.pickUpAddress ?? '-'} />
-        <DetailItem label="Delivery address" value={order.deliveryAddress ?? '-'} />
+        <DetailItem label="Pickup address" value={order.pickUpAddress ?? "-"} />
+        <DetailItem label="Delivery address" value={order.deliveryAddress ?? "-"} />
       </div>
 
       <div className="mt-5 rounded-lg border border-border overflow-auto max-h-80 scrollbar-none">

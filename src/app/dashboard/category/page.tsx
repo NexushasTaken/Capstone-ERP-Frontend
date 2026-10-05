@@ -1,7 +1,7 @@
-import type { Metadata } from 'next'
-import CategoriesView from './_components/CategoriesView'
+import type { Metadata } from "next"
+import CategoriesView from "./_components/CategoriesView"
 
-export const metadata: Metadata = { title: 'Categories' }
+export const metadata: Metadata = { title: "Categories" }
 
 export default function CategoriesPage() {
   return <CategoriesView />

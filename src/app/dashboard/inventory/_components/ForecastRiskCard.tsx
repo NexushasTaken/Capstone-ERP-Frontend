@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { AlertTriangle } from 'lucide-react'
-import { useForecastRiskCount } from '../_hooks/useInventory'
+import { AlertTriangle } from "lucide-react"
+import { useForecastRiskCount } from "../_hooks/useInventory"
 
 export default function ForecastRiskCard() {
   const forecastWarningCount = useForecastRiskCount()

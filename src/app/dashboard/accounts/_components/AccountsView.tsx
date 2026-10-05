@@ -1,38 +1,38 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Plus } from 'lucide-react'
-import PageTitle from '@/components/PageTitle'
-import SearchInput from '@/components/SearchInput'
-import SortPopover from '@/components/SortPopover'
-import { TablePagination } from '@/components/TablePagination'
-import { Button } from '@/components/ui/button'
-import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { allowedActions, can } from '@/lib/permissions'
-import type { AccountListItem, AccountSortBy } from '@/types/account'
-import { useAccountMutations, useAccounts } from '../_hooks/useAccounts'
+import { useState } from "react"
+import { Plus } from "lucide-react"
+import PageTitle from "@/components/PageTitle"
+import SearchInput from "@/components/SearchInput"
+import SortPopover from "@/components/SortPopover"
+import { TablePagination } from "@/components/TablePagination"
+import { Button } from "@/components/ui/button"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
+import { allowedActions, can } from "@/lib/permissions"
+import type { AccountListItem, AccountSortBy } from "@/types/account"
+import { useAccountMutations, useAccounts } from "../_hooks/useAccounts"
 import {
   ACCOUNT_ITEMS_PER_PAGE,
   accountSortOptions,
   editAccountActions,
   filterAndSortAccounts,
-} from '../_lib/accountHelpers'
-import AccountsTable from './AccountsTable'
-import CreateAccountModal, { type NewAccount } from './CreateAccountModal'
-import EditAccountRoleModal from './EditAccountRoleModal'
+} from "../_lib/accountHelpers"
+import AccountsTable from "./AccountsTable"
+import CreateAccountModal, { type NewAccount } from "./CreateAccountModal"
+import EditAccountRoleModal from "./EditAccountRoleModal"
 
 // Which modal is open, and for which account.
-type ModalState = { type: 'create' } | { type: 'edit'; account: AccountListItem } | null
+type ModalState = { type: "create" } | { type: "edit"; account: AccountListItem } | null
 
 export default function AccountsView() {
   const { data: currentUser } = useCurrentUser()
   const role = currentUser?.role
-  const accountActions = allowedActions(role, 'account', editAccountActions)
+  const accountActions = allowedActions(role, "account", editAccountActions)
 
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<AccountSortBy>('id')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [sortBy, setSortBy] = useState<AccountSortBy>("id")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [modal, setModal] = useState<ModalState>(null)
 
   const { data: accounts = [], isLoading, error } = useAccounts()
@@ -53,8 +53,8 @@ export default function AccountsView() {
     setCurrentPage(1)
   }
 
-  function handleUpdateRole(newRole: AccountListItem['role']) {
-    if (modal?.type !== 'edit') return
+  function handleUpdateRole(newRole: AccountListItem["role"]) {
+    if (modal?.type !== "edit") return
     mutations.updateRole.mutate({ id: modal.account.id, role: newRole })
     closeModal()
   }
@@ -74,8 +74,8 @@ export default function AccountsView() {
             placeholder="Search accounts"
           />
 
-          {can(role, 'account:create') && (
-            <Button onClick={() => setModal({ type: 'create' })} type="button">
+          {can(role, "account:create") && (
+            <Button onClick={() => setModal({ type: "create" })} type="button">
               <Plus className="h-4 w-4" />
               Create account
             </Button>
@@ -99,7 +99,7 @@ export default function AccountsView() {
           isLoading={isLoading}
           error={error}
           actions={accountActions}
-          onEdit={(account) => setModal({ type: 'edit', account })}
+          onEdit={(account) => setModal({ type: "edit", account })}
         />
       </div>
 
@@ -113,12 +113,12 @@ export default function AccountsView() {
       </div>
 
       <CreateAccountModal
-        open={modal?.type === 'create'}
+        open={modal?.type === "create"}
         disabled={mutations.isSubmitting}
         onClose={closeModal}
         onSubmit={handleCreateAccount}
       />
-      {modal?.type === 'edit' && (
+      {modal?.type === "edit" && (
         <EditAccountRoleModal
           account={modal.account}
           disabled={mutations.isSubmitting}

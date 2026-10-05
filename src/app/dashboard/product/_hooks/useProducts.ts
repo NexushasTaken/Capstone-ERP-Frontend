@@ -1,11 +1,11 @@
-'use client'
+"use client"
 
-import { keepPreviousData, type QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { deleteProduct, fetchProducts, insertProduct, updateProduct } from '@/services/productApi'
-import { optimisticUpdate } from '@/lib/query/optimisticUpdate'
-import { queryKeys } from '@/lib/query/queryKeys'
-import type { FetchProductsParams, ProductCategoryFilter, ProductListItem } from '@/types/product'
-import { categoryPresentByFilter, PRODUCT_LOAD_PAGE_SIZE } from '../_lib/productHelpers'
+import { keepPreviousData, type QueryKey, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { deleteProduct, fetchProducts, insertProduct, updateProduct } from "@/services/productApi"
+import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
+import { queryKeys } from "@/lib/query/queryKeys"
+import type { FetchProductsParams, ProductCategoryFilter, ProductListItem } from "@/types/product"
+import { categoryPresentByFilter, PRODUCT_LOAD_PAGE_SIZE } from "../_lib/productHelpers"
 
 type ProductsResponse = Awaited<ReturnType<typeof fetchProducts>>
 
@@ -25,7 +25,7 @@ export function useProducts(filter: ProductCategoryFilter, search: string) {
   const listParams: FetchProductsParams = {
     page: 1,
     pageSize: PRODUCT_LOAD_PAGE_SIZE,
-    name: filter === 'Uncategorized' ? undefined : search || undefined,
+    name: filter === "Uncategorized" ? undefined : search || undefined,
     categoryPresent: categoryPresentByFilter[filter],
   }
 
@@ -65,7 +65,7 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
   const shared = {
     queryClient,
     queryKey: listQueryKey,
-    scopeKey: ['products'],
+    scopeKey: ["products"],
   }
 
   const addProduct = useMutation({
@@ -74,7 +74,7 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
     ...optimisticUpdate<ProductsResponse, ProductValues & { optimisticId: number }>({
       ...shared,
       update: (current, values) => {
-        const belongsToCurrentFilter = values.categoryId === 0 ? filter === 'Uncategorized' : filter === 'Categorized'
+        const belongsToCurrentFilter = values.categoryId === 0 ? filter === "Uncategorized" : filter === "Categorized"
         if (!belongsToCurrentFilter) return current
 
         const optimisticProduct: ProductListItem = {
@@ -91,8 +91,8 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
           rows: current.rows + 1,
         }
       },
-      successMessage: 'Product added successfully',
-      errorMessage: 'Failed to add product',
+      successMessage: "Product added successfully",
+      errorMessage: "Failed to add product",
     }),
   })
 
@@ -115,8 +115,8 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
             : product,
         ),
       }),
-      successMessage: 'Product updated successfully',
-      errorMessage: 'Failed to update product',
+      successMessage: "Product updated successfully",
+      errorMessage: "Failed to update product",
     }),
   })
 
@@ -129,8 +129,8 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
         items: current.items.filter((product) => product.id !== productId),
         rows: Math.max(current.rows - 1, 0),
       }),
-      successMessage: 'Product deleted successfully',
-      errorMessage: 'Failed to delete product',
+      successMessage: "Product deleted successfully",
+      errorMessage: "Failed to delete product",
     }),
   })
 
