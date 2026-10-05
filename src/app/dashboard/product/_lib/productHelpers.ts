@@ -4,8 +4,6 @@ export const ITEMS_PER_PAGE = 10
 // The page loads up to this many products at once, then filters, sorts and pages them in the browser.
 export const PRODUCT_LOAD_PAGE_SIZE = 1000
 
-export const tableColumns = ['Product ID', 'Category', 'Product Name', 'Price', 'Created At']
-
 export const productFilters: ProductCategoryFilter[] = ['Categorized', 'Uncategorized']
 
 export const categoryPresentByFilter: Record<ProductCategoryFilter, 0 | 1> = {

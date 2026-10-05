@@ -19,8 +19,6 @@ import type {
 export const AUDIT_LOG_ITEMS_PER_PAGE = 10
 export const AUDIT_LOG_SIDEBAR_LIMIT = 10
 
-export const auditLogTableColumns = ['Date', 'User', 'Module', 'Action', 'Message']
-
 // Values match the backend enums (AuditActionEnum / AuditModuleEnum).
 export const auditActionOptions: AuditActionOption[] = [
   { value: 1, key: 'Create', label: 'Created', Icon: Plus, className: 'bg-[#E7F6EC] text-[#187B49]' },

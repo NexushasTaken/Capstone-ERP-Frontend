@@ -21,15 +21,6 @@ export function formatAccountId(accountId: string | number) {
   return `ACC-${accountId}`
 }
 
-export const accountTableColumns = [
-  'Id',
-  'Role',
-  'First Name',
-  'Last Name',
-  'Email',
-  'Action',
-]
-
 export const ACCOUNT_ITEMS_PER_PAGE = 10
 
 export const roleOptions: Array<{ label: string; value: 'owner' | 'secretary' }> = [

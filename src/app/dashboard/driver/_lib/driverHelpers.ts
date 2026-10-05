@@ -36,12 +36,4 @@ export function getDriverFilter(value: DriverSortOption) {
   return value.order === 'asc' ? 1 : 2
 }
 
-export const driverTableColumns = [
-  'Id',
-  'First Name',
-  'Last Name',
-  'Created At',
-  'Action',
-]
-
 export const DRIVER_ITEMS_PER_PAGE = 10

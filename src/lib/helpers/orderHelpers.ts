@@ -5,16 +5,6 @@ export function formatOrderNumber(orderId: number) {
   return `ORD-${orderId}`
 }
 
-export const tableColumns = [
-  'Order ID',
-  'Product',
-  'Order Type',
-  'Order Status',
-  'Customer',
-  'Order Date',
-  'Amount',
-]
-
 export function getOrderGroupKey(group: OrderGroup) {
   return String(group.orderId)
 }

@@ -48,8 +48,6 @@ export function formatDateForApi(isoDateString: string): string {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-export const inventoryColumns = ['Inventory ID', 'Name', 'Quantity', 'Reorder point', 'Warehouse', 'Status']
-
 export const inventorySortOptions = [
   { label: 'Latest added', value: 'latest' as InventorySortBy, order: 'asc' as const },
   { label: 'Name (A to Z)', value: 'name' as InventorySortBy, order: 'asc' as const },

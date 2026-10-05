@@ -1,5 +1,6 @@
 import { ChevronDown } from 'lucide-react'
 import { Collapsible, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { formatDate, formatPeso } from '@/lib/format'
 import {
   formatSaleId,
@@ -24,20 +25,20 @@ export default function SaleRow({ sale, columnCount, isExpanded, onExpandedChang
   const statusLabel = getSaleStatusLabel(sale)
 
   return (
-    <Collapsible render={<tbody />} open={isExpanded} onOpenChange={onExpandedChange}>
-      <tr className="bg-[#FAFBFA] text-sm text-[#121514]">
-        <td className="rounded-l-xl px-3 py-4 font-medium whitespace-nowrap">{formatSaleId(sale.id)}</td>
-        <td className="px-3 py-4 font-medium whitespace-nowrap capitalize">{getSaleProductName(sale)}</td>
-        <td className="px-3 py-4 whitespace-nowrap capitalize">{normalizeOrderText(sale.orderType)}</td>
-        <td className="px-3 py-4 font-medium whitespace-nowrap capitalize">{getSaleCustomerName(sale)}</td>
-        <td className="px-3 py-4 text-center">{getSaleQuantity(sale)}</td>
-        <td className="px-3 py-4 font-medium whitespace-nowrap">{formatPeso(sale.total)}</td>
-        <td className="px-3 py-4 font-medium whitespace-nowrap">{formatDate(sale.created_At)}</td>
-        <td className="px-3 py-4 whitespace-nowrap capitalize">
+    <Collapsible render={<TableBody />} open={isExpanded} onOpenChange={onExpandedChange}>
+      <TableRow>
+        <TableCell className="px-3 py-4 font-medium">{formatSaleId(sale.id)}</TableCell>
+        <TableCell className="px-3 py-4 font-medium capitalize">{getSaleProductName(sale)}</TableCell>
+        <TableCell className="px-3 py-4 capitalize">{normalizeOrderText(sale.orderType)}</TableCell>
+        <TableCell className="px-3 py-4 font-medium capitalize">{getSaleCustomerName(sale)}</TableCell>
+        <TableCell className="px-3 py-4 text-center">{getSaleQuantity(sale)}</TableCell>
+        <TableCell className="px-3 py-4 font-medium">{formatPeso(sale.total)}</TableCell>
+        <TableCell className="px-3 py-4 font-medium">{formatDate(sale.created_At)}</TableCell>
+        <TableCell className="px-3 py-4 capitalize">
           <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${saleStatusDotClass(statusLabel)}`} />
           {statusLabel}
-        </td>
-        <td className="rounded-r-xl px-3 py-4 whitespace-nowrap">
+        </TableCell>
+        <TableCell className="px-3 py-4">
           <CollapsibleTrigger
             type="button"
             className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#DFE2E0] bg-white px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
@@ -46,14 +47,14 @@ export default function SaleRow({ sale, columnCount, isExpanded, onExpandedChang
             View
             <ChevronDown className={'h-4 w-4 transition-transform ' + (isExpanded ? 'rotate-180' : '')} />
           </CollapsibleTrigger>
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
       {isExpanded ? (
-        <tr>
-          <td colSpan={columnCount} className="p-0">
+        <TableRow className="hover:bg-transparent">
+          <TableCell colSpan={columnCount} className="p-0 whitespace-normal">
             <SaleDetails sale={sale} />
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       ) : null}
     </Collapsible>
   )
