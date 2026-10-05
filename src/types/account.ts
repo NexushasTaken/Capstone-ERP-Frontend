@@ -16,6 +16,16 @@ export interface AccountSortOption {
   order: "asc" | "desc"
 }
 
+// API request/response shapes
+
+export interface FetchAccountsParams {
+  page?: number
+  pageSize?: number
+  name?: string
+  /** Sort code, see getAccountFilter. */
+  filter?: number
+}
+
 export interface CreateAccountPayload {
   firstName: string
   lastName: string

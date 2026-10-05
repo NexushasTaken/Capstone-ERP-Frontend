@@ -1,17 +1,18 @@
 "use client"
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { createAccount, fetchAccounts, updateAccountRole } from "@/services/accountApi"
 import { isValidationError } from "@/lib/apiError"
 import { invalidateAccounts } from "@/lib/query/queryInvalidation"
 import { queryKeys } from "@/lib/query/queryKeys"
-import type { AccountListItem } from "@/types/account"
+import type { AccountListItem, FetchAccountsParams } from "@/types/account"
 
-export function useAccounts() {
+export function useAccounts(params: FetchAccountsParams) {
   return useQuery({
-    queryKey: queryKeys.accounts.all,
-    queryFn: fetchAccounts,
+    queryKey: queryKeys.accounts.list(params),
+    queryFn: ({ signal }) => fetchAccounts(params, signal),
+    placeholderData: keepPreviousData,
   })
 }
 

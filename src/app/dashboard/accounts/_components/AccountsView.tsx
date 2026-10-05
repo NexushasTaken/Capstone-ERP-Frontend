@@ -8,6 +8,7 @@ import SortPopover from "@/components/SortPopover"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
+import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { allowedActions, can } from "@/lib/permissions"
 import type { AccountListItem, AccountSortBy } from "@/types/account"
 import { useAccountMutations, useAccounts } from "../_hooks/useAccounts"
@@ -15,7 +16,7 @@ import {
   ACCOUNT_ITEMS_PER_PAGE,
   accountSortOptions,
   editAccountActions,
-  filterAndSortAccounts,
+  getAccountFilter,
 } from "../_lib/accountHelpers"
 import AccountsTable from "./AccountsTable"
 import CreateAccountModal, { type NewAccount } from "./CreateAccountModal"
@@ -35,15 +36,19 @@ export default function AccountsView() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [modal, setModal] = useState<ModalState>(null)
 
-  const { data: accounts = [], isLoading, error } = useAccounts()
+  const debouncedSearch = useDebouncedValue(search.trim())
+
+  const { data, isLoading, error } = useAccounts({
+    page: currentPage,
+    pageSize: ACCOUNT_ITEMS_PER_PAGE,
+    name: debouncedSearch || undefined,
+    filter: getAccountFilter(sortBy, sortOrder),
+  })
   const mutations = useAccountMutations()
 
-  const filteredAccounts = filterAndSortAccounts(accounts, search, sortBy, sortOrder)
-  const pageCount = Math.max(1, Math.ceil(filteredAccounts.length / ACCOUNT_ITEMS_PER_PAGE))
-  const paginatedAccounts = filteredAccounts.slice(
-    (currentPage - 1) * ACCOUNT_ITEMS_PER_PAGE,
-    currentPage * ACCOUNT_ITEMS_PER_PAGE,
-  )
+  const accounts = data?.items ?? []
+  const rows = data?.rows ?? 0
+  const pageCount = Math.max(1, data?.pageCount ?? 1)
   const closeModal = () => setModal(null)
 
   // Close only once the account exists; on failure the modal stays open with its inputs.
@@ -62,7 +67,7 @@ export default function AccountsView() {
   return (
     <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <PageTitle title="Accounts" count={filteredAccounts.length} />
+        <PageTitle title="Accounts" count={rows} />
 
         <div className="flex flex-wrap items-center gap-2">
           <SearchInput
@@ -95,7 +100,7 @@ export default function AccountsView() {
 
       <div className="mt-5 min-h-0 overflow-auto scrollbar-none">
         <AccountsTable
-          accounts={paginatedAccounts}
+          accounts={accounts}
           isLoading={isLoading}
           error={error}
           actions={accountActions}
@@ -105,7 +110,7 @@ export default function AccountsView() {
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-muted-foreground">
-          Showing {paginatedAccounts.length} of {filteredAccounts.length} accounts
+          Showing {accounts.length} of {rows} accounts
         </span>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
