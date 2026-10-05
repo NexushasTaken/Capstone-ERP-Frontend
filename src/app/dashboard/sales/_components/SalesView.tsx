@@ -58,7 +58,7 @@ export default function SalesView() {
               setSearch(value)
               goToPage(1)
             }}
-            placeholder="Search sales"
+            placeholder="Search by product, customer, type or ID"
           />
 
           <OrderTypeFilterSelect

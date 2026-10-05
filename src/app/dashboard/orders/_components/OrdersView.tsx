@@ -69,7 +69,7 @@ export default function OrdersView() {
               setSearch(value)
               setCurrentPage(1)
             }}
-            placeholder="Search orders"
+            placeholder="Search by product, customer, type, status or ID"
           />
 
           <OrderTypeFilterSelect
