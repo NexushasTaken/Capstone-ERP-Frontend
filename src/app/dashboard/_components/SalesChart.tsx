@@ -16,9 +16,11 @@ import {
   type ChartConfiguration,
 } from 'chart.js'
 import { useEffect, useRef } from 'react'
+import { themeColor } from '@/lib/cssColor'
 
 Chart.register(ArcElement, BarController, BarElement, CategoryScale, Legend, LinearScale, LineController, LineElement, PieController, PointElement, Tooltip)
 
+// The pie keeps its own multi-colour palette: the theme's --chart-1..5 are greys, too few to tell slices apart.
 const salesPieColors = [
   '#1F618D',
   '#CB4335',
@@ -70,6 +72,8 @@ export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
     if (!canvasRef.current) return
 
     const pieColors = labels.map((_, index) => salesPieColors[index % salesPieColors.length])
+    const lineColor = themeColor('--chart-5')
+    const labelColor = themeColor('--muted-foreground')
     const config: ChartConfiguration = {
       type,
       data: {
@@ -78,10 +82,10 @@ export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
           {
             label: 'Sales',
             data: values,
-            borderColor: '#111513',
+            borderColor: lineColor,
             backgroundColor: type === 'pie'
               ? pieColors
-              : 'rgba(17, 21, 19, 0.12)',
+              : themeColor('--chart-5', 0.12),
             borderWidth: 3,
             borderRadius: type === 'bar' ? 4 : undefined,
             borderSkipped: type === 'bar' ? false : undefined,
@@ -90,8 +94,8 @@ export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
             pointStyle: 'circle',
             pointRadius: 8,
             pointHoverRadius: 12,
-            pointBackgroundColor: '#EBF3ED',
-            pointBorderColor: '#111513',
+            pointBackgroundColor: themeColor('--background'),
+            pointBorderColor: lineColor,
             pointBorderWidth: 3,
             tension: 0.35,
           },
@@ -107,7 +111,7 @@ export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
             labels: {
               boxHeight: 10,
               boxWidth: 10,
-              color: '#4E5752',
+              color: labelColor,
               padding: 16,
               usePointStyle: true,
             },
@@ -134,16 +138,16 @@ export function SalesChart({ type = 'line', labels, values }: SalesChartProps) {
             border: { display: false },
             grid: { display: false },
             ticks: {
-              color: '#4E5752',
+              color: labelColor,
               font: { size: 12, weight: 500 },
             },
           },
           y: {
             beginAtZero: true,
             border: { display: false },
-            grid: { color: '#DCE4DE' },
+            grid: { color: themeColor('--border') },
             ticks: {
-              color: '#68716C',
+              color: labelColor,
               callback: (value) => `${Number(value) / 1000}K`,
             },
           },
