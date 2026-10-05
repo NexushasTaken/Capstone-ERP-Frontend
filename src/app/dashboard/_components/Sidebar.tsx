@@ -1,14 +1,21 @@
 "use client"
 
-import ProfileModal from "@/app/dashboard/_components/ProfileModal"
 import AuditLogSidebar from "@/app/dashboard/_components/AuditLogSidebar"
+import { useLogout } from "@/app/dashboard/_hooks/useLogout"
 import { navGroups } from "@/lib/nav"
 import { formatProfileDetails, formatProfileName } from "@/app/dashboard/_lib/profileHelpers"
-import { Bell, ChevronDown, LayoutDashboard, X } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { ChevronDown, ChevronsUpDown, LayoutDashboard, LogOut, Settings, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import cproLogo from "../../../../public/cproLogo.png"
 import { getNavItemClasses, profileFallback } from "@/app/dashboard/_lib/sidebarHelpers"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
@@ -20,10 +27,11 @@ export interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
   // Both groups start expanded; collapsing is a per-visit UI preference, not worth persisting.
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
   const pathname = usePathname()
+  const router = useRouter()
+  const logout = useLogout()
   const { data: currentUser, isLoading: isLoadingCurrentUser } = useCurrentUser()
 
   const dashboardActive = pathname === "/dashboard"
@@ -133,27 +141,48 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <AuditLogSidebar onNavigate={onClose} />
 
         {/* PROFILE */}
-        <button
-          aria-label="Open profile"
-          className="flex h-16 w-full gap-2 rounded-2xl border-2 border-gray-200 p-3 text-left hover:border-border hover:bg-accent cursor-pointer sm:h-20 sm:pr-4"
-          onClick={() => setIsProfileOpen(true)}
-          type="button"
-        >
-          <div className="flex flex-col w-full h-full justify-center">
-            <span className="text-foreground font-medium text-base sm:text-lg capitalize">
-              {isLoadingCurrentUser ? "Loading..." : formatProfileName(profile)}
-            </span>
-            <span className="text-muted-foreground text-sm sm:text-base capitalize">
-              {formatProfileDetails(profile)}
-            </span>
-          </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button
+                aria-label="Open account menu"
+                className="flex h-16 w-full shrink-0 gap-2 rounded-2xl border-2 border-border p-3 text-left hover:bg-accent cursor-pointer sm:h-20 sm:pr-4"
+                type="button"
+              />
+            }
+          >
+            <div className="flex flex-col w-full h-full justify-center">
+              <span className="text-foreground font-medium text-base sm:text-lg capitalize">
+                {isLoadingCurrentUser ? "Loading..." : formatProfileName(profile)}
+              </span>
+              <span className="text-muted-foreground text-sm sm:text-base capitalize">
+                {formatProfileDetails(profile)}
+              </span>
+            </div>
 
-          <div className="flex items-center justify-center shrink-0">
-            <Bell className="text-foreground w-6 h-6" />
-          </div>
-        </button>
+            <div className="flex items-center justify-center shrink-0">
+              <ChevronsUpDown className="text-muted-foreground w-5 h-5" />
+            </div>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent side="top" align="start" className="rounded-xl">
+            <DropdownMenuItem
+              onClick={() => {
+                router.push("/dashboard/account-settings")
+                onClose()
+              }}
+            >
+              <Settings />
+              Account settings
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" disabled={logout.isPending} onClick={() => logout.mutate()}>
+              <LogOut />
+              Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </aside>
-      <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} profile={profile} />
     </>
   )
 }

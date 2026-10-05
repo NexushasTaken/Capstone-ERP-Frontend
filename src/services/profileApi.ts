@@ -71,3 +71,17 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
 
   return readStoredCurrentUser()
 }
+
+// POST
+export async function logoutUser(): Promise<void> {
+  const response = await fetch("/api/User/Logout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  })
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null)
+    throw new Error(payload?.message ?? payload?.title ?? "Unable to log out.")
+  }
+}
