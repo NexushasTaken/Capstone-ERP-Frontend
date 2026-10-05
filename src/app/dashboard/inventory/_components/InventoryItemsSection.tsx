@@ -9,6 +9,7 @@ import SearchInput from '@/components/SearchInput'
 import SortPopover from '@/components/SortPopover'
 import { TablePagination } from '@/components/TablePagination'
 import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { exportToCSV } from '@/lib/exportToCsv'
@@ -29,6 +30,9 @@ import InventoryFormModal, { type InventoryFormValues } from './InventoryFormMod
 import InventoryTable from './InventoryTable'
 import MarkDamageModal from './MarkDamageModal'
 import RestockModal from './RestockModal'
+
+// The selected filter keeps a solid fill; the stock pressed state (bg-muted) is too faint here.
+const selectedFilterClass = 'aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90'
 
 const ITEMS_PER_PAGE = 10
 
@@ -143,24 +147,24 @@ export default function InventoryItemsSection() {
 
           <ExportCsvButton onExport={() => exportInventory(inventories)} />
 
-          {statusFilters.map((filter) => (
-            <button
-              key={filter.label}
-              type="button"
-              onClick={() => {
-                setSelectedFilter(filter.label)
-                setCurrentPage(1)
-              }}
-              className={`cursor-pointer rounded-xl border px-3 py-2 text-sm whitespace-nowrap transition-colors ${
-                selectedFilter === filter.label
-                  ? 'border-foreground bg-primary text-primary-foreground'
-                  : 'border-border bg-background text-foreground hover:bg-accent'
-              }`}
-            >
-              {filter.label === 'All' ? 'All' : capitalize(filter.label)}
-              <span className="ml-1">{countsAvailable ? filter.count.toLocaleString() : '-'}</span>
-            </button>
-          ))}
+          <ToggleGroup
+            aria-label="Filter inventory by status"
+            value={[selectedFilter]}
+            variant="outline"
+            onValueChange={([filter]) => {
+              // Clicking the selected filter again would clear it; keep one selected.
+              if (!filter) return
+              setSelectedFilter(filter as InventoryFilter)
+              setCurrentPage(1)
+            }}
+          >
+            {statusFilters.map((filter) => (
+              <ToggleGroupItem className={selectedFilterClass} key={filter.label} value={filter.label}>
+                {filter.label === 'All' ? 'All' : capitalize(filter.label)}
+                <span className="ml-1">{countsAvailable ? filter.count.toLocaleString() : '-'}</span>
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
 
           <SortPopover
             value={sortBy}
