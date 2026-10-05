@@ -13,15 +13,6 @@ export function formatProductId(productId: string | number) {
   return `PR-${productId}`
 }
 
-export function formatDate(dateString: string | null) {
-  if (!dateString) return '—'
-  return new Date(dateString).toLocaleDateString('en-PH', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
 export function productStatusDotClass(isActive: boolean) {
   return isActive ? 'bg-[#39B82C]' : 'bg-[#D92D20]'
 }

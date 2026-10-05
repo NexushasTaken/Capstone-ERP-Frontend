@@ -1,30 +1,10 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Spinner } from '@/components/ui/spinner'
-
-import { ChevronDown, Search, X } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
-import {
-  formatPeso,
-  formatSaleId,
-  formatDate,
-  getSaleProductName,
-  getSaleCustomerName,
-  getSaleQuantity,
-  getSaleStatusLabel,
-  saleStatusDotClass,
-} from '@/lib/helpers/saleHelpers'
-import { exportToCSV } from '@/lib/exportToCsv'
-import { Input } from '@/components/ui/input'
+import { useState } from 'react'
+import ExportCsvButton from '@/components/ExportCsvButton'
+import PageTitle from '@/components/PageTitle'
+import SearchInput from '@/components/SearchInput'
 import { TablePagination } from '@/components/TablePagination'
-import Loading from '@/components/Loading'
-import { Collapsible, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { fetchSales } from '@/services/saleApi'
-import { fetchOrderTypes } from '@/services/orderApi'
-import { queryKeys } from '@/lib/query/queryKeys'
-import { normalizeOrderText } from '@/lib/helpers/orderHelpers'
 import {
   Select,
   SelectContent,
@@ -32,64 +12,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { exportToCSV } from '@/lib/exportToCsv'
+import { formatDate } from '@/lib/format'
+import { normalizeOrderText } from '@/lib/helpers/orderHelpers'
+import {
+  formatSaleId,
+  getSaleCustomerName,
+  getSaleProductName,
+  getSaleQuantity,
+  getSaleStatusLabel,
+} from '@/lib/helpers/saleHelpers'
+import type { Sale } from '@/types/sale'
+import { useOrderTypes, useSales } from '../_hooks/useSales'
+import SalesTable from './SalesTable'
 
-const tableColumns = [
-  'Sale ID',
-  'Product',
-  'Order type',
-  'Customer',
-  'Quantity',
-  'Total amount',
-  'Sale date',
-  'Status',
-  'Actions',
-]
+const PAGE_SIZE = 10
 
 export default function SalesView() {
-  const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null)
-  const [exportCooldown, setExportCooldown] = useState(0)
   const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState('')
-  const pageSize = 10
+  const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null)
+  const debouncedSearch = useDebouncedValue(search.trim())
 
-  useEffect(() => {
-    if (exportCooldown <= 0) return
-
-    const timer = setTimeout(() => {
-      setExportCooldown((previous) => previous - 1)
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [exportCooldown])
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setDebouncedSearch(search.trim())
-      setCurrentPage(1)
-      setExpandedSaleId(null)
-    }, 400)
-
-    return () => clearTimeout(timeout)
-  }, [search])
-
-  const salesQueryParams = {
+  const { data, isLoading, isFetching, error } = useSales({
     page: currentPage,
-    pageSize,
+    pageSize: PAGE_SIZE,
     name: debouncedSearch || undefined,
     orderTypeId: selectedOrderTypeFilter ? Number(selectedOrderTypeFilter) : 0,
-  }
-  const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: queryKeys.sales.all(salesQueryParams),
-    queryFn: ({ signal }) => fetchSales(salesQueryParams, signal),
-    staleTime: 0,
-    keepPreviousData: true,
   })
-  const { data: orderTypes = [], isLoading: orderTypesLoading } = useQuery({
-    queryKey: queryKeys.orders.types,
-    queryFn: fetchOrderTypes,
-  })
+  const { data: orderTypes = [], isLoading: orderTypesLoading } = useOrderTypes()
+
   const sales = data?.items ?? []
   const rows = data?.rows ?? 0
   const pageCount = Math.max(1, data?.pageCount ?? 1)
@@ -101,37 +55,25 @@ export default function SalesView() {
     })),
   ]
 
+  function goToPage(page: number) {
+    setCurrentPage(page)
+    setExpandedSaleId(null)
+  }
+
   return (
     <section className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-medium tracking-tight text-[#121514]">Sales</h1>
-          <span className="rounded-md border border-[#DFE2E0] px-3 py-1 text-sm text-[#121514]">
-            {rows}
-          </span>
-        </div>
+        <PageTitle title="Sales" count={rows} />
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative">
-            <Input
-              type="text"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search sales"
-              className="w-full rounded-xl border border-[#DFE2E0] bg-white px-3 py-2 text-sm text-[#121514] placeholder:text-[#737A76] focus:border-[#121514] focus:outline-none focus:ring-1 focus:ring-[#121514]"
-            />
-            {search ? (
-              <button
-                type="button"
-                onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737A76] cursor-pointer transition-colors hover:text-[#121514]"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            ) : (
-              <Search className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#737A76]" />
-            )}
-          </div>
+          <SearchInput
+            value={search}
+            onChange={(value) => {
+              setSearch(value)
+              goToPage(1)
+            }}
+            placeholder="Search sales"
+          />
 
           <div className="w-48">
             <Select
@@ -157,162 +99,21 @@ export default function SalesView() {
             </Select>
           </div>
 
-          <Button
-            variant="outline"
-            className={`h-auto rounded-xl border border-[#DFE2E0] px-3 py-2 text-sm whitespace-nowrap transition-colors ${exportCooldown > 0 ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'hover:bg-[#DCE4DF] cursor-pointer text-black'}`}
-            disabled={exportCooldown > 0 || isFetching || !!error || sales.length === 0}
-            type="button"
-            onClick={() => {
-              exportToCSV(
-                sales,
-                [
-                  { header: 'Sale ID', value: (sale) => formatSaleId(sale.id) },
-                  { header: 'Product', value: (sale) => getSaleProductName(sale) },
-                  { header: 'Order type', value: (sale) => normalizeOrderText(sale.orderType) },
-                  { header: 'Customer', value: (sale) => getSaleCustomerName(sale) },
-                  { header: 'Quantity', value: (sale) => getSaleQuantity(sale) },
-                  { header: 'Total amount', value: (sale) => sale.total },
-                  { header: 'Sale date', value: (sale) => formatDate(sale.created_At) },
-                  { header: 'Status', value: (sale) => getSaleStatusLabel(sale) },
-                ],
-                'sales'
-              )
-              setExportCooldown(10)
-            }}
-          >
-            {exportCooldown > 0 ? (
-              <>
-                <Spinner data-icon="inline-start" />
-                Cooldown
-              </>
-            ) : 'Export to CSV'}
-          </Button>
+          <ExportCsvButton
+            disabled={isFetching || !!error || sales.length === 0}
+            onExport={() => exportSales(sales)}
+          />
         </div>
       </div>
 
       <div className="mt-5 min-h-0 flex-1 overflow-auto">
-        <table className="w-full min-w-220 border-separate border-spacing-y-2 text-left">
-          <thead className="text-sm font-normal text-[#737A76]">
-            <tr>
-              {tableColumns.map((column) => (
-                <th className="px-3 pb-1 font-normal" key={column} scope="col">
-                  {column}
-                </th>
-              ))}
-            </tr>
-          </thead>
-            {isLoading ? (
-              <tbody><tr>
-                <td colSpan={tableColumns.length} className="px-3 py-4 text-center text-sm text-[#737A76]">
-                  <Loading />
-                </td>
-              </tr></tbody>
-            ) : error ? (
-              <tbody><tr>
-                <td colSpan={tableColumns.length} className="px-3 py-4 text-center text-sm text-red-500">
-                  {error instanceof Error ? error.message : 'Failed to load sales'}
-                </td>
-              </tr></tbody>
-            ) : sales.length === 0 ? (
-              <tbody><tr>
-                <td colSpan={tableColumns.length} className="px-3 py-4 text-center text-sm text-[#737A76]">
-                  No sales found.
-                </td>
-              </tr></tbody>
-            ) : (
-              sales.map((sale) => {
-                const productName = getSaleProductName(sale)
-                const customerName = getSaleCustomerName(sale)
-                const quantity = getSaleQuantity(sale)
-                const statusLabel = getSaleStatusLabel(sale)
-                const isExpanded = expandedSaleId === sale.id
-
-                return (
-                  <Collapsible
-                    key={sale.id}
-                    render={<tbody />}
-                    open={isExpanded}
-                    onOpenChange={(open) => setExpandedSaleId(open ? sale.id : null)}
-                  >
-                    <tr className="bg-[#FAFBFA] text-sm text-[#121514]">
-                      <td className="rounded-l-xl px-3 py-4 font-medium whitespace-nowrap">{formatSaleId(sale.id)}</td>
-                      <td className="px-3 py-4 font-medium whitespace-nowrap capitalize">{productName}</td>
-                      <td className="px-3 py-4 whitespace-nowrap capitalize">{normalizeOrderText(sale.orderType)}</td>
-                      <td className="px-3 py-4 font-medium whitespace-nowrap capitalize">{customerName}</td>
-                      <td className="px-3 py-4 text-center">{quantity}</td>
-                      <td className="px-3 py-4 font-medium whitespace-nowrap">{formatPeso(sale.total)}</td>
-                      <td className="px-3 py-4 font-medium whitespace-nowrap">{formatDate(sale.created_At)}</td>
-                      <td className="px-3 py-4 whitespace-nowrap capitalize">
-                        <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${saleStatusDotClass(statusLabel)}`} />
-                        {statusLabel}
-                      </td>
-                      <td className="rounded-r-xl px-3 py-4 whitespace-nowrap">
-                        <CollapsibleTrigger
-                          type="button"
-                          className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#DFE2E0] bg-white px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-[#DCE4DF]"
-                          aria-label={'View ' + formatSaleId(sale.id) + ' details'}
-                        >
-                          View
-                          <ChevronDown className={'h-4 w-4 transition-transform ' + (isExpanded ? 'rotate-180' : '')} />
-                        </CollapsibleTrigger>
-                      </td>
-                    </tr>
-                    {isExpanded ? (
-                      <tr>
-                        <td colSpan={tableColumns.length} className="p-0">
-                          <div className="border-t border-[#E2E2E2] bg-white p-4">
-                            <dl className="grid grid-cols-4 gap-4 text-sm">
-                              {[
-                                ['Customer', getSaleCustomerName(sale)],
-                                ['Order type', normalizeOrderText(sale.orderType)],
-                                ['Status', getSaleStatusLabel(sale)],
-                                ['Driver', sale.driverName || 'Unassigned'],
-                                ['Pickup address', sale.pickUpAddress || '-'],
-                                ['Delivery address', sale.deliveryAddress || '-'],
-                                ['Sale date', formatDate(sale.created_At)],
-                                ['Quantity', getSaleQuantity(sale)],
-                                ['Total amount', formatPeso(sale.total)],
-                              ].map(([label, value]) => (
-                                <div key={label}>
-                                  <dt className="text-xs text-[#737A76]">{label}</dt>
-                                  <dd className="wrap-break-word font-medium text-[#121514] capitalize">{value}</dd>
-                                </div>
-                              ))}
-                            </dl>
-                            <div className="mt-5 max-h-80 overflow-auto rounded-lg border border-[#E2E2E2] scrollbar-none">
-                              <table className="w-full text-left text-sm">
-                                <caption className="sr-only">Sale products</caption>
-                                <thead className="sticky top-0 bg-[#F0F1F1] text-xs text-[#737A76]">
-                                  <tr>
-                                    {['Product', 'Quantity', 'Unit price', 'Amount'].map((column) => (
-                                      <th key={column} scope="col" className="px-3 py-2 font-normal">{column}</th>
-                                    ))}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {sale.orders.map((item, index) => (
-                                    <tr key={`${sale.id}-${index}`} className="border-t border-[#E2E2E2]">
-                                      <td className="px-3 py-3 capitalize">{item.productName}</td>
-                                      <td className="px-3 py-3">{item.quantity}</td>
-                                      <td className="whitespace-nowrap px-3 py-3">{formatPeso(item.price)}</td>
-                                      <td className="whitespace-nowrap px-3 py-3 font-medium">{formatPeso(item.totalAmount)}</td>
-                                    </tr>
-                                  ))}
-                                  {sale.orders.length === 0 && (
-                                    <tr><td colSpan={4} className="px-3 py-3 text-[#737A76]">No products recorded.</td></tr>
-                                  )}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : null}
-                  </Collapsible>
-                )
-              })
-            )}
-        </table>
+        <SalesTable
+          sales={sales}
+          isLoading={isLoading}
+          error={error}
+          expandedSaleId={expandedSaleId}
+          onExpandedSaleChange={setExpandedSaleId}
+        />
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
@@ -321,12 +122,26 @@ export default function SalesView() {
           {isFetching ? ' - Updating...' : ''}
         </span>
         <div className="flex">
-          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={(page) => {
-              setCurrentPage(page)
-              setExpandedSaleId(null)
-            }} />
+          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={goToPage} />
         </div>
       </div>
     </section>
+  )
+}
+
+function exportSales(sales: Sale[]) {
+  exportToCSV(
+    sales,
+    [
+      { header: 'Sale ID', value: (sale) => formatSaleId(sale.id) },
+      { header: 'Product', value: (sale) => getSaleProductName(sale) },
+      { header: 'Order type', value: (sale) => normalizeOrderText(sale.orderType) },
+      { header: 'Customer', value: (sale) => getSaleCustomerName(sale) },
+      { header: 'Quantity', value: (sale) => getSaleQuantity(sale) },
+      { header: 'Total amount', value: (sale) => sale.total },
+      { header: 'Sale date', value: (sale) => formatDate(sale.created_At) },
+      { header: 'Status', value: (sale) => getSaleStatusLabel(sale) },
+    ],
+    'sales'
   )
 }
