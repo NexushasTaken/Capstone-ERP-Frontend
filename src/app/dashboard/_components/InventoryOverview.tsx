@@ -1,16 +1,16 @@
-'use client'
+"use client"
 
-import Link from 'next/link'
-import { Warehouse as WarehouseIcon } from 'lucide-react'
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import Link from "next/link"
+import { Warehouse as WarehouseIcon } from "lucide-react"
+import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 
-import { fetchInventories } from '@/services/inventoryApi'
-import { fetchDashboardInventory } from '@/services/dashboardApi'
-import { getInventoryStatusStyleFromLabel, formatNumber, capitalize } from '@/lib/helpers/inventoryHelpers'
-import Loading from '@/components/Loading'
-import { TablePagination } from '@/components/TablePagination'
-import { queryKeys } from '@/lib/query/queryKeys'
+import { fetchInventories } from "@/services/inventoryApi"
+import { fetchDashboardInventory } from "@/services/dashboardApi"
+import { getInventoryStatusStyleFromLabel, formatNumber, capitalize } from "@/lib/helpers/inventoryHelpers"
+import Loading from "@/components/Loading"
+import { TablePagination } from "@/components/TablePagination"
+import { queryKeys } from "@/lib/query/queryKeys"
 
 const attentionItemsPerPage = 7
 
@@ -30,7 +30,7 @@ export default function InventoryOverview() {
     queryFn: () => fetchInventories(inventoryQueryParams),
   })
   const inventories = inventoriesResponse?.items ?? []
-  const criticalInventories = inventories.filter((item) => item.status === 'critical')
+  const criticalInventories = inventories.filter((item) => item.status === "critical")
   const {
     data: dashboardInventory,
     isLoading: isDashboardInventoryLoading,
@@ -42,9 +42,9 @@ export default function InventoryOverview() {
   const totalCapacity = dashboardInventory?.totalWareHouseCapacity ?? 0
 
   const statusCounts = {
-    available: dashboardInventory?.inventoryStatus.find((item) => item.status === 'available')?.total ?? 0,
-    lowStock: dashboardInventory?.inventoryStatus.find((item) => item.status === 'low stock')?.total ?? 0,
-    critical: dashboardInventory?.inventoryStatus.find((item) => item.status === 'critical')?.total ?? 0,
+    available: dashboardInventory?.inventoryStatus.find((item) => item.status === "available")?.total ?? 0,
+    lowStock: dashboardInventory?.inventoryStatus.find((item) => item.status === "low stock")?.total ?? 0,
+    critical: dashboardInventory?.inventoryStatus.find((item) => item.status === "critical")?.total ?? 0,
   }
 
   const attentionItems = criticalInventories
@@ -75,7 +75,7 @@ export default function InventoryOverview() {
             <span className="text-sm text-muted-foreground">Total warehouse capacity</span>
           </div>
           <p className="mt-3 text-4xl font-semibold text-foreground">
-            {isDashboardInventoryLoading || isDashboardInventoryError ? '-' : `${formatNumber(totalCapacity)} units`}
+            {isDashboardInventoryLoading || isDashboardInventoryError ? "-" : `${formatNumber(totalCapacity)} units`}
           </p>
           {isDashboardInventoryError && (
             <p role="alert" className="mt-1 text-xs text-destructive">

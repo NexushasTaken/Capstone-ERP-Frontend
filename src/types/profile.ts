@@ -1,4 +1,4 @@
-export type Role = 'owner' | 'secretary'
+export type Role = "owner" | "secretary"
 
 export interface StaffProfile {
   firstName: string

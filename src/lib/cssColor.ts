@@ -3,7 +3,7 @@
 // Browser-only: call it inside an effect.
 export function themeColor(variable: string, alpha = 1): string {
   const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim()
-  const context = document.createElement('canvas').getContext('2d')
+  const context = document.createElement("canvas").getContext("2d")
   if (!value || !context) return value
 
   context.fillStyle = value

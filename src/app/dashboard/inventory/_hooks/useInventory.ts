@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { keepPreviousData, type QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import { keepPreviousData, type QueryKey, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import {
   deleteInventory,
   fetchInventories,
@@ -12,20 +12,20 @@ import {
   markInventoryAsDamage,
   restockInventory,
   updateInventory,
-} from '@/services/inventoryApi'
-import { fetchInventoryForecast } from '@/services/dashboardApi'
-import { fetchWarehouses } from '@/services/warehouseApi'
-import { isSelectableWarehouse } from '@/lib/helpers/inventoryHelpers'
-import { optimisticUpdate } from '@/lib/query/optimisticUpdate'
-import { invalidateInventories } from '@/lib/query/queryInvalidation'
-import { queryKeys } from '@/lib/query/queryKeys'
+} from "@/services/inventoryApi"
+import { fetchInventoryForecast } from "@/services/dashboardApi"
+import { fetchWarehouses } from "@/services/warehouseApi"
+import { isSelectableWarehouse } from "@/lib/helpers/inventoryHelpers"
+import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
+import { invalidateInventories } from "@/lib/query/queryInvalidation"
+import { queryKeys } from "@/lib/query/queryKeys"
 import type {
   FetchInventoriesParams,
   InsertInventoryPayload,
   InventoryListItem,
   MarkInventoryAsDamagePayload,
   UpdateInventoryPayload,
-} from '@/types/inventory'
+} from "@/types/inventory"
 
 type InventoriesResponse = Awaited<ReturnType<typeof fetchInventories>>
 type DamageRecords = Awaited<ReturnType<typeof fetchInventoryDamageRecords>>
@@ -92,7 +92,7 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
   const shared = {
     queryClient,
     queryKey: listQueryKey,
-    scopeKey: ['inventories'],
+    scopeKey: ["inventories"],
   }
 
   const addInventory = useMutation({
@@ -122,8 +122,8 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
           quantity: payload.quantity,
           reorderPoint: payload.reorderPoint,
           warehouseId: payload.warehouseId,
-          warehouseName: payload.warehouseName ?? 'Pending...',
-          status: 'pending',
+          warehouseName: payload.warehouseName ?? "Pending...",
+          status: "pending",
           dateArrived: payload.dateArrived,
         }
         return {
@@ -132,8 +132,8 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
           rows: current.rows + 1,
         }
       },
-      successMessage: 'Inventory item added successfully.',
-      errorMessage: 'Failed to add inventory item.',
+      successMessage: "Inventory item added successfully.",
+      errorMessage: "Failed to add inventory item.",
     }),
   })
 
@@ -157,8 +157,8 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
             : item,
         ),
       }),
-      successMessage: 'Inventory item updated successfully.',
-      errorMessage: 'Failed to update inventory item.',
+      successMessage: "Inventory item updated successfully.",
+      errorMessage: "Failed to update inventory item.",
     }),
   })
 
@@ -171,8 +171,8 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
         items: current.items.filter((item) => item.id !== inventoryId),
         rows: Math.max(current.rows - 1, 0),
       }),
-      successMessage: 'Inventory item deleted successfully.',
-      errorMessage: 'Failed to delete inventory item.',
+      successMessage: "Inventory item deleted successfully.",
+      errorMessage: "Failed to delete inventory item.",
     }),
   })
 
@@ -181,7 +181,7 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
   const markAsDamage = useMutation({
     mutationFn: markInventoryAsDamage,
     onMutate: async (payload: MarkInventoryAsDamagePayload) => {
-      await queryClient.cancelQueries({ queryKey: ['inventories'] })
+      await queryClient.cancelQueries({ queryKey: ["inventories"] })
       const previousQuantity =
         payload.damagedType === 1
           ? queryClient.getQueryData<InventoriesResponse>(listQueryKey)?.items.find((item) => item.id === payload.id)
@@ -230,10 +230,10 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
       if (context?.previousDamageRecords) {
         queryClient.setQueryData(context.damageKey, context.previousDamageRecords)
       }
-      toast.error(error instanceof Error ? error.message : 'Failed to mark inventory as damaged.')
+      toast.error(error instanceof Error ? error.message : "Failed to mark inventory as damaged.")
     },
     onSuccess: () => {
-      toast.success('Inventory marked as damaged successfully.')
+      toast.success("Inventory marked as damaged successfully.")
     },
     onSettled: () => invalidateInventories(queryClient),
   })
@@ -241,10 +241,10 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
   const restock = useMutation({
     mutationFn: restockInventory,
     onSuccess: () => {
-      toast.success('Inventory restocked successfully.')
+      toast.success("Inventory restocked successfully.")
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to restock inventory.')
+      toast.error(error instanceof Error ? error.message : "Failed to restock inventory.")
     },
     onSettled: () => invalidateInventories(queryClient),
   })

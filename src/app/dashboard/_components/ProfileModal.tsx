@@ -1,14 +1,14 @@
-'use client'
+"use client"
 
-import { LogOut, Settings, X } from 'lucide-react'
-import AppModal, { ModalTitle } from '@/components/AppModal'
-import type { StaffProfile } from '@/types/profile'
-import { formatProfileDetails, formatProfileName } from '@/app/dashboard/_lib/profileHelpers'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import { useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/query/queryKeys'
-import { storeCurrentUser } from '@/services/profileApi'
+import { LogOut, Settings, X } from "lucide-react"
+import AppModal, { ModalTitle } from "@/components/AppModal"
+import type { StaffProfile } from "@/types/profile"
+import { formatProfileDetails, formatProfileName } from "@/app/dashboard/_lib/profileHelpers"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
+import { queryKeys } from "@/lib/query/queryKeys"
+import { storeCurrentUser } from "@/services/profileApi"
 
 interface ProfileModalProps {
   isOpen: boolean
@@ -21,15 +21,15 @@ export default function ProfileModal({ isOpen, profile, onClose }: ProfileModalP
   const queryClient = useQueryClient()
   async function handleLogout() {
     try {
-      const response = await fetch('/api/User/Logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch("/api/User/Logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       })
 
       if (!response.ok) {
         const payload = await response.json().catch(() => null)
-        const message = payload?.message ?? payload?.title ?? 'Unable to log out.'
+        const message = payload?.message ?? payload?.title ?? "Unable to log out."
         throw new Error(message)
       }
 
@@ -37,10 +37,10 @@ export default function ProfileModal({ isOpen, profile, onClose }: ProfileModalP
       storeCurrentUser(null)
       queryClient.removeQueries({ queryKey: queryKeys.auth.currentUser })
       toast.success("You're logged out successfully!")
-      router.push('/')
+      router.push("/")
       router.refresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to log out. Please try again.')
+      toast.error(error instanceof Error ? error.message : "Unable to log out. Please try again.")
     }
   }
 

@@ -1,69 +1,69 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { AlertTriangle, Plus } from 'lucide-react'
-import DeleteConfirmModal from '@/components/DeleteConfirmModal'
-import ExportCsvButton from '@/components/ExportCsvButton'
-import PageTitle from '@/components/PageTitle'
-import SearchInput from '@/components/SearchInput'
-import SortPopover from '@/components/SortPopover'
-import { TablePagination } from '@/components/TablePagination'
-import { Button } from '@/components/ui/button'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { exportToCSV } from '@/lib/exportToCsv'
-import { formatDate } from '@/lib/format'
-import { capitalize, formatInventoryId, getInventoryFilter, inventorySortOptions } from '@/lib/helpers/inventoryHelpers'
-import { editDeleteActions } from '@/lib/helpers/statusActionHelpers'
-import { allowedActions, can } from '@/lib/permissions'
-import { queryKeys } from '@/lib/query/queryKeys'
-import type { InventoryFilter, InventoryListItem, InventorySortBy } from '@/types/inventory'
-import { useInventories, useInventoryMutations, useInventoryStatusCounts } from '../_hooks/useInventory'
-import InventoryDetailsModal from './InventoryDetailsModal'
-import InventoryFormModal, { type InventoryFormValues } from './InventoryFormModal'
-import InventoryTable from './InventoryTable'
-import MarkDamageModal from './MarkDamageModal'
-import RestockModal from './RestockModal'
+import { useState } from "react"
+import { AlertTriangle, Plus } from "lucide-react"
+import DeleteConfirmModal from "@/components/DeleteConfirmModal"
+import ExportCsvButton from "@/components/ExportCsvButton"
+import PageTitle from "@/components/PageTitle"
+import SearchInput from "@/components/SearchInput"
+import SortPopover from "@/components/SortPopover"
+import { TablePagination } from "@/components/TablePagination"
+import { Button } from "@/components/ui/button"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
+import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { exportToCSV } from "@/lib/exportToCsv"
+import { formatDate } from "@/lib/format"
+import { capitalize, formatInventoryId, getInventoryFilter, inventorySortOptions } from "@/lib/helpers/inventoryHelpers"
+import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
+import { allowedActions, can } from "@/lib/permissions"
+import { queryKeys } from "@/lib/query/queryKeys"
+import type { InventoryFilter, InventoryListItem, InventorySortBy } from "@/types/inventory"
+import { useInventories, useInventoryMutations, useInventoryStatusCounts } from "../_hooks/useInventory"
+import InventoryDetailsModal from "./InventoryDetailsModal"
+import InventoryFormModal, { type InventoryFormValues } from "./InventoryFormModal"
+import InventoryTable from "./InventoryTable"
+import MarkDamageModal from "./MarkDamageModal"
+import RestockModal from "./RestockModal"
 
 // The selected filter keeps a solid fill; the stock pressed state (bg-muted) is too faint here.
 const selectedFilterClass =
-  'aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90'
+  "aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90"
 
 const ITEMS_PER_PAGE = 10
 
 const inventoryStatusIds: Record<string, number> = {
   All: 0,
   available: 1,
-  'low stock': 2,
+  "low stock": 2,
   critical: 3,
 }
 
 // Which modal is open, and for which item. Adding has its own flag so its draft survives closing.
 type ModalState = {
-  type: 'edit' | 'delete' | 'details' | 'damage' | 'restock'
+  type: "edit" | "delete" | "details" | "damage" | "restock"
   item: InventoryListItem
 } | null
 
 export default function InventoryItemsSection() {
   const { data: currentUser } = useCurrentUser()
   const role = currentUser?.role
-  const inventoryActions = allowedActions(role, 'inventory', [
+  const inventoryActions = allowedActions(role, "inventory", [
     ...editDeleteActions,
-    { label: 'Restock', value: 'restock', icon: Plus },
+    { label: "Restock", value: "restock", icon: Plus },
     {
-      label: 'Mark as damage',
-      value: 'damage',
+      label: "Mark as damage",
+      value: "damage",
       icon: AlertTriangle,
-      variant: 'destructive' as const,
+      variant: "destructive" as const,
     },
   ])
 
-  const [search, setSearch] = useState('')
-  const [selectedFilter, setSelectedFilter] = useState<InventoryFilter>('All')
+  const [search, setSearch] = useState("")
+  const [selectedFilter, setSelectedFilter] = useState<InventoryFilter>("All")
   const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<InventorySortBy>('latest')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [sortBy, setSortBy] = useState<InventorySortBy>("latest")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [modal, setModal] = useState<ModalState>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   // Bumped after a successful add to clear the add form.
@@ -87,7 +87,7 @@ export default function InventoryItemsSection() {
   const countsAvailable = !!statusCounts && !statusCountsError
   const statusFilters = [
     {
-      label: 'All',
+      label: "All",
       count: statusCounts?.reduce((total, item) => total + item.count, 0) ?? 0,
     },
     ...(statusCounts ?? []).map((item) => ({
@@ -102,8 +102,8 @@ export default function InventoryItemsSection() {
 
   function handleAction(action: string, item: InventoryListItem) {
     if (mutations.isSubmitting) return
-    if ((action === 'damage' || action === 'restock') && item.id <= 0) return
-    if (action === 'edit' || action === 'delete' || action === 'damage' || action === 'restock') {
+    if ((action === "damage" || action === "restock") && item.id <= 0) return
+    if (action === "edit" || action === "delete" || action === "damage" || action === "restock") {
       setModal({ type: action, item })
     }
   }
@@ -117,7 +117,7 @@ export default function InventoryItemsSection() {
   }
 
   function handleUpdateInventory(values: InventoryFormValues) {
-    if (modal?.type !== 'edit') return
+    if (modal?.type !== "edit") return
     mutations.updateInventory.mutate({
       id: modal.item.id,
       name: values.name,
@@ -130,7 +130,7 @@ export default function InventoryItemsSection() {
   }
 
   function handleDeleteInventory() {
-    if (modal?.type !== 'delete') return
+    if (modal?.type !== "delete") return
     mutations.deleteInventory.mutate(modal.item.id)
     closeModal()
   }
@@ -145,7 +145,7 @@ export default function InventoryItemsSection() {
         <PageTitle
           as="h2"
           title="Inventory items"
-          count={countsAvailable ? selectedFilterCount.toLocaleString() : '-'}
+          count={countsAvailable ? selectedFilterCount.toLocaleString() : "-"}
         />
 
         <div className="flex flex-wrap items-center gap-2">
@@ -173,8 +173,8 @@ export default function InventoryItemsSection() {
           >
             {statusFilters.map((filter) => (
               <ToggleGroupItem className={selectedFilterClass} key={filter.label} value={filter.label}>
-                {filter.label === 'All' ? 'All' : capitalize(filter.label)}
-                <span className="ml-1">{countsAvailable ? filter.count.toLocaleString() : '-'}</span>
+                {filter.label === "All" ? "All" : capitalize(filter.label)}
+                <span className="ml-1">{countsAvailable ? filter.count.toLocaleString() : "-"}</span>
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
@@ -190,7 +190,7 @@ export default function InventoryItemsSection() {
             }}
           />
 
-          {can(role, 'inventory:add') && (
+          {can(role, "inventory:add") && (
             <Button onClick={() => setIsAddModalOpen(true)} type="button">
               <Plus className="h-4 w-4" />
               Add inventory
@@ -205,7 +205,7 @@ export default function InventoryItemsSection() {
           isLoading={isLoading}
           error={error}
           actions={inventoryActions}
-          onShowDetails={(item) => setModal({ type: 'details', item })}
+          onShowDetails={(item) => setModal({ type: "details", item })}
           onAction={handleAction}
         />
       </div>
@@ -228,7 +228,7 @@ export default function InventoryItemsSection() {
         onSubmit={handleAddInventory}
       />
 
-      {modal?.type === 'edit' && (
+      {modal?.type === "edit" && (
         <InventoryFormModal
           open
           item={modal.item}
@@ -239,16 +239,16 @@ export default function InventoryItemsSection() {
       )}
 
       <DeleteConfirmModal
-        open={modal?.type === 'delete'}
+        open={modal?.type === "delete"}
         onClose={closeModal}
         onConfirm={handleDeleteInventory}
         entityName="inventory"
-        subtitle={modal?.type === 'delete' ? formatInventoryId(String(modal.item.id)) : ''}
-        itemLabel={modal?.type === 'delete' ? modal.item.name : null}
+        subtitle={modal?.type === "delete" ? formatInventoryId(String(modal.item.id)) : ""}
+        itemLabel={modal?.type === "delete" ? modal.item.name : null}
         disabled={mutations.isSubmitting}
       />
 
-      {modal?.type === 'damage' && modalItem && (
+      {modal?.type === "damage" && modalItem && (
         <MarkDamageModal
           item={modalItem}
           isPending={mutations.markAsDamage.isPending}
@@ -260,7 +260,7 @@ export default function InventoryItemsSection() {
         />
       )}
 
-      {modal?.type === 'restock' && modalItem && (
+      {modal?.type === "restock" && modalItem && (
         <RestockModal
           item={modalItem}
           isPending={mutations.restock.isPending}
@@ -269,7 +269,7 @@ export default function InventoryItemsSection() {
         />
       )}
 
-      <InventoryDetailsModal item={modal?.type === 'details' ? modalItem : null} onClose={closeModal} />
+      <InventoryDetailsModal item={modal?.type === "details" ? modalItem : null} onClose={closeModal} />
     </section>
   )
 }
@@ -279,16 +279,16 @@ function exportInventory(items: InventoryListItem[]) {
     items,
     [
       {
-        header: 'Inventory ID',
+        header: "Inventory ID",
         value: (item) => formatInventoryId(String(item.id)),
       },
-      { header: 'Product', value: (item) => item.name },
-      { header: 'Available', value: (item) => item.quantity },
-      { header: 'Reorder point', value: (item) => item.reorderPoint },
-      { header: 'Warehouse', value: (item) => item.warehouseName },
-      { header: 'Status', value: (item) => item.status },
-      { header: 'Date arrived', value: (item) => formatDate(item.dateArrived) },
+      { header: "Product", value: (item) => item.name },
+      { header: "Available", value: (item) => item.quantity },
+      { header: "Reorder point", value: (item) => item.reorderPoint },
+      { header: "Warehouse", value: (item) => item.warehouseName },
+      { header: "Status", value: (item) => item.status },
+      { header: "Date arrived", value: (item) => formatDate(item.dateArrived) },
     ],
-    'inventory',
+    "inventory",
   )
 }

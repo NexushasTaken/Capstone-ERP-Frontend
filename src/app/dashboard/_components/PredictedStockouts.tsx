@@ -1,15 +1,15 @@
-'use client'
+"use client"
 
-import { formatDate } from '@/lib/format'
-import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { TablePagination } from '@/components/TablePagination'
-import Loading from '@/components/Loading'
-import { Button } from '@/components/ui/button'
-import { toast } from 'sonner'
-import { fetchInventoryForecast } from '@/services/dashboardApi'
-import { queryKeys } from '@/lib/query/queryKeys'
-import { formatInventoryId } from '@/lib/helpers/inventoryHelpers'
+import { formatDate } from "@/lib/format"
+import { useState } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { TablePagination } from "@/components/TablePagination"
+import Loading from "@/components/Loading"
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
+import { fetchInventoryForecast } from "@/services/dashboardApi"
+import { queryKeys } from "@/lib/query/queryKeys"
+import { formatInventoryId } from "@/lib/helpers/inventoryHelpers"
 
 export default function PredictedStockouts() {
   const [stockoutCurrentPage, setStockoutCurrentPage] = useState(1)
@@ -43,7 +43,7 @@ export default function PredictedStockouts() {
       setIsShowingForcedForecast(true)
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to force inventory forecast.')
+      toast.error(error instanceof Error ? error.message : "Failed to force inventory forecast.")
     },
   })
 
@@ -71,7 +71,7 @@ export default function PredictedStockouts() {
             onClick={() => forceForecastMutation.mutate()}
             type="button"
           >
-            {forceForecastMutation.isPending ? 'Forecasting...' : 'Force Forecast'}
+            {forceForecastMutation.isPending ? "Forecasting..." : "Force Forecast"}
           </Button>
           <span className="rounded-lg bg-destructive/10 px-2.5 py-1 text-xs font-semibold text-destructive">
             {forecastWarningCount} risks
@@ -98,7 +98,7 @@ export default function PredictedStockouts() {
             ) : loadError ? (
               <tr>
                 <td colSpan={3} className="px-5 py-6 text-center text-sm text-destructive">
-                  {loadError instanceof Error ? loadError.message : 'Failed to load predicted stockouts'}
+                  {loadError instanceof Error ? loadError.message : "Failed to load predicted stockouts"}
                 </td>
               </tr>
             ) : predictedStockouts.length === 0 ? (
@@ -122,7 +122,7 @@ export default function PredictedStockouts() {
 
       <div className="flex flex-col items-center justify-between gap-4 border-t border-border p-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-muted-foreground">
-          Showing {forecastQuery.isLoading || loadError ? 0 : predictedStockouts.length} of{' '}
+          Showing {forecastQuery.isLoading || loadError ? 0 : predictedStockouts.length} of{" "}
           {forecastQuery.isLoading || loadError ? 0 : forecastWarningCount} predicted stockouts
         </span>
         <div className="flex">

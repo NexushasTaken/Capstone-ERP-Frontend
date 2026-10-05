@@ -1,18 +1,18 @@
-'use client'
+"use client"
 
-import ProfileModal from '@/app/dashboard/_components/ProfileModal'
-import AuditLogSidebar from '@/app/dashboard/_components/AuditLogSidebar'
-import { navGroups } from '@/lib/nav'
-import { formatProfileDetails, formatProfileName } from '@/app/dashboard/_lib/profileHelpers'
-import { Bell, ChevronDown, LayoutDashboard, X } from 'lucide-react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { useState } from 'react'
-import { usePathname } from 'next/navigation'
-import cproLogo from '../../../../public/cproLogo.png'
-import { getNavItemClasses, profileFallback } from '@/app/dashboard/_lib/sidebarHelpers'
-import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { can } from '@/lib/permissions'
+import ProfileModal from "@/app/dashboard/_components/ProfileModal"
+import AuditLogSidebar from "@/app/dashboard/_components/AuditLogSidebar"
+import { navGroups } from "@/lib/nav"
+import { formatProfileDetails, formatProfileName } from "@/app/dashboard/_lib/profileHelpers"
+import { Bell, ChevronDown, LayoutDashboard, X } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useState } from "react"
+import { usePathname } from "next/navigation"
+import cproLogo from "../../../../public/cproLogo.png"
+import { getNavItemClasses, profileFallback } from "@/app/dashboard/_lib/sidebarHelpers"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
+import { can } from "@/lib/permissions"
 
 export interface SidebarProps {
   isOpen: boolean
@@ -26,7 +26,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
   const { data: currentUser, isLoading: isLoadingCurrentUser } = useCurrentUser()
 
-  const dashboardActive = pathname === '/dashboard'
+  const dashboardActive = pathname === "/dashboard"
   const profile = {
     firstName: currentUser?.firstName ?? profileFallback.firstName,
     lastName: currentUser?.lastName ?? profileFallback.lastName,
@@ -48,8 +48,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       <aside
         className={`h-dvh scrollbar-none shrink-0 flex-col gap-3 bg-background px-3 xl:pr-0 py-3 overflow-y-auto sm:gap-4 ${
           isOpen
-            ? 'fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.5rem))] shadow-xl sm:w-[min(20rem,calc(100vw-2rem))] xl:static xl:z-auto xl:w-1/5 xl:shadow-none'
-            : 'hidden xl:flex w-auto xl:w-1/5'
+            ? "fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-1.5rem))] shadow-xl sm:w-[min(20rem,calc(100vw-2rem))] xl:static xl:z-auto xl:w-1/5 xl:shadow-none"
+            : "hidden xl:flex w-auto xl:w-1/5"
         }`}
       >
         {/* BUTTON NAV - DASHBOARD */}
@@ -101,7 +101,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     className="flex items-center justify-between w-full rounded-xl px-3 py-2 cursor-pointer text-left text-muted-foreground hover:bg-accent transition-all duration-300"
                   >
                     <span className="text-xs font-semibold uppercase tracking-wide">{label}</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
                   </button>
 
                   {open && (
@@ -141,7 +141,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         >
           <div className="flex flex-col w-full h-full justify-center">
             <span className="text-foreground font-medium text-base sm:text-lg capitalize">
-              {isLoadingCurrentUser ? 'Loading...' : formatProfileName(profile)}
+              {isLoadingCurrentUser ? "Loading..." : formatProfileName(profile)}
             </span>
             <span className="text-muted-foreground text-sm sm:text-base capitalize">
               {formatProfileDetails(profile)}

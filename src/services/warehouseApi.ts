@@ -1,12 +1,12 @@
-import type { WarehouseListItem } from '@/types/warehouseCapacity'
-import { ApiEnvelope, ApiEnvelopeNoContent } from '@/types/api'
-import { InsertWarehousePayload, RawWarehouse, UpdateWarehousePayload } from '@/types/warehouseCapacity'
+import type { WarehouseListItem } from "@/types/warehouseCapacity"
+import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
+import { InsertWarehousePayload, RawWarehouse, UpdateWarehousePayload } from "@/types/warehouseCapacity"
 
 // GET
 export async function fetchWarehouses(): Promise<WarehouseListItem[]> {
   const response = await fetch(`/api/Inventory/warehouse/all`, {
-    method: 'GET',
-    credentials: 'include',
+    method: "GET",
+    credentials: "include",
   })
 
   if (!response.ok) {
@@ -16,7 +16,7 @@ export async function fetchWarehouses(): Promise<WarehouseListItem[]> {
   const data: ApiEnvelope<RawWarehouse[]> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || 'Failed to fetch warehouses')
+    throw new Error(data.message || "Failed to fetch warehouses")
   }
 
   return data.content.map((w) => ({
@@ -30,17 +30,17 @@ export async function fetchWarehouses(): Promise<WarehouseListItem[]> {
 
 // INSERT
 export async function insertWarehouse(payload: InsertWarehousePayload): Promise<ApiEnvelopeNoContent> {
-  const response = await fetch('/api/Inventory/warehouse/insert', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+  const response = await fetch("/api/Inventory/warehouse/insert", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(payload),
   })
 
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || 'Failed to add warehouse')
+    throw new Error(data.message || "Failed to add warehouse")
   }
 
   return data
@@ -48,17 +48,17 @@ export async function insertWarehouse(payload: InsertWarehousePayload): Promise<
 
 // PATCH
 export async function updateWarehouse(payload: UpdateWarehousePayload): Promise<ApiEnvelopeNoContent> {
-  const response = await fetch('/api/Inventory/warehouse/patch', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+  const response = await fetch("/api/Inventory/warehouse/patch", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(payload),
   })
 
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || 'Failed to update warehouse')
+    throw new Error(data.message || "Failed to update warehouse")
   }
 
   return data
@@ -69,14 +69,14 @@ export async function deleteWarehouse(id: number): Promise<ApiEnvelopeNoContent>
   const query = new URLSearchParams({ id: String(id) })
 
   const response = await fetch(`/api/Inventory/warehouse/delete?${query.toString()}`, {
-    method: 'DELETE',
-    credentials: 'include',
+    method: "DELETE",
+    credentials: "include",
   })
 
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || 'Failed to delete warehouse')
+    throw new Error(data.message || "Failed to delete warehouse")
   }
 
   return data

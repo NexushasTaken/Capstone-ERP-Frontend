@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react'
-import type { LucideIcon } from 'lucide-react'
-import CloseButton from '@/components/CloseButton'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { cn } from '@/lib/utils'
+import type { ReactNode } from "react"
+import type { LucideIcon } from "lucide-react"
+import CloseButton from "@/components/CloseButton"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { cn } from "@/lib/utils"
 
 interface AppModalProps {
   open: boolean
@@ -24,7 +24,7 @@ export default function AppModal({ open, onClose, children, className }: AppModa
       <DialogContent
         showCloseButton={false}
         className={cn(
-          'h-full w-full max-w-none gap-0 rounded-none bg-background p-0 text-base sm:max-w-none lg:rounded-lg xl:h-auto',
+          "h-full w-full max-w-none gap-0 rounded-none bg-background p-0 text-base sm:max-w-none lg:rounded-lg xl:h-auto",
           className,
         )}
       >
@@ -58,7 +58,7 @@ export function ModalHeader({
   )
 }
 
-export function ModalBody({ children, className = 'gap-4' }: { children: ReactNode; className?: string }) {
+export function ModalBody({ children, className = "gap-4" }: { children: ReactNode; className?: string }) {
   return <div className={`flex flex-col p-4 ${className}`}>{children}</div>
 }
 
@@ -89,7 +89,7 @@ export function ModalActions({
         disabled={confirmDisabled}
         onClick={onConfirm}
         type="button"
-        variant={destructive ? 'destructive' : 'default'}
+        variant={destructive ? "destructive" : "default"}
       >
         {ConfirmIcon && <ConfirmIcon className="h-4 w-4" />}
         {confirmLabel}

@@ -1,11 +1,11 @@
-'use client'
+"use client"
 
-import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { ChevronDown, Plus, Search } from 'lucide-react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import Loading from '@/components/Loading'
-import { Input } from '@/components/ui/input'
+import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
+import { ChevronDown, Plus, Search } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import Loading from "@/components/Loading"
+import { Input } from "@/components/ui/input"
 
 interface EntityDropdownOption {
   id: number
@@ -44,11 +44,11 @@ export default function EntityDropdown({
   isLoading,
   onSearch,
   isSearching,
-  searchPlaceholder = 'Search...',
+  searchPlaceholder = "Search...",
 }: EntityDropdownProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState("")
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const onSearchRef = useRef(onSearch)
@@ -73,7 +73,7 @@ export default function EntityDropdown({
     const query = searchQuery.trim().toLowerCase()
     if (!query) return options
 
-    return options.filter((option) => `${option.label} ${option.sublabel ?? ''}`.toLowerCase().includes(query))
+    return options.filter((option) => `${option.label} ${option.sublabel ?? ""}`.toLowerCase().includes(query))
   }, [options, searchQuery])
 
   return (
@@ -83,7 +83,7 @@ export default function EntityDropdown({
         setOpen(nextOpen)
         if (!nextOpen) {
           if (debounceRef.current) clearTimeout(debounceRef.current)
-          setSearchQuery('')
+          setSearchQuery("")
         }
       }}
     >
@@ -92,8 +92,8 @@ export default function EntityDropdown({
         className="flex h-10 w-full items-center justify-between rounded-xl 
         border border-border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
       >
-        <span className={value ? 'text-foreground capitalize' : 'text-muted-foreground'}>
-          {isLoading ? 'Loading...' : value || placeholder}
+        <span className={value ? "text-foreground capitalize" : "text-muted-foreground"}>
+          {isLoading ? "Loading..." : value || placeholder}
         </span>
         <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>

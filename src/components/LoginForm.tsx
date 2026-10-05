@@ -1,19 +1,19 @@
-'use client'
+"use client"
 
-import { LockKeyhole, Mail } from 'lucide-react'
-import { toast } from 'sonner'
-import React, { ChangeEvent, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useQueryClient } from '@tanstack/react-query'
-import type { ApiEnvelope } from '@/types/api'
-import { queryKeys } from '@/lib/query/queryKeys'
-import { normalizeCurrentUser, storeCurrentUser, type RawCurrentUser } from '@/services/profileApi'
+import { LockKeyhole, Mail } from "lucide-react"
+import { toast } from "sonner"
+import React, { ChangeEvent, useState } from "react"
+import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
+import type { ApiEnvelope } from "@/types/api"
+import { queryKeys } from "@/lib/query/queryKeys"
+import { normalizeCurrentUser, storeCurrentUser, type RawCurrentUser } from "@/services/profileApi"
 
 export default function LoginForm() {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleSubmit(event: ChangeEvent<HTMLFormElement>) {
@@ -24,10 +24,10 @@ export default function LoginForm() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch('/api/User/Login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch("/api/User/Login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       })
 
@@ -35,11 +35,11 @@ export default function LoginForm() {
         .json()
         .catch(() => null)
 
-      if (!response.ok || !payload || !('success' in payload) || !payload.success) {
+      if (!response.ok || !payload || !("success" in payload) || !payload.success) {
         const message =
-          payload && 'title' in payload
-            ? (payload.title ?? payload.message ?? 'Invalid email or password.')
-            : (payload?.message ?? 'Invalid email or password.')
+          payload && "title" in payload
+            ? (payload.title ?? payload.message ?? "Invalid email or password.")
+            : (payload?.message ?? "Invalid email or password.")
         throw new Error(message)
       }
 
@@ -47,10 +47,10 @@ export default function LoginForm() {
       storeCurrentUser(currentUser)
       queryClient.setQueryData(queryKeys.auth.currentUser, currentUser)
       toast.success("You're logged in successfully!")
-      router.push('/dashboard')
+      router.push("/dashboard")
       router.refresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to sign in. Please try again.')
+      toast.error(error instanceof Error ? error.message : "Unable to sign in. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -111,7 +111,7 @@ export default function LoginForm() {
             disabled={isSubmitting}
             className="bg-primary text-primary-foreground py-4 rounded-lg mt-8 transition-all hover:scale-105 duration-300 cursor-pointer text-center disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? 'Signing in...' : 'Sign In'}
+            {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
       </div>

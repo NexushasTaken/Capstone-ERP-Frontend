@@ -1,10 +1,10 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { AccountListItem } from '@/types/account'
-import { roleOptions } from '../_lib/accountHelpers'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import type { AccountListItem } from "@/types/account"
+import { roleOptions } from "../_lib/accountHelpers"
 
 interface RoleSelectProps {
-  value: AccountListItem['role']
-  onChange: (role: AccountListItem['role']) => void
+  value: AccountListItem["role"]
+  onChange: (role: AccountListItem["role"]) => void
   disabled?: boolean
 }
 

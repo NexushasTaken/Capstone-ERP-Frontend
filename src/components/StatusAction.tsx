@@ -1,13 +1,13 @@
-import { Ellipsis } from 'lucide-react'
+import { Ellipsis } from "lucide-react"
 
-import type { StatusActionItem, StatusActionValue } from '@/types/statusAction'
+import type { StatusActionItem, StatusActionValue } from "@/types/statusAction"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu"
 
 interface StatusActionProps {
   actions: StatusActionItem[]

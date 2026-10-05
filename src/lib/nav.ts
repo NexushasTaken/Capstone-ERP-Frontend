@@ -8,7 +8,7 @@ import {
   UserCog,
   Users,
   Warehouse,
-} from 'lucide-react'
+} from "lucide-react"
 
 export interface NavItem {
   name: string
@@ -23,62 +23,62 @@ export interface NavGroup {
 
 export const navGroups: NavGroup[] = [
   {
-    label: 'Operations',
+    label: "Operations",
     items: [
       {
-        name: 'Orders',
+        name: "Orders",
         icon: Package,
-        link: '/dashboard/orders',
+        link: "/dashboard/orders",
       },
       {
-        name: 'Inventory',
+        name: "Inventory",
         icon: Warehouse,
-        link: '/dashboard/inventory',
+        link: "/dashboard/inventory",
       },
     ],
   },
   {
-    label: 'Basic Informations',
+    label: "Basic Informations",
     items: [
       {
-        name: 'Product',
+        name: "Product",
         icon: PackageOpen,
-        link: '/dashboard/product',
+        link: "/dashboard/product",
       },
       {
-        name: 'Category',
+        name: "Category",
         icon: PackageOpen,
-        link: '/dashboard/category',
+        link: "/dashboard/category",
       },
       {
-        name: 'Driver',
+        name: "Driver",
         icon: Truck,
-        link: '/dashboard/driver',
+        link: "/dashboard/driver",
       },
       {
-        name: 'Audit logs',
+        name: "Audit logs",
         icon: History,
-        link: '/dashboard/audit-logs',
+        link: "/dashboard/audit-logs",
       },
       {
-        name: 'Sales',
+        name: "Sales",
         icon: ChartNoAxesCombined,
-        link: '/dashboard/sales',
+        link: "/dashboard/sales",
       },
     ],
   },
   {
-    label: 'Account Manager',
+    label: "Account Manager",
     items: [
       {
-        name: 'Account Settings',
+        name: "Account Settings",
         icon: UserCog,
-        link: '/dashboard/account-settings',
+        link: "/dashboard/account-settings",
       },
       {
-        name: 'Accounts',
+        name: "Accounts",
         icon: Users,
-        link: '/dashboard/accounts',
+        link: "/dashboard/accounts",
       },
     ],
   },

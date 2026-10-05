@@ -1,5 +1,5 @@
-import type { ComponentProps, ReactNode } from 'react'
-import { Input } from '@/components/ui/input'
+import type { ComponentProps, ReactNode } from "react"
+import { Input } from "@/components/ui/input"
 
 // A label stacked above its input, as used in the add/edit modals. `error` shows under the input.
 export function FormField({ label, error, children }: { label: string; error?: string; children: ReactNode }) {

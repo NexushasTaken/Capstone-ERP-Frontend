@@ -1,5 +1,5 @@
-import type { WarehouseCapacity } from '@/types/inventory'
-import type { WarehouseListItem } from '@/types/warehouseCapacity'
+import type { WarehouseCapacity } from "@/types/inventory"
+import type { WarehouseListItem } from "@/types/warehouseCapacity"
 
 export const MAX_SELECTED_WAREHOUSES = 3
 
@@ -13,7 +13,7 @@ export function toWarehouseCapacity(warehouse: WarehouseListItem): WarehouseCapa
 
 export function getTotalWarehouseCapacity(warehouses: WarehouseListItem[]): WarehouseCapacity {
   return {
-    warehouse: 'Total capacity',
+    warehouse: "Total capacity",
     used: warehouses.reduce((total, warehouse) => total + warehouse.stocks, 0),
     total: warehouses.reduce((total, warehouse) => total + warehouse.capacity, 0),
   }

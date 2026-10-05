@@ -1,24 +1,24 @@
-import DataTable, { type DataTableColumn } from '@/components/DataTable'
-import StatusAction from '@/components/StatusAction'
-import { Button } from '@/components/ui/button'
-import { TableCell, TableRow } from '@/components/ui/table'
+import DataTable, { type DataTableColumn } from "@/components/DataTable"
+import StatusAction from "@/components/StatusAction"
+import { Button } from "@/components/ui/button"
+import { TableCell, TableRow } from "@/components/ui/table"
 import {
   capitalize,
   formatInventoryId,
   formatNumber,
   getInventoryStatusStyleFromLabel,
-} from '@/lib/helpers/inventoryHelpers'
-import type { InventoryListItem } from '@/types/inventory'
-import type { StatusActionItem } from '@/types/statusAction'
+} from "@/lib/helpers/inventoryHelpers"
+import type { InventoryListItem } from "@/types/inventory"
+import type { StatusActionItem } from "@/types/statusAction"
 
 const columns: DataTableColumn[] = [
-  'Inventory ID',
-  'Name',
-  'Quantity',
-  'Reorder point',
-  'Warehouse',
-  'Status',
-  { label: 'Inventory actions', srOnly: true },
+  "Inventory ID",
+  "Name",
+  "Quantity",
+  "Reorder point",
+  "Warehouse",
+  "Status",
+  { label: "Inventory actions", srOnly: true },
 ]
 
 interface InventoryTableProps {

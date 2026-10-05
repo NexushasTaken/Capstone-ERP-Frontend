@@ -1,17 +1,17 @@
-import type { QueryClient } from '@tanstack/react-query'
+import type { QueryClient } from "@tanstack/react-query"
 
-import { queryKeys } from '@/lib/query/queryKeys'
+import { queryKeys } from "@/lib/query/queryKeys"
 
 export function invalidateOrders(queryClient: QueryClient) {
-  return queryClient.invalidateQueries({ queryKey: ['orders'] })
+  return queryClient.invalidateQueries({ queryKey: ["orders"] })
 }
 
 export function invalidateInventories(queryClient: QueryClient) {
-  return queryClient.invalidateQueries({ queryKey: ['inventories'] })
+  return queryClient.invalidateQueries({ queryKey: ["inventories"] })
 }
 
 export function invalidateDrivers(queryClient: QueryClient) {
-  return queryClient.invalidateQueries({ queryKey: ['drivers'] })
+  return queryClient.invalidateQueries({ queryKey: ["drivers"] })
 }
 
 export function invalidateWarehouses(queryClient: QueryClient) {
@@ -19,7 +19,7 @@ export function invalidateWarehouses(queryClient: QueryClient) {
 }
 
 export function invalidateAuditLogs(queryClient: QueryClient) {
-  return queryClient.invalidateQueries({ queryKey: ['auditLogs'] })
+  return queryClient.invalidateQueries({ queryKey: ["auditLogs"] })
 }
 
 export function invalidateAccounts(queryClient: QueryClient) {

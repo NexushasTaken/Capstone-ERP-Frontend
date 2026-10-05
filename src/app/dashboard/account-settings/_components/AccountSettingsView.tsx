@@ -1,12 +1,12 @@
-'use client'
+"use client"
 
-import { useQuery } from '@tanstack/react-query'
-import Loading from '@/components/Loading'
-import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { fetchCredentials } from '@/services/accountApi'
-import { queryKeys } from '@/lib/query/queryKeys'
-import CredentialsForm from './CredentialsForm'
-import ProfileInfoForm from './ProfileInfoForm'
+import { useQuery } from "@tanstack/react-query"
+import Loading from "@/components/Loading"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
+import { fetchCredentials } from "@/services/accountApi"
+import { queryKeys } from "@/lib/query/queryKeys"
+import CredentialsForm from "./CredentialsForm"
+import ProfileInfoForm from "./ProfileInfoForm"
 
 export default function AccountSettingsView() {
   const { data: currentUser, isLoading: isLoadingCurrentUser } = useCurrentUser()

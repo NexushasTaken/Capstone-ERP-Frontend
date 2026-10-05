@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useOrderTypes } from '@/hooks/useOrderTypes'
-import { normalizeOrderText } from '@/lib/helpers/orderHelpers'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useOrderTypes } from "@/hooks/useOrderTypes"
+import { normalizeOrderText } from "@/lib/helpers/orderHelpers"
 
 interface OrderTypeFilterSelectProps {
   /** Selected order type id as a string, or '' for "All types". */
@@ -14,7 +14,7 @@ interface OrderTypeFilterSelectProps {
 export default function OrderTypeFilterSelect({ value, onChange }: OrderTypeFilterSelectProps) {
   const { data: orderTypes = [], isLoading } = useOrderTypes()
   const items = [
-    { value: 'all', label: 'All types' },
+    { value: "all", label: "All types" },
     ...orderTypes.map((orderType) => ({
       value: String(orderType.id),
       label: normalizeOrderText(orderType.type),
@@ -26,8 +26,8 @@ export default function OrderTypeFilterSelect({ value, onChange }: OrderTypeFilt
       <Select
         disabled={isLoading}
         items={items}
-        onValueChange={(next) => onChange(next === 'all' ? '' : String(next ?? ''))}
-        value={value || 'all'}
+        onValueChange={(next) => onChange(next === "all" ? "" : String(next ?? ""))}
+        value={value || "all"}
       >
         <SelectTrigger className="w-full">
           <SelectValue placeholder="All types" />

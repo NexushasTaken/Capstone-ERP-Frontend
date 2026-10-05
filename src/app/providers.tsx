@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { invalidateAuditLogs } from '@/lib/query/queryInvalidation'
-import React, { useState } from 'react'
+import { MutationCache, QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { invalidateAuditLogs } from "@/lib/query/queryInvalidation"
+import React, { useState } from "react"
 
 function makeQueryClient() {
   const client: QueryClient = new QueryClient({

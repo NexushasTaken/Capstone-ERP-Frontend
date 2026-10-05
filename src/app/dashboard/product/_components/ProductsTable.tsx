@@ -1,19 +1,19 @@
-import DataTable, { type DataTableColumn } from '@/components/DataTable'
-import StatusAction from '@/components/StatusAction'
-import { Button } from '@/components/ui/button'
-import { TableCell, TableRow } from '@/components/ui/table'
-import { formatDate, formatPeso } from '@/lib/format'
-import type { ProductListItem } from '@/types/product'
-import type { StatusActionItem } from '@/types/statusAction'
-import { formatProductId } from '../_lib/productHelpers'
+import DataTable, { type DataTableColumn } from "@/components/DataTable"
+import StatusAction from "@/components/StatusAction"
+import { Button } from "@/components/ui/button"
+import { TableCell, TableRow } from "@/components/ui/table"
+import { formatDate, formatPeso } from "@/lib/format"
+import type { ProductListItem } from "@/types/product"
+import type { StatusActionItem } from "@/types/statusAction"
+import { formatProductId } from "../_lib/productHelpers"
 
 const columns: DataTableColumn[] = [
-  'Product ID',
-  'Category',
-  'Product Name',
-  'Price',
-  'Created At',
-  { label: 'Action', className: 'text-right' },
+  "Product ID",
+  "Category",
+  "Product Name",
+  "Price",
+  "Created At",
+  { label: "Action", className: "text-right" },
 ]
 
 interface ProductsTableProps {
@@ -48,7 +48,7 @@ export default function ProductsTable({
       {products.map((product) => (
         <TableRow key={product.id}>
           <TableCell className="px-3 py-4 font-medium">{formatProductId(product.id)}</TableCell>
-          <TableCell className="px-3 py-4 font-medium capitalize">{product.categoryName ?? 'Uncategorized'}</TableCell>
+          <TableCell className="px-3 py-4 font-medium capitalize">{product.categoryName ?? "Uncategorized"}</TableCell>
           <TableCell className="px-3 py-4 capitalize">{product.name}</TableCell>
           <TableCell className="px-3 py-4 font-medium">{formatPeso(product.price)}</TableCell>
           <TableCell className="px-3 py-4">{formatDate(product.created_At)}</TableCell>
@@ -62,8 +62,8 @@ export default function ProductsTable({
                   actions={actions}
                   label={`More actions for product ${product.id}`}
                   onAction={(action) => {
-                    if (action === 'edit') onEdit(product)
-                    if (action === 'delete') onDelete(product)
+                    if (action === "edit") onEdit(product)
+                    if (action === "delete") onDelete(product)
                   }}
                 />
               )}

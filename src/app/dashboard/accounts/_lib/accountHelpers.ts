@@ -1,18 +1,18 @@
-import { Pencil } from 'lucide-react'
-import type { AccountListItem, AccountSortBy, AccountSortOption } from '@/types/account'
-import type { StatusActionItem } from '@/types/statusAction'
+import { Pencil } from "lucide-react"
+import type { AccountListItem, AccountSortBy, AccountSortOption } from "@/types/account"
+import type { StatusActionItem } from "@/types/statusAction"
 
 export const accountSortOptions: AccountSortOption[] = [
-  { label: 'Id', value: 'id', order: 'asc' },
-  { label: 'Role (A to Z)', value: 'role', order: 'asc' },
-  { label: 'First name (A to Z)', value: 'firstName', order: 'asc' },
-  { label: 'First name (Z to A)', value: 'firstName', order: 'desc' },
+  { label: "Id", value: "id", order: "asc" },
+  { label: "Role (A to Z)", value: "role", order: "asc" },
+  { label: "First name (A to Z)", value: "firstName", order: "asc" },
+  { label: "First name (Z to A)", value: "firstName", order: "desc" },
 ]
 
 export const editAccountActions: StatusActionItem[] = [
   {
-    label: 'Edit',
-    value: 'edit',
+    label: "Edit",
+    value: "edit",
     icon: Pencil,
   },
 ]
@@ -25,10 +25,10 @@ export const ACCOUNT_ITEMS_PER_PAGE = 10
 
 export const roleOptions: Array<{
   label: string
-  value: 'owner' | 'secretary'
+  value: "owner" | "secretary"
 }> = [
-  { label: 'Owner', value: 'owner' },
-  { label: 'Secretary', value: 'secretary' },
+  { label: "Owner", value: "owner" },
+  { label: "Secretary", value: "secretary" },
 ]
 
 // The first (owner) account's role can't be changed.
@@ -39,7 +39,7 @@ export function filterAndSortAccounts(
   accounts: AccountListItem[],
   search: string,
   sortBy: AccountSortBy,
-  sortOrder: 'asc' | 'desc',
+  sortOrder: "asc" | "desc",
 ) {
   const searchValue = search.trim().toLowerCase()
   const matched = searchValue
@@ -52,16 +52,16 @@ export function filterAndSortAccounts(
           String(account.id).includes(searchValue),
       )
     : accounts
-  const direction = sortOrder === 'asc' ? 1 : -1
+  const direction = sortOrder === "asc" ? 1 : -1
 
   return [...matched].sort((a, b) => {
     switch (sortBy) {
-      case 'id':
+      case "id":
         return (a.id - b.id) * direction
-      case 'role':
-      case 'firstName':
-      case 'lastName':
-      case 'email':
+      case "role":
+      case "firstName":
+      case "lastName":
+      case "email":
         return a[sortBy].localeCompare(b[sortBy]) * direction
       default:
         return 0

@@ -1,4 +1,4 @@
-import type { DateRange } from 'react-day-picker'
+import type { DateRange } from "react-day-picker"
 
 export function getCurrentYearDateRange(referenceDate = new Date()): DateRange {
   const year = referenceDate.getFullYear()
@@ -43,8 +43,8 @@ export function clampRangeToCurrentYear(range: DateRange | undefined, referenceD
 }
 
 export function formatDashboardDateParam(date: Date) {
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
   const year = date.getFullYear()
 
   return `${month}-${day}-${year}`
@@ -56,14 +56,14 @@ export function getDateRangeMonthLabels(range: DateRange | undefined, itemCount:
 
   return Array.from({ length: itemCount }, (_, index) => {
     const month = (startMonth + index) % 12
-    return new Date(currentYear, month, 1).toLocaleString('en-US', {
-      month: 'short',
+    return new Date(currentYear, month, 1).toLocaleString("en-US", {
+      month: "short",
     })
   })
 }
 
 export function formatDashboardPeso(amount: number) {
-  return new Intl.NumberFormat('en-PH', {
+  return new Intl.NumberFormat("en-PH", {
     maximumFractionDigits: 0,
   }).format(amount)
 }

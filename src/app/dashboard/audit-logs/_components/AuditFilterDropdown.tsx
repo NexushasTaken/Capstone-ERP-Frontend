@@ -1,11 +1,11 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Check, ChevronDown } from 'lucide-react'
+import { useState } from "react"
+import { Check, ChevronDown } from "lucide-react"
 
-import type { AuditFilterOption } from '@/types/auditLog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import type { AuditFilterOption } from "@/types/auditLog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu"
 
 interface AuditFilterDropdownProps<T extends string | number> {
   label: string
@@ -33,7 +33,7 @@ export default function AuditFilterDropdown<T extends string | number>({
   onChange,
   searchPlaceholder,
 }: AuditFilterDropdownProps<T>) {
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState("")
   const selected = options.find((option) => option.value === value)
   const normalizedSearch = search.trim().toLowerCase()
   const filteredOptions = normalizedSearch
@@ -45,11 +45,11 @@ export default function AuditFilterDropdown<T extends string | number>({
 
     return (
       <DropdownMenuItem
-        key={itemValue ?? 'all'}
+        key={itemValue ?? "all"}
         onClick={() => {
           // Picking the selected item again goes back to "All".
           onChange(checked ? null : itemValue)
-          setSearch('')
+          setSearch("")
         }}
         className="cursor-pointer items-start gap-2 px-2 py-2"
       >
@@ -69,14 +69,14 @@ export default function AuditFilterDropdown<T extends string | number>({
       <DropdownMenuTrigger
         render={
           <Button
-            className={selected ? 'border-foreground text-foreground' : undefined}
+            className={selected ? "border-foreground text-foreground" : undefined}
             type="button"
             variant="outline"
           />
         }
       >
         <span className="text-muted-foreground">{label}:</span>
-        <span className="max-w-32 truncate capitalize">{selected?.label ?? 'All'}</span>
+        <span className="max-w-32 truncate capitalize">{selected?.label ?? "All"}</span>
         <ChevronDown className="h-4 w-4" />
       </DropdownMenuTrigger>
 

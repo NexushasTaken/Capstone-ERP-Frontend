@@ -1,9 +1,9 @@
-import DataTable from '@/components/DataTable'
-import { TableCell, TableRow } from '@/components/ui/table'
-import { formatAuditDate, getAuditAction, getAuditModuleLabel } from '@/lib/helpers/auditLogHelpers'
-import type { AuditLogItem } from '@/types/auditLog'
+import DataTable from "@/components/DataTable"
+import { TableCell, TableRow } from "@/components/ui/table"
+import { formatAuditDate, getAuditAction, getAuditModuleLabel } from "@/lib/helpers/auditLogHelpers"
+import type { AuditLogItem } from "@/types/auditLog"
 
-const columns = ['Date', 'User', 'Module', 'Action', 'Message']
+const columns = ["Date", "User", "Module", "Action", "Message"]
 
 interface AuditLogsTableProps {
   logs: AuditLogItem[]
@@ -17,7 +17,7 @@ export default function AuditLogsTable({ logs, isLoading, error, hasFilters }: A
     <DataTable
       className="min-w-200"
       columns={columns}
-      emptyMessage={hasFilters ? 'No audit logs match these filters.' : 'No audit logs yet.'}
+      emptyMessage={hasFilters ? "No audit logs match these filters." : "No audit logs yet."}
       error={error}
       errorMessage="Failed to load audit logs"
       isEmpty={logs.length === 0}

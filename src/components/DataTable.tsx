@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react'
-import Loading from '@/components/Loading'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
+import type { ReactNode } from "react"
+import Loading from "@/components/Loading"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { cn } from "@/lib/utils"
 
 export type DataTableColumn = string | { label: string; className?: string; srOnly?: boolean }
 
@@ -44,7 +44,7 @@ export default function DataTable({
   ) : null
 
   return (
-    <Table className={cn('text-left', className)}>
+    <Table className={cn("text-left", className)}>
       <TableHeader>
         <TableRow className="hover:bg-transparent">
           {columns.map((column) => {
@@ -52,10 +52,10 @@ export default function DataTable({
               label,
               className: columnClassName,
               srOnly,
-            } = typeof column === 'string' ? { label: column, className: undefined, srOnly: false } : column
+            } = typeof column === "string" ? { label: column, className: undefined, srOnly: false } : column
             return (
               <TableHead
-                className={cn('px-3 font-normal text-muted-foreground', columnClassName)}
+                className={cn("px-3 font-normal text-muted-foreground", columnClassName)}
                 key={label}
                 scope="col"
               >

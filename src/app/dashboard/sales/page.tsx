@@ -1,7 +1,7 @@
-import type { Metadata } from 'next'
-import SalesView from './_components/SalesView'
+import type { Metadata } from "next"
+import SalesView from "./_components/SalesView"
 
-export const metadata: Metadata = { title: 'Sales' }
+export const metadata: Metadata = { title: "Sales" }
 
 export default function SalesPage() {
   return (

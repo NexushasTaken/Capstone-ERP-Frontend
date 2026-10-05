@@ -7,14 +7,14 @@ export interface ProductListItem {
   created_At: string
 }
 
-export type ProductCategoryFilter = 'Categorized' | 'Uncategorized'
+export type ProductCategoryFilter = "Categorized" | "Uncategorized"
 
-export type ProductSortBy = 'id' | 'name' | 'price' | 'createdAt'
+export type ProductSortBy = "id" | "name" | "price" | "createdAt"
 
 export interface ProductSortOption {
   label: string
   value: ProductSortBy
-  order: 'asc' | 'desc'
+  order: "asc" | "desc"
 }
 
 // API request/response shapes

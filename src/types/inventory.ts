@@ -16,9 +16,9 @@ export interface InventoryListItem {
   dateArrived: string
 }
 
-export type InventoryFilter = 'All' | string
+export type InventoryFilter = "All" | string
 
-export type InventorySortBy = 'latest' | 'name' | 'quantity' | 'reorderPoint' | 'warehouseId'
+export type InventorySortBy = "latest" | "name" | "quantity" | "reorderPoint" | "warehouseId"
 
 export interface InventoryMovementItem {
   quantity: number

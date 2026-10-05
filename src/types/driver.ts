@@ -5,12 +5,12 @@ export interface DriverListItem {
   created_At: string
 }
 
-export type DriverSortBy = 'createdAt' | 'name'
+export type DriverSortBy = "createdAt" | "name"
 
 export interface DriverSortOption {
   label: string
   value: DriverSortBy
-  order: 'asc' | 'desc'
+  order: "asc" | "desc"
 }
 
 // API request/response shapes

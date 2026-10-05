@@ -1,9 +1,9 @@
-'use client'
+"use client"
 
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { fetchSales } from '@/services/saleApi'
-import { queryKeys } from '@/lib/query/queryKeys'
-import type { FetchSalesParams } from '@/types/sale'
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { fetchSales } from "@/services/saleApi"
+import { queryKeys } from "@/lib/query/queryKeys"
+import type { FetchSalesParams } from "@/types/sale"
 
 export function useSales(params: FetchSalesParams) {
   return useQuery({

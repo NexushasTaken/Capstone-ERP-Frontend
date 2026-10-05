@@ -1,7 +1,7 @@
-import type { CurrentUser } from '@/types/profile'
-import type { ApiEnvelope } from '@/types/api'
+import type { CurrentUser } from "@/types/profile"
+import type { ApiEnvelope } from "@/types/api"
 
-const CURRENT_USER_STORAGE_KEY = 'erp.currentUser'
+const CURRENT_USER_STORAGE_KEY = "erp.currentUser"
 
 // Shape the backend sends: id, firstName, lastName, role (from both login and authorize endpoints)
 export interface RawCurrentUser {
@@ -23,7 +23,7 @@ export function normalizeCurrentUser(raw: RawCurrentUser | null | undefined): Cu
 }
 
 export function readStoredCurrentUser(): CurrentUser | null {
-  if (typeof window === 'undefined') return null
+  if (typeof window === "undefined") return null
 
   try {
     const value = window.sessionStorage.getItem(CURRENT_USER_STORAGE_KEY)
@@ -34,7 +34,7 @@ export function readStoredCurrentUser(): CurrentUser | null {
 }
 
 export function storeCurrentUser(user: CurrentUser | null) {
-  if (typeof window === 'undefined') return
+  if (typeof window === "undefined") return
 
   if (!user) {
     window.sessionStorage.removeItem(CURRENT_USER_STORAGE_KEY)
@@ -46,9 +46,9 @@ export function storeCurrentUser(user: CurrentUser | null) {
 
 // GET
 export async function fetchCurrentUser(): Promise<CurrentUser | null> {
-  const response = await fetch('/api/View/authorize', {
-    method: 'GET',
-    credentials: 'include',
+  const response = await fetch("/api/View/authorize", {
+    method: "GET",
+    credentials: "include",
   })
 
   if (response.status === 401) {
@@ -59,7 +59,7 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const data: ApiEnvelope<RawCurrentUser | null> = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || 'Failed to fetch current user')
+    throw new Error(data.message || "Failed to fetch current user")
   }
 
   const user = normalizeCurrentUser(data.content)

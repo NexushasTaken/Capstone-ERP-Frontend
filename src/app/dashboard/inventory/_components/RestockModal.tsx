@@ -1,17 +1,17 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import AppModal, { ModalHeader } from '@/components/AppModal'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Spinner } from '@/components/ui/spinner'
-import { formatInventoryId, formatNumber } from '@/lib/helpers/inventoryHelpers'
-import type { InventoryListItem, RestockInventoryPayload } from '@/types/inventory'
+import { useState } from "react"
+import AppModal, { ModalHeader } from "@/components/AppModal"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
+import { formatInventoryId, formatNumber } from "@/lib/helpers/inventoryHelpers"
+import type { InventoryListItem, RestockInventoryPayload } from "@/types/inventory"
 
 const restockTypeOptions = [
-  { value: 1, label: 'Increase Stock' },
-  { value: 2, label: 'Return Stock' },
+  { value: 1, label: "Increase Stock" },
+  { value: 2, label: "Return Stock" },
 ]
 
 interface RestockModalProps {
@@ -24,7 +24,7 @@ interface RestockModalProps {
 // Stays open while saving; the parent closes it once the restock succeeds.
 export default function RestockModal({ item, isPending, onClose, onSubmit }: RestockModalProps) {
   const [form, setForm] = useState<{ quantity: string; restockType: 1 | 2 }>({
-    quantity: '',
+    quantity: "",
     restockType: 1,
   })
   const quantity = Number(form.quantity)
@@ -100,7 +100,7 @@ export default function RestockModal({ item, isPending, onClose, onSubmit }: Res
                 Saving...
               </>
             ) : (
-              'Restock'
+              "Restock"
             )}
           </Button>
         </div>

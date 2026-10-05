@@ -1,13 +1,13 @@
-import { TriangleAlert } from 'lucide-react'
-import Link from 'next/link'
-import React from 'react'
+import { TriangleAlert } from "lucide-react"
+import Link from "next/link"
+import React from "react"
 
 interface AccessDeniedPageProps {
-  reason?: 'credentials' | 'role'
+  reason?: "credentials" | "role"
 }
 
-export default function AccessDeniedPage({ reason = 'credentials' }: AccessDeniedPageProps) {
-  const isRole = reason === 'role'
+export default function AccessDeniedPage({ reason = "credentials" }: AccessDeniedPageProps) {
+  const isRole = reason === "role"
 
   return (
     <div className="flex w-full h-screen items-center justify-center">
@@ -22,10 +22,10 @@ export default function AccessDeniedPage({ reason = 'credentials' }: AccessDenie
             : "We couldn't verify your credentials. Please double-check your information and try again."}
         </p>
         <Link
-          href={isRole ? '/dashboard' : '/'}
+          href={isRole ? "/dashboard" : "/"}
           className="text-center p-4 w-full bg-primary text-primary-foreground rounded-lg text-lg mt-4"
         >
-          {isRole ? 'Back to Dashboard' : 'Return to Login'}
+          {isRole ? "Back to Dashboard" : "Return to Login"}
         </Link>
       </div>
     </div>

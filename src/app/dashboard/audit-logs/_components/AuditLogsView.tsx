@@ -1,21 +1,21 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { X } from 'lucide-react'
+import { useState } from "react"
+import { X } from "lucide-react"
 
-import AuditFilterDropdown from './AuditFilterDropdown'
-import AuditLogsTable from './AuditLogsTable'
-import PageTitle from '@/components/PageTitle'
-import { TablePagination } from '@/components/TablePagination'
-import { useAuditLogs, useUsers } from '@/hooks/useAuditLogs'
-import { Button } from '@/components/ui/button'
+import AuditFilterDropdown from "./AuditFilterDropdown"
+import AuditLogsTable from "./AuditLogsTable"
+import PageTitle from "@/components/PageTitle"
+import { TablePagination } from "@/components/TablePagination"
+import { useAuditLogs, useUsers } from "@/hooks/useAuditLogs"
+import { Button } from "@/components/ui/button"
 import {
   AUDIT_LOG_ITEMS_PER_PAGE,
   auditActionFilterOptions,
   auditModuleFilterOptions,
   auditRoleFilterOptions,
   toUserFilterOptions,
-} from '@/lib/helpers/auditLogHelpers'
+} from "@/lib/helpers/auditLogHelpers"
 
 export default function AuditLogsView() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -106,7 +106,7 @@ export default function AuditLogsView() {
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-muted-foreground">
           Showing {logs.length} of {rows} audit logs
-          {isFetching ? ' - Updating...' : ''}
+          {isFetching ? " - Updating..." : ""}
         </span>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />

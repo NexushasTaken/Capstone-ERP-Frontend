@@ -1,12 +1,12 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Plus } from 'lucide-react'
-import AppModal, { ModalActions, ModalBody, ModalHeader } from '@/components/AppModal'
-import { FormField, FormInput } from '@/components/FormField'
-import { isValidationError } from '@/lib/apiError'
-import type { AccountListItem } from '@/types/account'
-import RoleSelect from './RoleSelect'
+import { useState } from "react"
+import { Plus } from "lucide-react"
+import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
+import { FormField, FormInput } from "@/components/FormField"
+import { isValidationError } from "@/lib/apiError"
+import type { AccountListItem } from "@/types/account"
+import RoleSelect from "./RoleSelect"
 
 // Same rules as the backend's AccountValidation, so most mistakes are caught before sending.
 const MIN_PASSWORD_LENGTH = 8
@@ -17,19 +17,19 @@ export interface NewAccount {
   lastName: string
   email: string
   password: string
-  role: AccountListItem['role']
+  role: AccountListItem["role"]
 }
 
-type TextField = 'firstName' | 'lastName' | 'email' | 'password' | 'confirmPassword'
-type FieldErrors = Partial<Record<TextField | 'role', string>>
+type TextField = "firstName" | "lastName" | "email" | "password" | "confirmPassword"
+type FieldErrors = Partial<Record<TextField | "role", string>>
 
 const EMPTY_FORM = {
-  firstName: '',
-  lastName: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-  role: 'secretary' as AccountListItem['role'],
+  firstName: "",
+  lastName: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  role: "secretary" as AccountListItem["role"],
 }
 
 interface CreateAccountModalProps {
@@ -42,25 +42,25 @@ interface CreateAccountModalProps {
 
 function validate(form: typeof EMPTY_FORM): FieldErrors {
   const errors: FieldErrors = {}
-  if (form.firstName.trim() === '') errors.firstName = 'First name is required.'
-  if (form.lastName.trim() === '') errors.lastName = 'Last name is required.'
-  if (form.email.trim() === '') errors.email = 'Email is required.'
-  else if (!EMAIL_PATTERN.test(form.email.trim())) errors.email = 'Email is invalid.'
+  if (form.firstName.trim() === "") errors.firstName = "First name is required."
+  if (form.lastName.trim() === "") errors.lastName = "Last name is required."
+  if (form.email.trim() === "") errors.email = "Email is required."
+  else if (!EMAIL_PATTERN.test(form.email.trim())) errors.email = "Email is invalid."
   if (form.password.length < MIN_PASSWORD_LENGTH) {
     errors.password = `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`
   }
-  if (form.confirmPassword !== form.password) errors.confirmPassword = 'Passwords do not match.'
+  if (form.confirmPassword !== form.password) errors.confirmPassword = "Passwords do not match."
   return errors
 }
 
 // The backend returns one message per rejected input. Put it under the field it names.
 function fieldForServerMessage(message: string): keyof FieldErrors | null {
   const text = message.toLowerCase()
-  if (text.startsWith('first name')) return 'firstName'
-  if (text.startsWith('last name')) return 'lastName'
-  if (text.includes('email')) return 'email'
-  if (text.startsWith('password')) return 'password'
-  if (text.startsWith('role')) return 'role'
+  if (text.startsWith("first name")) return "firstName"
+  if (text.startsWith("last name")) return "lastName"
+  if (text.includes("email")) return "email"
+  if (text.startsWith("password")) return "password"
+  if (text.startsWith("role")) return "role"
   return null
 }
 
@@ -69,11 +69,11 @@ function fieldForServerMessage(message: string): keyof FieldErrors | null {
 export default function CreateAccountModal({ open, disabled, onClose, onSubmit }: CreateAccountModalProps) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [errors, setErrors] = useState<FieldErrors>({})
-  const [formError, setFormError] = useState('')
+  const [formError, setFormError] = useState("")
 
   function clearError(field: keyof FieldErrors) {
     setErrors((prev) => ({ ...prev, [field]: undefined }))
-    setFormError('')
+    setFormError("")
   }
 
   function updateField(field: TextField) {
@@ -88,7 +88,7 @@ export default function CreateAccountModal({ open, disabled, onClose, onSubmit }
 
     const clientErrors = validate(form)
     setErrors(clientErrors)
-    setFormError('')
+    setFormError("")
     if (Object.keys(clientErrors).length > 0) return
 
     try {
@@ -114,19 +114,19 @@ export default function CreateAccountModal({ open, disabled, onClose, onSubmit }
       <ModalHeader subtitle="New account" title="Create account" onClose={onClose} />
       <ModalBody>
         <FormField label="First Name" error={errors.firstName}>
-          <FormInput aria-invalid={!!errors.firstName} onChange={updateField('firstName')} value={form.firstName} />
+          <FormInput aria-invalid={!!errors.firstName} onChange={updateField("firstName")} value={form.firstName} />
         </FormField>
         <FormField label="Last Name" error={errors.lastName}>
-          <FormInput aria-invalid={!!errors.lastName} onChange={updateField('lastName')} value={form.lastName} />
+          <FormInput aria-invalid={!!errors.lastName} onChange={updateField("lastName")} value={form.lastName} />
         </FormField>
         <FormField label="Email" error={errors.email}>
-          <FormInput aria-invalid={!!errors.email} type="email" onChange={updateField('email')} value={form.email} />
+          <FormInput aria-invalid={!!errors.email} type="email" onChange={updateField("email")} value={form.email} />
         </FormField>
         <FormField label="Password" error={errors.password}>
           <FormInput
             aria-invalid={!!errors.password}
             type="password"
-            onChange={updateField('password')}
+            onChange={updateField("password")}
             value={form.password}
           />
         </FormField>
@@ -134,7 +134,7 @@ export default function CreateAccountModal({ open, disabled, onClose, onSubmit }
           <FormInput
             aria-invalid={!!errors.confirmPassword}
             type="password"
-            onChange={updateField('confirmPassword')}
+            onChange={updateField("confirmPassword")}
             value={form.confirmPassword}
           />
         </FormField>
@@ -143,7 +143,7 @@ export default function CreateAccountModal({ open, disabled, onClose, onSubmit }
             value={form.role}
             onChange={(role) => {
               setForm((prev) => ({ ...prev, role }))
-              clearError('role')
+              clearError("role")
             }}
           />
         </FormField>

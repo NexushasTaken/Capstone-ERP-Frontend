@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import AppModal, { ModalActions, ModalBody, ModalHeader } from '@/components/AppModal'
+import type { ReactNode } from "react"
+import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
 
 interface DeleteConfirmModalProps {
   open: boolean

@@ -1,30 +1,30 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Plus } from 'lucide-react'
-import ExportCsvButton from '@/components/ExportCsvButton'
-import OrderTypeFilterSelect from '@/components/OrderTypeFilterSelect'
-import PageTitle from '@/components/PageTitle'
-import SearchInput from '@/components/SearchInput'
-import { TablePagination } from '@/components/TablePagination'
-import { Button } from '@/components/ui/button'
-import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { exportToCSV } from '@/lib/exportToCsv'
-import { formatDate } from '@/lib/format'
-import { formatOrderNumber, normalizeOrderText } from '@/lib/helpers/orderHelpers'
-import type { InsertOrderPayload, OrderGroup } from '@/types/order'
-import { useOrderMutations, useOrders, useOrderStatuses } from '../_hooks/useOrders'
-import CreateOrderModal from './CreateOrderModal'
-import OrdersList from './OrdersList'
-import OrderStatusFilterSelect from './OrderStatusFilterSelect'
+import { useState } from "react"
+import { Plus } from "lucide-react"
+import ExportCsvButton from "@/components/ExportCsvButton"
+import OrderTypeFilterSelect from "@/components/OrderTypeFilterSelect"
+import PageTitle from "@/components/PageTitle"
+import SearchInput from "@/components/SearchInput"
+import { TablePagination } from "@/components/TablePagination"
+import { Button } from "@/components/ui/button"
+import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { exportToCSV } from "@/lib/exportToCsv"
+import { formatDate } from "@/lib/format"
+import { formatOrderNumber, normalizeOrderText } from "@/lib/helpers/orderHelpers"
+import type { InsertOrderPayload, OrderGroup } from "@/types/order"
+import { useOrderMutations, useOrders, useOrderStatuses } from "../_hooks/useOrders"
+import CreateOrderModal from "./CreateOrderModal"
+import OrdersList from "./OrdersList"
+import OrderStatusFilterSelect from "./OrderStatusFilterSelect"
 
 const PAGE_SIZE = 10
 
 export default function OrdersView() {
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState('')
-  const [selectedOrderStatusFilter, setSelectedOrderStatusFilter] = useState('')
+  const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState("")
+  const [selectedOrderStatusFilter, setSelectedOrderStatusFilter] = useState("")
   const [expandedOrderKey, setExpandedOrderKey] = useState<string | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const debouncedSearch = useDebouncedValue(search.trim())
@@ -116,7 +116,7 @@ export default function OrdersView() {
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
         <span className="text-sm text-muted-foreground">
           Showing {orders.length} orders of {rows}
-          {isFetching ? ' - Updating...' : ''}
+          {isFetching ? " - Updating..." : ""}
         </span>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={goToPage} />
@@ -139,32 +139,32 @@ function exportOrders(groups: OrderGroup[]) {
     groups.flatMap((group) => group.orders.map((line) => ({ ...group, ...line }))),
     [
       {
-        header: 'Order ID',
+        header: "Order ID",
         value: (order) => formatOrderNumber(order.orderId),
       },
-      { header: 'Product', value: (order) => order.productName },
+      { header: "Product", value: (order) => order.productName },
       {
-        header: 'Order type',
+        header: "Order type",
         value: (order) => normalizeOrderText(order.orderType),
       },
       {
-        header: 'Status',
+        header: "Status",
         value: (order) => normalizeOrderText(order.orderStatus),
       },
-      { header: 'Customer', value: (order) => order.customerName },
-      { header: 'Driver', value: (order) => order.driverName || 'Unassigned' },
-      { header: 'Quantity', value: (order) => order.quantity },
-      { header: 'Amount', value: (order) => order.totalAmount },
+      { header: "Customer", value: (order) => order.customerName },
+      { header: "Driver", value: (order) => order.driverName || "Unassigned" },
+      { header: "Quantity", value: (order) => order.quantity },
+      { header: "Amount", value: (order) => order.totalAmount },
       {
-        header: 'Pickup address',
-        value: (order) => order.pickUpAddress ?? '-',
+        header: "Pickup address",
+        value: (order) => order.pickUpAddress ?? "-",
       },
       {
-        header: 'Delivery address',
-        value: (order) => order.deliveryAddress ?? '-',
+        header: "Delivery address",
+        value: (order) => order.deliveryAddress ?? "-",
       },
-      { header: 'Created at', value: (order) => formatDate(order.created_At) },
+      { header: "Created at", value: (order) => formatDate(order.created_At) },
     ],
-    'orders',
+    "orders",
   )
 }

@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { Button } from '@/components/ui/button'
-import { Spinner } from '@/components/ui/spinner'
-import { useCooldown } from '@/hooks/useCooldown'
+import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { useCooldown } from "@/hooks/useCooldown"
 
 interface ExportCsvButtonProps {
   onExport: () => void
@@ -32,7 +32,7 @@ export default function ExportCsvButton({ onExport, disabled = false }: ExportCs
           Cooldown
         </>
       ) : (
-        'Export to CSV'
+        "Export to CSV"
       )}
     </Button>
   )

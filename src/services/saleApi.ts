@@ -1,5 +1,5 @@
-import type { Sale } from '@/types/sale'
-import type { FetchSalesParams, SaleListContent } from '@/types/sale'
+import type { Sale } from "@/types/sale"
+import type { FetchSalesParams, SaleListContent } from "@/types/sale"
 
 interface SaleEnvelope {
   status: number
@@ -17,16 +17,16 @@ export async function fetchSales(
   rows: number
 }> {
   const query = new URLSearchParams()
-  if (params.page) query.set('page', String(params.page))
-  if (params.pageSize) query.set('pageSize', String(params.pageSize))
-  if (params.name) query.set('name', params.name)
-  if (params.orderTypeId !== undefined) query.set('orderTypeId', String(params.orderTypeId))
+  if (params.page) query.set("page", String(params.page))
+  if (params.pageSize) query.set("pageSize", String(params.pageSize))
+  if (params.name) query.set("name", params.name)
+  if (params.orderTypeId !== undefined) query.set("orderTypeId", String(params.orderTypeId))
 
   const response = await fetch(`/api/Sale/all?${query.toString()}`, {
-    cache: 'no-store',
+    cache: "no-store",
     signal,
-    method: 'GET',
-    credentials: 'include',
+    method: "GET",
+    credentials: "include",
   })
 
   if (!response.ok) {
@@ -36,7 +36,7 @@ export async function fetchSales(
   const data: SaleEnvelope = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || 'Failed to fetch sales')
+    throw new Error(data.message || "Failed to fetch sales")
   }
 
   return {

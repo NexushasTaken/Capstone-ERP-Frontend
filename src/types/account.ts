@@ -1,4 +1,4 @@
-import type { Role } from '@/types/profile'
+import type { Role } from "@/types/profile"
 
 export interface AccountListItem {
   id: number
@@ -8,12 +8,12 @@ export interface AccountListItem {
   email: string
 }
 
-export type AccountSortBy = 'id' | 'role' | 'firstName' | 'lastName' | 'email'
+export type AccountSortBy = "id" | "role" | "firstName" | "lastName" | "email"
 
 export interface AccountSortOption {
   label: string
   value: AccountSortBy
-  order: 'asc' | 'desc'
+  order: "asc" | "desc"
 }
 
 export interface CreateAccountPayload {
