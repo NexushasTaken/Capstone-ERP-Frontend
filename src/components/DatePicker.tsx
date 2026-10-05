@@ -15,9 +15,11 @@ interface DatePickerSimpleProps {
   label?: string
   minDate?: Date
   maxDate?: Date
+  /** Shown under the picker. */
+  error?: string
 }
 
-export function DatePickerSimple({ value, onChange, label = "Date", minDate, maxDate }: DatePickerSimpleProps) {
+export function DatePickerSimple({ value, onChange, label = "Date", minDate, maxDate, error }: DatePickerSimpleProps) {
   const id = React.useId()
   const [open, setOpen] = React.useState(false)
   const date = value ? new Date(value + "T00:00:00") : undefined
@@ -30,7 +32,13 @@ export function DatePickerSimple({ value, onChange, label = "Date", minDate, max
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           render={
-            <Button type="button" variant="outline" id={id} className="h-10 w-full justify-start font-normal">
+            <Button
+              type="button"
+              variant="outline"
+              id={id}
+              aria-invalid={!!error}
+              className="h-10 w-full justify-start font-normal"
+            >
               {date ? (
                 format(date, "PPP")
               ) : (
@@ -57,6 +65,7 @@ export function DatePickerSimple({ value, onChange, label = "Date", minDate, max
           />
         </PopoverContent>
       </Popover>
+      {error && <span className="text-xs text-destructive">{error}</span>}
     </Field>
   )
 }

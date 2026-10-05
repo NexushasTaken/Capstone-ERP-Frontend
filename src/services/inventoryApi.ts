@@ -12,6 +12,7 @@ import type {
   InventoryListContent,
   UpdateInventoryPayload,
 } from "@/types/inventory"
+import { ApiError } from "@/lib/apiError"
 
 // GET
 export async function fetchInventoryProducts(signal?: AbortSignal): Promise<ProductListItem[]> {
@@ -29,7 +30,7 @@ export async function fetchInventoryProducts(signal?: AbortSignal): Promise<Prod
   const data: ApiEnvelope<ProductListItem[]> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch inventory products")
+    throw new ApiError(data.message || "Failed to fetch inventory products", response.status, data.errors)
   }
 
   return data.content
@@ -50,7 +51,7 @@ export async function fetchInventoryVelocity(params: FetchInventoryVelocityParam
   }
   const data: ApiEnvelope<InventoryVelocityContent> = await response.json()
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch inventory velocity")
+    throw new ApiError(data.message || "Failed to fetch inventory velocity", response.status, data.errors)
   }
   return {
     items: data.content.inventories,
@@ -84,7 +85,7 @@ export async function fetchInventories(params: FetchInventoriesParams = {}): Pro
   const data: ApiEnvelope<InventoryListContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch inventories")
+    throw new ApiError(data.message || "Failed to fetch inventories", response.status, data.errors)
   }
 
   return {
@@ -111,7 +112,7 @@ export async function insertInventory(
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to add inventory item")
+    throw new ApiError(data.message || "Failed to add inventory item", response.status, data.errors)
   }
 
   return data
@@ -129,7 +130,7 @@ export async function updateInventory(payload: UpdateInventoryPayload): Promise<
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to update inventory item")
+    throw new ApiError(data.message || "Failed to update inventory item", response.status, data.errors)
   }
 
   return data
@@ -144,7 +145,8 @@ export async function markInventoryAsDamage(payload: MarkInventoryAsDamagePayloa
     body: JSON.stringify(payload),
   })
   const data: ApiEnvelopeNoContent = await response.json()
-  if (!response.ok || !data.success) throw new Error(data.message || "Failed to mark inventory as damaged")
+  if (!response.ok || !data.success)
+    throw new ApiError(data.message || "Failed to mark inventory as damaged", response.status, data.errors)
   return data
 }
 
@@ -156,7 +158,8 @@ export async function restockInventory(payload: RestockInventoryPayload): Promis
     body: JSON.stringify(payload),
   })
   const data: ApiEnvelopeNoContent = await response.json()
-  if (!response.ok || !data.success) throw new Error(data.message || "Failed to restock inventory")
+  if (!response.ok || !data.success)
+    throw new ApiError(data.message || "Failed to restock inventory", response.status, data.errors)
   return data
 }
 
@@ -172,7 +175,7 @@ export async function deleteInventory(id: number): Promise<ApiEnvelopeNoContent>
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to delete inventory item")
+    throw new ApiError(data.message || "Failed to delete inventory item", response.status, data.errors)
   }
 
   return data
@@ -186,7 +189,7 @@ export async function fetchInventoryMovements(id: number): Promise<InventoryMove
   })
   const data: ApiEnvelope<InventoryMovementItem[]> = await response.json()
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to fetch inventory movement records")
+    throw new ApiError(data.message || "Failed to fetch inventory movement records", response.status, data.errors)
   }
   return [...data.content].sort((a, b) => Date.parse(b.created_At) - Date.parse(a.created_At))
 }
@@ -199,7 +202,7 @@ export async function fetchInventoryDamageRecords(id: number): Promise<Inventory
   })
   const data: ApiEnvelope<InventoryDamageItem[]> = await response.json()
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to fetch inventory damage records")
+    throw new ApiError(data.message || "Failed to fetch inventory damage records", response.status, data.errors)
   }
   return [...data.content].sort((a, b) => Date.parse(b.created_At) - Date.parse(a.created_At))
 }
@@ -212,6 +215,6 @@ export async function fetchInventoryStatusCounts(signal?: AbortSignal): Promise<
   })
   if (!response.ok) throw new Error("Failed to fetch inventory status counts: " + response.status)
   const data: ApiEnvelope<StatusCount[]> = await response.json()
-  if (!data.success) throw new Error(data.message || "Failed to fetch status counts")
+  if (!data.success) throw new ApiError(data.message || "Failed to fetch status counts", response.status, data.errors)
   return data.content
 }

@@ -6,6 +6,7 @@ import type {
   WarehouseListItem,
 } from "@/types/warehouse"
 import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
+import { ApiError } from "@/lib/apiError"
 
 // GET
 export async function fetchWarehouses(params: FetchWarehousesParams = {}): Promise<{
@@ -31,7 +32,7 @@ export async function fetchWarehouses(params: FetchWarehousesParams = {}): Promi
   const data: ApiEnvelope<WarehouseListContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch warehouses")
+    throw new ApiError(data.message || "Failed to fetch warehouses", response.status, data.errors)
   }
 
   return {
@@ -59,7 +60,7 @@ export async function insertWarehouse(payload: InsertWarehousePayload): Promise<
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to add warehouse")
+    throw new ApiError(data.message || "Failed to add warehouse", response.status, data.errors)
   }
 
   return data
@@ -77,7 +78,7 @@ export async function updateWarehouse(payload: UpdateWarehousePayload): Promise<
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to update warehouse")
+    throw new ApiError(data.message || "Failed to update warehouse", response.status, data.errors)
   }
 
   return data
@@ -95,7 +96,7 @@ export async function deleteWarehouse(id: number): Promise<ApiEnvelopeNoContent>
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to delete warehouse")
+    throw new ApiError(data.message || "Failed to delete warehouse", response.status, data.errors)
   }
 
   return data

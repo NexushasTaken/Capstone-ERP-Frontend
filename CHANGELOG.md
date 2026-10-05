@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-10-05
+
+### Added
+
+- Every form shows what's wrong under the field itself (after you leave the field or try to submit), instead of only greying out the save button.
+- Errors the server finds, such as an email that's already taken or a wrong current password, appear under the matching field in the login, create account and account settings forms.
+- Create order flags each order line's missing product or invalid quantity on that line.
+
+### Changed
+
+- Form rules now match the server's: adding inventory needs a reorder point above 0, and marking damage can't exceed the available stock for current items.
+
 ## [1.3.0] - 2026-10-05
 
 ### Added

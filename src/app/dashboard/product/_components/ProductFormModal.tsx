@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { Controller, useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useQuery } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
 import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
@@ -11,6 +12,7 @@ import { queryKeys } from "@/lib/query/queryKeys"
 import type { ProductListItem } from "@/types/product"
 import type { ProductValues } from "../_hooks/useProducts"
 import { formatProductId } from "../_lib/productHelpers"
+import { productSchema, type ProductFormValues } from "../_lib/productSchema"
 
 const ALL_CATEGORIES = { page: 1, pageSize: 1000 }
 
@@ -24,10 +26,19 @@ interface ProductFormModalProps {
 
 // Add and edit share this modal. Render it only while open so the fields start fresh each time.
 export default function ProductFormModal({ product, disabled, onClose, onSubmit }: ProductFormModalProps) {
-  const [form, setForm] = useState({
-    name: product?.name ?? "",
-    categoryId: product?.categoryId ? String(product.categoryId) : "",
-    price: product ? String(product.price) : "",
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
+    mode: "onTouched",
+    defaultValues: {
+      name: product?.name ?? "",
+      categoryId: product?.categoryId ?? 0,
+      price: product?.price,
+    },
   })
   const { data: categoriesResponse, isLoading: categoriesLoading } = useQuery({
     queryKey: queryKeys.categories.all(ALL_CATEGORIES),
@@ -44,22 +55,9 @@ export default function ProductFormModal({ product, disabled, onClose, onSubmit 
       sublabel: `ID: ${category.id}`,
     })),
   ]
-  const selectedCategoryName = categories.find((category) => category.id === Number(form.categoryId))?.type ?? null
-  const canSubmit = form.name.trim() !== "" && form.price.trim() !== "" && Number(form.price) > 0 && !disabled
+  const categoryName = (categoryId: number) => categories.find((category) => category.id === categoryId)?.type ?? null
 
-  function updateField(field: keyof typeof form, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }))
-  }
-
-  function handleSubmit() {
-    if (!canSubmit) return
-    onSubmit({
-      name: form.name.trim(),
-      price: Number(form.price),
-      categoryId: form.categoryId ? Number(form.categoryId) : 0,
-      categoryName: selectedCategoryName,
-    })
-  }
+  const submit = handleSubmit((values) => onSubmit({ ...values, categoryName: categoryName(values.categoryId) }))
 
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open>
@@ -69,41 +67,44 @@ export default function ProductFormModal({ product, disabled, onClose, onSubmit 
         onClose={onClose}
       />
       <ModalBody>
-        <FormField label="Product name">
-          <FormInput
-            className="capitalize"
-            onChange={(event) => updateField("name", event.target.value)}
-            value={form.name}
+        <FormField label="Product name" error={errors.name?.message}>
+          <FormInput aria-invalid={!!errors.name} className="capitalize" {...register("name")} />
+        </FormField>
+
+        <FormField label="Category" error={errors.categoryId?.message}>
+          <Controller
+            control={control}
+            name="categoryId"
+            render={({ field }) => (
+              <EntityDropdown
+                emptyLabel="No categories found"
+                isLoading={categoriesLoading}
+                onSelect={field.onChange}
+                options={categoryOptions}
+                placeholder="No category"
+                searchPlaceholder="Search categories..."
+                value={field.value === 0 ? "" : (categoryName(field.value) ?? "")}
+              />
+            )}
           />
         </FormField>
 
-        <FormField label="Category">
-          <EntityDropdown
-            emptyLabel="No categories found"
-            isLoading={categoriesLoading}
-            onSelect={(categoryId) => updateField("categoryId", categoryId === 0 ? "" : String(categoryId))}
-            options={categoryOptions}
-            placeholder="No category"
-            searchPlaceholder="Search categories..."
-            value={form.categoryId === "0" ? "No category" : (selectedCategoryName ?? "")}
-          />
-        </FormField>
-
-        <FormField label="Price">
+        <FormField label="Price" error={errors.price?.message}>
           <FormInput
+            aria-invalid={!!errors.price}
             min={1}
-            onChange={(event) => updateField("price", event.target.value)}
+            step="any"
             type="number"
-            value={form.price}
+            {...register("price", { valueAsNumber: true })}
           />
         </FormField>
       </ModalBody>
       <ModalActions
         onCancel={onClose}
-        onConfirm={handleSubmit}
+        onConfirm={submit}
         confirmLabel={isEdit ? "Save changes" : "Add product"}
         confirmIcon={isEdit ? undefined : Plus}
-        confirmDisabled={!canSubmit}
+        confirmDisabled={!isValid || disabled}
       />
     </AppModal>
   )

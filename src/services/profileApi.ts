@@ -1,5 +1,6 @@
 import type { CurrentUser } from "@/types/profile"
 import type { ApiEnvelope } from "@/types/api"
+import { ApiError } from "@/lib/apiError"
 
 const CURRENT_USER_STORAGE_KEY = "erp.currentUser"
 
@@ -59,7 +60,7 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const data: ApiEnvelope<RawCurrentUser | null> = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to fetch current user")
+    throw new ApiError(data.message || "Failed to fetch current user", response.status, data.errors)
   }
 
   const user = normalizeCurrentUser(data.content)

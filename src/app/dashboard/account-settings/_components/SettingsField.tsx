@@ -5,16 +5,18 @@ import { Input } from "@/components/ui/input"
 // Label on the left, input on the right. `SettingsRow` lines other content up with the inputs.
 const fieldLabelColumn = "grid-cols-[150px_1fr]"
 
-interface SettingsFieldProps extends Omit<ComponentProps<typeof Input>, "onChange"> {
+interface SettingsFieldProps extends ComponentProps<typeof Input> {
   label: string
-  onChange: (value: string) => void
+  /** Shown under the input. */
+  error?: string
 }
 
-export function SettingsField({ label, onChange, ...inputProps }: SettingsFieldProps) {
+export function SettingsField({ label, error, ...inputProps }: SettingsFieldProps) {
   return (
     <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-foreground`}>
       <span className="text-muted-foreground">{label}</span>
-      <Input onChange={(event) => onChange(event.target.value)} {...inputProps} />
+      <Input aria-invalid={!!error} {...inputProps} />
+      {error && <span className="col-start-2 text-xs text-destructive">{error}</span>}
     </label>
   )
 }

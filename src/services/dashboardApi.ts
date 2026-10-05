@@ -6,6 +6,7 @@ import type {
   InventoryForecastContent,
   SalesOverviewContent,
 } from "@/types/dashboard"
+import { ApiError } from "@/lib/apiError"
 
 export async function fetchSalesOverview(
   params: FetchSalesOverviewParams,
@@ -29,7 +30,7 @@ export async function fetchSalesOverview(
   const data: ApiEnvelope<SalesOverviewContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch sales overview")
+    throw new ApiError(data.message || "Failed to fetch sales overview", response.status, data.errors)
   }
 
   return data.content
@@ -49,7 +50,7 @@ export async function fetchDashboardInventory(signal?: AbortSignal): Promise<Das
   const data: ApiEnvelope<DashboardInventoryContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch dashboard inventory")
+    throw new ApiError(data.message || "Failed to fetch dashboard inventory", response.status, data.errors)
   }
 
   return data.content
@@ -81,7 +82,7 @@ export async function fetchInventoryForecast(
   const data: ApiEnvelope<InventoryForecastContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch inventory forecast")
+    throw new ApiError(data.message || "Failed to fetch inventory forecast", response.status, data.errors)
   }
 
   return {

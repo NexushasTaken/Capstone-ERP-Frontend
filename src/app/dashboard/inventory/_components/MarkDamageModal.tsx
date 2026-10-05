@@ -1,13 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { Controller, useForm, useWatch } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import AppModal, { ModalHeader } from "@/components/AppModal"
+import { FormField } from "@/components/FormField"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { formatInventoryId, formatNumber } from "@/lib/helpers/inventoryHelpers"
 import type { InventoryListItem, MarkInventoryAsDamagePayload } from "@/types/inventory"
+import { damageSchema, type DamageFormValues } from "../_lib/inventorySchema"
 
 const damageTypeOptions = [
   { value: 1, label: "Current Item" },
@@ -23,22 +26,17 @@ interface MarkDamageModalProps {
 
 // "Current item" damage is taken out of stock; "return item" damage only records a report.
 export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: MarkDamageModalProps) {
-  const [form, setForm] = useState<{
-    quantity: string
-    reason: string
-    damagedType: 1 | 2
-  }>({
-    quantity: "",
-    reason: "",
-    damagedType: 1,
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<DamageFormValues>({
+    resolver: zodResolver(damageSchema(item.quantity)),
+    mode: "onTouched",
+    defaultValues: { damagedType: 1, reason: "" },
   })
-  const quantity = Number(form.quantity)
-  const canSubmit =
-    item.id > 0 &&
-    Number.isSafeInteger(quantity) &&
-    quantity > 0 &&
-    (form.damagedType === 2 || quantity <= item.quantity) &&
-    form.reason.trim() !== ""
+  const damagedType = useWatch({ control, name: "damagedType" })
   const close = () => {
     if (!isPending) onClose()
   }
@@ -47,22 +45,15 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
     <AppModal open onClose={close} className="flex max-h-fit flex-col lg:max-w-lg">
       <ModalHeader subtitle={formatInventoryId(String(item.id))} title="Mark as damage" onClose={close} />
       <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          if (!canSubmit || isPending) return
-          onSubmit({
-            id: item.id,
-            damagedType: form.damagedType,
-            quantity,
-            reason: form.reason.trim(),
-            created_At: new Date().toISOString(),
-          })
-        }}
+        onSubmit={handleSubmit((values) => {
+          if (isPending) return
+          onSubmit({ id: item.id, ...values, created_At: new Date().toISOString() })
+        })}
       >
         <div className="flex flex-col gap-4 p-4">
           <p className="text-sm text-muted-foreground">
             {item.name} · {formatNumber(item.quantity)} available.{" "}
-            {form.damagedType === 1
+            {damagedType === 1
               ? "Damaged quantity will be deducted from stock."
               : "Returned damage does not change current stock."}
           </p>
@@ -70,65 +61,59 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
             <label htmlFor="damage-type" className="text-xs text-muted-foreground">
               Damage type
             </label>
-            <Select
-              items={damageTypeOptions}
-              value={form.damagedType}
-              disabled={isPending}
-              onValueChange={(value) => {
-                if (value === 1 || value === 2) setForm((previous) => ({ ...previous, damagedType: value }))
-              }}
-            >
-              <SelectTrigger id="damage-type" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {damageTypeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              control={control}
+              name="damagedType"
+              // The stock limit only applies to "current item" damage, so re-check quantity on change.
+              rules={{ deps: ["quantity"] }}
+              render={({ field }) => (
+                <Select
+                  items={damageTypeOptions}
+                  value={field.value}
+                  disabled={isPending}
+                  onValueChange={(value) => {
+                    if (value === 1 || value === 2) field.onChange(value)
+                  }}
+                >
+                  <SelectTrigger id="damage-type" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {damageTypeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
-          <label className="flex flex-col gap-1 text-sm text-foreground">
-            <span className="text-xs text-muted-foreground">Quantity</span>
+          <FormField label="Quantity" error={errors.quantity?.message}>
             <Input
-              required
+              aria-invalid={!!errors.quantity}
               type="number"
               min={1}
-              max={form.damagedType === 1 ? item.quantity : undefined}
+              max={damagedType === 1 ? item.quantity : undefined}
               step={1}
               disabled={isPending}
-              value={form.quantity}
-              onChange={(event) =>
-                setForm((previous) => ({
-                  ...previous,
-                  quantity: event.target.value,
-                }))
-              }
+              {...register("quantity", { valueAsNumber: true })}
             />
-          </label>
-          <label className="flex flex-col gap-1 text-sm text-foreground">
-            <span className="text-xs text-muted-foreground">Reason</span>
+          </FormField>
+          <FormField label="Reason" error={errors.reason?.message}>
             <Textarea
-              required
+              aria-invalid={!!errors.reason}
               disabled={isPending}
-              value={form.reason}
-              onChange={(event) =>
-                setForm((previous) => ({
-                  ...previous,
-                  reason: event.target.value,
-                }))
-              }
               className="h-28 min-h-28 max-h-28 resize-none field-sizing-fixed overflow-y-auto"
+              {...register("reason")}
             />
-          </label>
+          </FormField>
         </div>
         <div className="flex justify-end gap-2 border-t border-border p-4">
           <Button type="button" variant="outline" disabled={isPending} onClick={close}>
             Cancel
           </Button>
-          <Button type="submit" variant="destructive" disabled={!canSubmit || isPending}>
+          <Button type="submit" variant="destructive" disabled={!isValid || isPending}>
             {isPending ? "Saving..." : "Mark as damage"}
           </Button>
         </div>

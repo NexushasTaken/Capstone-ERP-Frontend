@@ -6,6 +6,7 @@ import type {
   InsertProductPayload,
   UpdateProductPayload,
 } from "@/types/product"
+import { ApiError } from "@/lib/apiError"
 
 // GET
 export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
@@ -32,7 +33,7 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
   const data: ApiEnvelope<ProductListContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch products")
+    throw new ApiError(data.message || "Failed to fetch products", response.status, data.errors)
   }
 
   return {
@@ -56,7 +57,7 @@ export async function insertProduct(payload: InsertProductPayload, existingId?: 
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to add product")
+    throw new ApiError(data.message || "Failed to add product", response.status, data.errors)
   }
 
   return data
@@ -74,7 +75,7 @@ export async function updateProduct(payload: UpdateProductPayload): Promise<ApiE
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to update product")
+    throw new ApiError(data.message || "Failed to update product", response.status, data.errors)
   }
 
   return data
@@ -92,7 +93,7 @@ export async function deleteProduct(id: number): Promise<ApiEnvelopeNoContent> {
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to delete product")
+    throw new ApiError(data.message || "Failed to delete product", response.status, data.errors)
   }
 
   return data
