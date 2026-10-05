@@ -46,10 +46,11 @@ export default function AccountsView() {
   )
   const closeModal = () => setModal(null)
 
-  function handleCreateAccount(account: NewAccount) {
+  // Close only once the account exists; on failure the modal stays open with its inputs.
+  async function handleCreateAccount(account: NewAccount) {
+    await mutations.createAccount.mutateAsync(account)
     closeModal()
     setCurrentPage(1)
-    mutations.createAccount.mutate(account)
   }
 
   function handleUpdateRole(newRole: AccountListItem['role']) {
@@ -115,9 +116,12 @@ export default function AccountsView() {
         </div>
       </div>
 
-      {modal?.type === 'create' && (
-        <CreateAccountModal disabled={mutations.isSubmitting} onClose={closeModal} onSubmit={handleCreateAccount} />
-      )}
+      <CreateAccountModal
+        open={modal?.type === 'create'}
+        disabled={mutations.isSubmitting}
+        onClose={closeModal}
+        onSubmit={handleCreateAccount}
+      />
       {modal?.type === 'edit' && (
         <EditAccountRoleModal
           account={modal.account}
