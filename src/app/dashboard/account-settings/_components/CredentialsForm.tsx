@@ -1,95 +1,92 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useForm, useWatch } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { updateAccountCredentials } from "@/services/accountApi"
+import { ApiError } from "@/lib/apiError"
+import { applyServerErrors } from "@/lib/applyServerErrors"
 import { queryKeys } from "@/lib/query/queryKeys"
 import type { CredentialsInfo } from "@/types/account"
+import { credentialsSchema, type CredentialsFormValues } from "../_lib/settingsSchema"
 import { SaveButton, SettingsField, SettingsHeading, SettingsRow } from "./SettingsField"
-
-const MIN_PASSWORD_LENGTH = 8
 
 export default function CredentialsForm({ credentials }: { credentials: CredentialsInfo }) {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState({
-    currentPassword: "",
-    email: credentials.email,
-    password: "",
-    confirmPassword: "",
+  const {
+    register,
+    control,
+    handleSubmit,
+    resetField,
+    setError,
+    formState: { errors, isValid },
+  } = useForm<CredentialsFormValues>({
+    resolver: zodResolver(credentialsSchema),
+    mode: "onTouched",
+    defaultValues: { currentPassword: "", email: credentials.email, password: "", confirmPassword: "" },
   })
+  const [email, password] = useWatch({ control, name: ["email", "password"] })
 
   const updateCredentialsMutation = useMutation({
     mutationFn: updateAccountCredentials,
-    onSuccess: () => {
+    onSuccess: (_result, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.profile.info })
-      setForm((prev) => ({
-        ...prev,
-        currentPassword: "",
-        password: "",
-        confirmPassword: "",
-      }))
+      resetField("email", { defaultValue: variables.email })
+      resetField("currentPassword")
+      resetField("password")
+      resetField("confirmPassword")
       toast.success("Account settings updated successfully")
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to update account settings"),
+    onError: (err) => {
+      // The user is signed in, so a 401 here means the current password was wrong.
+      if (err instanceof ApiError && err.status === 401) {
+        setError("currentPassword", { message: err.message }, { shouldFocus: true })
+        return
+      }
+      if (applyServerErrors(err, setError)) return
+      toast.error(err instanceof Error ? err.message : "Failed to update account settings")
+    },
   })
 
-  const passwordProvided = form.password !== "" || form.confirmPassword !== ""
-  const passwordValid =
-    !passwordProvided || (form.password.length >= MIN_PASSWORD_LENGTH && form.password === form.confirmPassword)
-  const emailChanged = form.email.trim() !== credentials.email
-  const canSubmit =
-    form.currentPassword !== "" && form.email.trim() !== "" && passwordValid && (emailChanged || passwordProvided)
-
-  function updateField(field: keyof typeof form) {
-    return (value: string) => setForm((prev) => ({ ...prev, [field]: value }))
-  }
-
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (!canSubmit) return
-
-    updateCredentialsMutation.mutate({
-      currentPassword: form.currentPassword,
-      email: form.email.trim(),
-      password: passwordProvided ? form.password : undefined,
-    })
-  }
+  const emailChanged = email.trim() !== credentials.email
+  const canSubmit = isValid && (emailChanged || password !== "") && !updateCredentialsMutation.isPending
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full max-w-md flex-col gap-4">
+    <form
+      onSubmit={handleSubmit(({ currentPassword, email, password }) =>
+        updateCredentialsMutation.mutate({ currentPassword, email, password: password || undefined }),
+      )}
+      className="flex w-full max-w-md flex-col gap-4"
+    >
       <SettingsHeading title="Account Settings" description="Update your login email or password." />
-      <SettingsField label="Email" type="email" value={form.email} onChange={updateField("email")} />
+      <SettingsField label="Email" type="email" error={errors.email?.message} {...register("email")} />
       <SettingsField
         label="Current Password"
         type="password"
-        value={form.currentPassword}
-        onChange={updateField("currentPassword")}
+        error={errors.currentPassword?.message}
+        {...register("currentPassword")}
       />
       <SettingsField
         label="Password"
         type="password"
         placeholder="Leave blank to keep current password"
-        value={form.password}
-        onChange={updateField("password")}
+        error={errors.password?.message}
+        {...register("password", { deps: ["confirmPassword"] })}
       />
       <SettingsField
         label="Confirm Password"
         type="password"
         placeholder="Leave blank to keep current password"
-        value={form.confirmPassword}
-        onChange={updateField("confirmPassword")}
+        error={errors.confirmPassword?.message}
+        {...register("confirmPassword")}
       />
-
-      {passwordProvided && !passwordValid ? (
+      {errors.root?.server && (
         <SettingsRow>
-          <span className="text-xs text-destructive">
-            Password must be at least {MIN_PASSWORD_LENGTH} characters and match the confirmation.
-          </span>
+          <span className="text-xs text-destructive">{errors.root.server.message}</span>
         </SettingsRow>
-      ) : null}
-
-      <SaveButton disabled={!canSubmit || updateCredentialsMutation.isPending} />
+      )}
+      <SaveButton disabled={!canSubmit} />
     </form>
   )
 }

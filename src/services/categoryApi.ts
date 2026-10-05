@@ -7,6 +7,7 @@ import type {
   UpdateCategoryPayload,
 } from "@/types/category"
 import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
+import { ApiError } from "@/lib/apiError"
 
 function mapCategory(item: RawCategoryListItem): CategoryListItem {
   return {
@@ -40,7 +41,7 @@ export async function fetchCategories(params: FetchCategoriesParams = {}): Promi
   const data: ApiEnvelope<CategoryListContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch categories")
+    throw new ApiError(data.message || "Failed to fetch categories", response.status, data.errors)
   }
 
   return {
@@ -62,7 +63,7 @@ export async function insertCategory(payload: InsertCategoryPayload): Promise<Ap
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to add category")
+    throw new ApiError(data.message || "Failed to add category", response.status, data.errors)
   }
 
   return data
@@ -80,7 +81,7 @@ export async function updateCategory(payload: UpdateCategoryPayload): Promise<Ap
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to update category")
+    throw new ApiError(data.message || "Failed to update category", response.status, data.errors)
   }
 
   return data
@@ -98,7 +99,7 @@ export async function deleteCategory(id: number): Promise<ApiEnvelopeNoContent> 
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to delete category")
+    throw new ApiError(data.message || "Failed to delete category", response.status, data.errors)
   }
 
   return data

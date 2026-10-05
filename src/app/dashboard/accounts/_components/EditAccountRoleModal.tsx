@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { Controller, useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
 import { FormField } from "@/components/FormField"
 import type { AccountListItem } from "@/types/account"
 import { formatAccountId, LOCKED_ACCOUNT_ID } from "../_lib/accountHelpers"
+import { editRoleSchema, type EditRoleFormValues } from "../_lib/accountSchema"
 import RoleSelect from "./RoleSelect"
 
 interface EditAccountRoleModalProps {
@@ -15,9 +17,16 @@ interface EditAccountRoleModalProps {
 }
 
 export default function EditAccountRoleModal({ account, disabled, onClose, onSubmit }: EditAccountRoleModalProps) {
-  const [role, setRole] = useState(account.role)
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isDirty },
+  } = useForm<EditRoleFormValues>({
+    resolver: zodResolver(editRoleSchema),
+    defaultValues: { role: account.role },
+  })
   const isLocked = account.id === LOCKED_ACCOUNT_ID
-  const canSubmit = !isLocked && role !== account.role && !disabled
+  const canSubmit = !isLocked && isDirty && !disabled
 
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open>
@@ -28,8 +37,12 @@ export default function EditAccountRoleModal({ account, disabled, onClose, onSub
           <span className="text-sm text-muted-foreground">{account.email}</span>
         </div>
 
-        <FormField label="Role">
-          <RoleSelect value={role} onChange={setRole} disabled={isLocked} />
+        <FormField label="Role" error={errors.role?.message}>
+          <Controller
+            control={control}
+            name="role"
+            render={({ field }) => <RoleSelect value={field.value} onChange={field.onChange} disabled={isLocked} />}
+          />
           {isLocked && (
             <span className="text-xs text-muted-foreground">This account&apos;s role cannot be changed.</span>
           )}
@@ -37,7 +50,7 @@ export default function EditAccountRoleModal({ account, disabled, onClose, onSub
       </ModalBody>
       <ModalActions
         onCancel={onClose}
-        onConfirm={() => canSubmit && onSubmit(role)}
+        onConfirm={handleSubmit((values) => canSubmit && onSubmit(values.role))}
         confirmLabel="Save changes"
         confirmDisabled={!canSubmit}
       />

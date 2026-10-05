@@ -1,5 +1,6 @@
 import type { Sale } from "@/types/sale"
 import type { FetchSalesParams, SaleListContent } from "@/types/sale"
+import { ApiError } from "@/lib/apiError"
 
 interface SaleEnvelope {
   status: number
@@ -36,7 +37,7 @@ export async function fetchSales(
   const data: SaleEnvelope = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch sales")
+    throw new ApiError(data.message || "Failed to fetch sales", response.status)
   }
 
   return {

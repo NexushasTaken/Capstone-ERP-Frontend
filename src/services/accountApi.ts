@@ -52,7 +52,7 @@ export async function fetchAccounts(
   const data: ApiEnvelope<RawAccountPage> = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to fetch accounts")
+    throw new ApiError(data.message || "Failed to fetch accounts", response.status, data.errors)
   }
 
   return {
@@ -73,7 +73,7 @@ export async function createAccount(payload: CreateAccountPayload): Promise<void
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new ApiError(data.message || "Failed to create account", response.status)
+    throw new ApiError(data.message || "Failed to create account", response.status, data.errors)
   }
 }
 
@@ -88,7 +88,7 @@ export async function updateAccountRole(id: number, role: AccountListItem["role"
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to update account")
+    throw new ApiError(data.message || "Failed to update account", response.status, data.errors)
   }
 }
 
@@ -101,7 +101,7 @@ export async function deleteAccount(id: number): Promise<void> {
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to delete account")
+    throw new ApiError(data.message || "Failed to delete account", response.status, data.errors)
   }
 }
 
@@ -116,7 +116,7 @@ export async function updateProfileInfo(payload: ProfileInfo): Promise<void> {
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to update profile information")
+    throw new ApiError(data.message || "Failed to update profile information", response.status, data.errors)
   }
 }
 
@@ -129,7 +129,7 @@ export async function fetchCredentials(): Promise<CredentialsInfo> {
   const data: ApiEnvelope<CredentialsInfo> = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to fetch account settings")
+    throw new ApiError(data.message || "Failed to fetch account settings", response.status, data.errors)
   }
 
   return data.content
@@ -146,6 +146,6 @@ export async function updateAccountCredentials(payload: UpdateCredentialsPayload
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to update account settings")
+    throw new ApiError(data.message || "Failed to update account settings", response.status, data.errors)
   }
 }

@@ -41,9 +41,10 @@ export function orderStatusDotClass(status: string | null | undefined) {
   return "bg-muted-foreground"
 }
 
-export function getOrderLineRows(orderLines: { productId: string; quantity: string }[], products: ProductListItem[]) {
+// Line values come straight from the form, so an untouched quantity can be NaN.
+export function getOrderLineRows(orderLines: { productId?: number; quantity?: number }[], products: ProductListItem[]) {
   return orderLines.map((line) => {
-    const product = products.find((item) => item.id === Number(line.productId)) ?? null
+    const product = products.find((item) => item.id === line.productId) ?? null
     const quantity = Number(line.quantity) || 0
     const unitPrice = product?.price ?? 0
 

@@ -2,6 +2,7 @@ import type { StatusCount } from "@/types/statusCount"
 import type { OrderGroup, OrderRider, OrderStatus, OrderType } from "@/types/order"
 import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
 import type { FetchOrdersParams, OrderListContent, InsertOrderPayload, UpdateOrderStatusPayload } from "@/types/order"
+import { ApiError } from "@/lib/apiError"
 
 export async function fetchOrders(
   params: FetchOrdersParams = {},
@@ -32,7 +33,7 @@ export async function fetchOrders(
   const data: ApiEnvelope<OrderListContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch orders")
+    throw new ApiError(data.message || "Failed to fetch orders", response.status, data.errors)
   }
 
   return {
@@ -53,7 +54,7 @@ export async function insertOrder(payload: InsertOrderPayload): Promise<ApiEnvel
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to add order")
+    throw new ApiError(data.message || "Failed to add order", response.status, data.errors)
   }
 
   return data
@@ -68,7 +69,7 @@ export async function fetchOrderTypes(): Promise<OrderType[]> {
   const data: ApiEnvelope<OrderType[]> = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to fetch order types")
+    throw new ApiError(data.message || "Failed to fetch order types", response.status, data.errors)
   }
 
   return data.content
@@ -83,7 +84,7 @@ export async function fetchOrderStatuses(): Promise<OrderStatus[]> {
   const data: ApiEnvelope<OrderStatus[]> = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to fetch order statuses")
+    throw new ApiError(data.message || "Failed to fetch order statuses", response.status, data.errors)
   }
 
   return data.content
@@ -98,7 +99,7 @@ export async function fetchOrderRiders(): Promise<OrderRider[]> {
   const data: ApiEnvelope<OrderRider[]> = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to fetch delivery riders")
+    throw new ApiError(data.message || "Failed to fetch delivery riders", response.status, data.errors)
   }
 
   return data.content
@@ -115,7 +116,7 @@ export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Prom
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to update order status")
+    throw new ApiError(data.message || "Failed to update order status", response.status, data.errors)
   }
 
   return data
@@ -129,6 +130,6 @@ export async function fetchOrderStatusCounts(signal?: AbortSignal): Promise<Stat
   })
   if (!response.ok) throw new Error("Failed to fetch order status counts: " + response.status)
   const data: ApiEnvelope<StatusCount[]> = await response.json()
-  if (!data.success) throw new Error(data.message || "Failed to fetch status counts")
+  if (!data.success) throw new ApiError(data.message || "Failed to fetch status counts", response.status, data.errors)
   return data.content
 }

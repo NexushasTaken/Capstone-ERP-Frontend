@@ -1,6 +1,7 @@
 import type { AuditLogItem, UserOption } from "@/types/auditLog"
 import type { AuditLogListContent, FetchAuditLogsParams } from "@/types/auditLog"
 import { ApiEnvelope } from "@/types/api"
+import { ApiError } from "@/lib/apiError"
 
 export async function fetchAuditLogs(
   params: FetchAuditLogsParams = {},
@@ -31,7 +32,7 @@ export async function fetchAuditLogs(
   const data: ApiEnvelope<AuditLogListContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch audit logs")
+    throw new ApiError(data.message || "Failed to fetch audit logs", response.status, data.errors)
   }
 
   return {
@@ -55,7 +56,7 @@ export async function fetchUsers(signal?: AbortSignal): Promise<UserOption[]> {
   const data: ApiEnvelope<UserOption[]> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch users")
+    throw new ApiError(data.message || "Failed to fetch users", response.status, data.errors)
   }
 
   return data.content

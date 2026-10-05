@@ -1,6 +1,7 @@
 import type { DriverListItem } from "@/types/driver"
 import type { DriverListContent, FetchDriversParams, InsertDriverPayload, UpdateDriverPayload } from "@/types/driver"
 import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
+import { ApiError } from "@/lib/apiError"
 
 export async function fetchDrivers(
   params: FetchDriversParams = {},
@@ -29,7 +30,7 @@ export async function fetchDrivers(
   const data: ApiEnvelope<DriverListContent> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.message || "Failed to fetch drivers")
+    throw new ApiError(data.message || "Failed to fetch drivers", response.status, data.errors)
   }
 
   return {
@@ -50,7 +51,7 @@ export async function insertDriver(payload: InsertDriverPayload): Promise<ApiEnv
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to add driver")
+    throw new ApiError(data.message || "Failed to add driver", response.status, data.errors)
   }
 
   return data
@@ -67,7 +68,7 @@ export async function updateDriver(payload: UpdateDriverPayload): Promise<ApiEnv
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to update driver")
+    throw new ApiError(data.message || "Failed to update driver", response.status, data.errors)
   }
 
   return data
@@ -84,7 +85,7 @@ export async function deleteDriver(id: number): Promise<ApiEnvelopeNoContent> {
   const data: ApiEnvelopeNoContent = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new Error(data.message || "Failed to delete driver")
+    throw new ApiError(data.message || "Failed to delete driver", response.status, data.errors)
   }
 
   return data

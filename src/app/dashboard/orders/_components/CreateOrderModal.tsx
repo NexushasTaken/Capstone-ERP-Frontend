@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { Controller, FormProvider, useForm, useWatch } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
 import AppModal, { ModalTitle } from "@/components/AppModal"
 import CloseButton from "@/components/CloseButton"
@@ -17,19 +19,11 @@ import {
   getOrderLineRows,
   normalizeOrderText,
 } from "@/lib/helpers/orderHelpers"
-import type { InsertOrderPayload, OrderLineForm } from "@/types/order"
+import type { InsertOrderPayload } from "@/types/order"
 import { useOrderRiders } from "../_hooks/useOrders"
+import { emptyOrder, orderSchema, type OrderFields } from "../_lib/orderSchema"
 import ConfirmOrderModal from "./ConfirmOrderModal"
 import OrderLinesEditor from "./OrderLinesEditor"
-
-const emptyOrderForm = {
-  orderTypeId: "",
-  deliveryRiderId: "",
-  customerName: "",
-  pickUpAddress: "",
-  deliveryAddress: "",
-}
-const emptyOrderLines: OrderLineForm[] = [{ productId: "", quantity: "1" }]
 
 interface CreateOrderModalProps {
   open: boolean
@@ -44,8 +38,6 @@ interface CreateOrderModalProps {
  */
 export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: CreateOrderModalProps) {
   const [isReviewing, setIsReviewing] = useState(false)
-  const [form, setForm] = useState(emptyOrderForm)
-  const [lines, setLines] = useState(emptyOrderLines)
 
   const { products, isLoading: productsLoading, error: productsError } = useInventoryProductSearch(open)
   const { data: orderTypes = [], isLoading: orderTypesLoading } = useOrderTypes()
@@ -59,62 +51,61 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
     value: String(orderType.id),
     label: orderType.label,
   }))
-  const selectedOrderTypeLabel = orderTypeOptions.find((type) => type.id === Number(form.orderTypeId))?.label
-  // Walk-in orders have no rider and no addresses.
-  const isWalkin = selectedOrderTypeLabel?.toLowerCase() === "walkin"
+  const isWalkinType = (orderTypeId?: number) =>
+    orderTypeOptions.find((type) => type.id === orderTypeId)?.label.toLowerCase() === "walkin"
+
+  const form = useForm<OrderFields>({
+    // Walk-in orders skip the rider and address rules, so pick the schema from the values being checked.
+    resolver: (values, context, options) =>
+      zodResolver(orderSchema(isWalkinType(values.orderTypeId)))(values, context, options),
+    mode: "onTouched",
+    defaultValues: emptyOrder,
+  })
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors, isValid },
+  } = form
+  const values = useWatch({ control })
+
+  const selectedOrderTypeLabel = orderTypeOptions.find((type) => type.id === values.orderTypeId)?.label
+  const isWalkin = isWalkinType(values.orderTypeId)
   const riderOptions = riders.map((rider) => ({
     id: rider.id,
     label: `${rider.firstName} ${rider.lastName}`,
   }))
-  const selectedRiderLabel = riderOptions.find((rider) => rider.id === Number(form.deliveryRiderId))?.label ?? ""
+  const selectedRiderLabel = riderOptions.find((rider) => rider.id === values.deliveryRiderId)?.label ?? ""
 
-  const lineRows = getOrderLineRows(lines, products)
+  const lineRows = getOrderLineRows(values.orderLines ?? [], products)
   const totalQuantity = getOrderLineQuantityTotal(lineRows)
   const totalAmount = getOrderLineAmountTotal(lineRows)
-  const canSubmit =
-    !disabled &&
-    Number(form.orderTypeId) > 0 &&
-    form.customerName.trim() !== "" &&
-    (isWalkin ||
-      (form.deliveryRiderId.trim() !== "" &&
-        Number(form.deliveryRiderId) >= 0 &&
-        form.pickUpAddress.trim() !== "" &&
-        form.deliveryAddress.trim() !== "")) &&
-    lines.every((line) => Number(line.productId) > 0 && Number(line.quantity) > 0)
+  const canSubmit = isValid && !disabled
 
-  function updateField(field: keyof typeof emptyOrderForm, value: string) {
-    setForm((current) => ({ ...current, [field]: value }))
-  }
-
-  function handleConfirm() {
-    if (!canSubmit) return
-
+  const handleConfirm = handleSubmit((order) => {
     onSubmit({
-      orderTypeId: Number(form.orderTypeId),
-      deliveryRiderId: isWalkin ? 0 : Number(form.deliveryRiderId),
-      customerName: form.customerName.trim(),
-      pickUpAddress: isWalkin ? "" : form.pickUpAddress.trim(),
-      deliveryAddress: isWalkin ? "" : form.deliveryAddress.trim(),
-      orderLines: lines.map((line) => ({
-        productId: Number(line.productId),
-        quantity: Number(line.quantity),
-      })),
+      orderTypeId: order.orderTypeId,
+      deliveryRiderId: isWalkin ? 0 : order.deliveryRiderId,
+      customerName: order.customerName,
+      pickUpAddress: isWalkin ? "" : order.pickUpAddress,
+      deliveryAddress: isWalkin ? "" : order.deliveryAddress,
+      orderLines: order.orderLines,
     })
     setIsReviewing(false)
-    setForm(emptyOrderForm)
-    setLines(emptyOrderLines)
-  }
+    reset(emptyOrder)
+  })
 
   const reviewDetails = [
     { label: "Order type", value: selectedOrderTypeLabel ?? "-" },
     ...(isWalkin ? [] : [{ label: "Delivery rider", value: selectedRiderLabel || "-" }]),
-    { label: "Customer", value: form.customerName || "-" },
+    { label: "Customer", value: values.customerName || "-" },
     { label: "Quantity", value: totalQuantity },
     ...(isWalkin
       ? []
       : [
-          { label: "Pickup address", value: form.pickUpAddress || "-" },
-          { label: "Delivery address", value: form.deliveryAddress || "-" },
+          { label: "Pickup address", value: values.pickUpAddress || "-" },
+          { label: "Delivery address", value: values.deliveryAddress || "-" },
         ]),
   ]
 
@@ -135,46 +126,57 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
         <div className="flex flex-col bg-background">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <FormField label="Order type">
-              <Select
-                disabled={orderTypesLoading}
-                items={orderTypeSelectItems}
-                onValueChange={(value) => updateField("orderTypeId", value ?? "")}
-                value={form.orderTypeId}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select order type" />
-                </SelectTrigger>
-                <SelectContent className="capitalize">
-                  {orderTypeOptions.map((orderType) => (
-                    <SelectItem key={orderType.id} value={String(orderType.id)} className="capitalize">
-                      {orderType.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <FormField label="Order type" error={errors.orderTypeId?.message}>
+              <Controller
+                control={control}
+                name="orderTypeId"
+                render={({ field }) => (
+                  <Select
+                    disabled={orderTypesLoading}
+                    items={orderTypeSelectItems}
+                    onValueChange={(value) => {
+                      field.onChange(Number(value ?? 0))
+                      field.onBlur()
+                    }}
+                    value={field.value ? String(field.value) : ""}
+                  >
+                    <SelectTrigger aria-invalid={!!errors.orderTypeId} className="w-full">
+                      <SelectValue placeholder="Select order type" />
+                    </SelectTrigger>
+                    <SelectContent className="capitalize">
+                      {orderTypeOptions.map((orderType) => (
+                        <SelectItem key={orderType.id} value={String(orderType.id)} className="capitalize">
+                          {orderType.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </FormField>
 
             {!isWalkin && (
-              <FormField label="Delivery rider">
-                <EntityDropdown
-                  emptyLabel="No riders found."
-                  isLoading={ridersLoading}
-                  onSelect={(riderId) => updateField("deliveryRiderId", String(riderId))}
-                  options={riderOptions}
-                  placeholder="Select delivery rider"
-                  searchPlaceholder="Search riders..."
-                  value={selectedRiderLabel}
+              <FormField label="Delivery rider" error={errors.deliveryRiderId?.message}>
+                <Controller
+                  control={control}
+                  name="deliveryRiderId"
+                  render={({ field }) => (
+                    <EntityDropdown
+                      emptyLabel="No riders found."
+                      isLoading={ridersLoading}
+                      onSelect={field.onChange}
+                      options={riderOptions}
+                      placeholder="Select delivery rider"
+                      searchPlaceholder="Search riders..."
+                      value={selectedRiderLabel}
+                    />
+                  )}
                 />
               </FormField>
             )}
 
-            <FormField label="Customer name">
-              <FormInput
-                className="capitalize"
-                onChange={(event) => updateField("customerName", event.target.value)}
-                value={form.customerName}
-              />
+            <FormField label="Customer name" error={errors.customerName?.message}>
+              <FormInput aria-invalid={!!errors.customerName} className="capitalize" {...register("customerName")} />
             </FormField>
 
             <FormField label="Quantity (total items)">
@@ -185,31 +187,25 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
 
           {!isWalkin && (
             <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <FormField label="Pick up address">
-                <FormInput
-                  onChange={(event) => updateField("pickUpAddress", event.target.value)}
-                  value={form.pickUpAddress}
-                />
+              <FormField label="Pick up address" error={errors.pickUpAddress?.message}>
+                <FormInput aria-invalid={!!errors.pickUpAddress} {...register("pickUpAddress")} />
               </FormField>
-              <FormField label="Delivery address">
-                <FormInput
-                  onChange={(event) => updateField("deliveryAddress", event.target.value)}
-                  value={form.deliveryAddress}
-                />
+              <FormField label="Delivery address" error={errors.deliveryAddress?.message}>
+                <FormInput aria-invalid={!!errors.deliveryAddress} {...register("deliveryAddress")} />
               </FormField>
             </div>
           )}
         </div>
 
-        <OrderLinesEditor
-          lines={lines}
-          lineRows={lineRows}
-          totalAmount={totalAmount}
-          products={products}
-          productsLoading={productsLoading}
-          productsError={productsError}
-          onChange={setLines}
-        />
+        <FormProvider {...form}>
+          <OrderLinesEditor
+            lineRows={lineRows}
+            totalAmount={totalAmount}
+            products={products}
+            productsLoading={productsLoading}
+            productsError={productsError}
+          />
+        </FormProvider>
       </div>
 
       <div className="flex justify-end gap-2 border-t border-border p-5">

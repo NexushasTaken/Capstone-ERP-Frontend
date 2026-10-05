@@ -2,27 +2,40 @@
 
 import { LockKeyhole, Mail } from "lucide-react"
 import { toast } from "sonner"
-import React, { ChangeEvent, useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import type { ApiEnvelope } from "@/types/api"
+import { ApiError } from "@/lib/apiError"
+import { applyServerErrors } from "@/lib/applyServerErrors"
+import { emailSchema } from "@/lib/validation"
 import { queryKeys } from "@/lib/query/queryKeys"
 import { normalizeCurrentUser, storeCurrentUser, type RawCurrentUser } from "@/services/profileApi"
+
+const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, "Password is required."),
+})
+
+type LoginValues = z.infer<typeof loginSchema>
 
 export default function LoginForm() {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    mode: "onTouched",
+    defaultValues: { email: "", password: "" },
+  })
 
-  async function handleSubmit(event: ChangeEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    if (isSubmitting) return
-
-    setIsSubmitting(true)
-
+  async function login({ email, password }: LoginValues) {
     try {
       const response = await fetch("/api/User/Login", {
         method: "POST",
@@ -31,16 +44,10 @@ export default function LoginForm() {
         body: JSON.stringify({ email, password }),
       })
 
-      const payload: ApiEnvelope<RawCurrentUser> | { message?: string; title?: string } | null = await response
-        .json()
-        .catch(() => null)
+      const payload: ApiEnvelope<RawCurrentUser> | null = await response.json().catch(() => null)
 
-      if (!response.ok || !payload || !("success" in payload) || !payload.success) {
-        const message =
-          payload && "title" in payload
-            ? (payload.title ?? payload.message ?? "Invalid email or password.")
-            : (payload?.message ?? "Invalid email or password.")
-        throw new Error(message)
+      if (!response.ok || !payload?.success) {
+        throw new ApiError(payload?.message ?? "Invalid email or password.", response.status, payload?.errors)
       }
 
       const currentUser = normalizeCurrentUser(payload.content)
@@ -50,9 +57,8 @@ export default function LoginForm() {
       router.push("/dashboard")
       router.refresh()
     } catch (error) {
+      if (applyServerErrors(error, setError)) return
       toast.error(error instanceof Error ? error.message : "Unable to sign in. Please try again.")
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -64,7 +70,7 @@ export default function LoginForm() {
           <span className="text-foreground text-sm font-light">Please enter your details to sign in.</span>
         </div>
 
-        <form className="flex flex-col mt-8" onSubmit={handleSubmit}>
+        <form className="flex flex-col mt-8" onSubmit={handleSubmit(login)} noValidate>
           <div className="flex flex-col gap-2">
             <label htmlFor="email" className="text-sm text-foreground">
               Email address
@@ -72,17 +78,16 @@ export default function LoginForm() {
             <div className="relative">
               <input
                 id="email"
-                name="email"
                 type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
                 autoComplete="email"
-                required
-                className="pl-12 pr-4 py-4 outline-none border rounded-lg border-border w-full text-foreground"
+                aria-invalid={!!errors.email}
+                {...register("email")}
+                className="pl-12 pr-4 py-4 outline-none border rounded-lg border-border w-full text-foreground aria-invalid:border-destructive"
                 placeholder="Email address"
               />
               <Mail className="text-foreground w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2" />
             </div>
+            {errors.email && <span className="text-xs text-destructive">{errors.email.message}</span>}
           </div>
 
           <div className="flex flex-col mt-4 gap-2">
@@ -92,17 +97,16 @@ export default function LoginForm() {
             <div className="relative">
               <input
                 id="password"
-                name="password"
                 type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
                 autoComplete="current-password"
-                required
-                className="pl-12 pr-4 py-4 outline-none border rounded-lg border-border w-full text-foreground"
+                aria-invalid={!!errors.password}
+                {...register("password")}
+                className="pl-12 pr-4 py-4 outline-none border rounded-lg border-border w-full text-foreground aria-invalid:border-destructive"
                 placeholder="Password"
               />
               <LockKeyhole className="text-foreground w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2" />
             </div>
+            {errors.password && <span className="text-xs text-destructive">{errors.password.message}</span>}
           </div>
 
           <button

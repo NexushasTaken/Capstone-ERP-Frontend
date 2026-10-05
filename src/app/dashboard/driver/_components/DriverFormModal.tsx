@@ -1,28 +1,34 @@
 "use client"
 
-import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
 import AppModal, { ModalActions, ModalHeader } from "@/components/AppModal"
 import { FormField, FormInput } from "@/components/FormField"
 import type { DriverListItem } from "@/types/driver"
 import { formatDriverId } from "../_lib/driverHelpers"
+import { driverSchema, type DriverFormValues } from "../_lib/driverSchema"
 
 interface DriverFormModalProps {
   /** The driver being updated, or `null` to add a new one. */
   driver: DriverListItem | null
   disabled: boolean
   onClose: () => void
-  onSubmit: (values: { firstName: string; lastName: string }) => void
+  onSubmit: (values: DriverFormValues) => void
 }
 
 // Add and update share this modal. Render it only while open so the fields start fresh each time.
 export default function DriverFormModal({ driver, disabled, onClose, onSubmit }: DriverFormModalProps) {
-  const [form, setForm] = useState({
-    firstName: driver?.firstName ?? "",
-    lastName: driver?.lastName ?? "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<DriverFormValues>({
+    resolver: zodResolver(driverSchema),
+    mode: "onTouched",
+    defaultValues: { firstName: driver?.firstName ?? "", lastName: driver?.lastName ?? "" },
   })
   const isEdit = driver !== null
-  const canSubmit = form.firstName.trim() !== "" && form.lastName.trim() !== "" && !disabled
 
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open>
@@ -32,33 +38,19 @@ export default function DriverFormModal({ driver, disabled, onClose, onSubmit }:
         onClose={onClose}
       />
       <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
-        <FormField label="First name">
-          <FormInput
-            className="capitalize"
-            onChange={(event) => setForm((prev) => ({ ...prev, firstName: event.target.value }))}
-            value={form.firstName}
-          />
+        <FormField label="First name" error={errors.firstName?.message}>
+          <FormInput aria-invalid={!!errors.firstName} className="capitalize" {...register("firstName")} />
         </FormField>
-        <FormField label="Last name">
-          <FormInput
-            className="capitalize"
-            onChange={(event) => setForm((prev) => ({ ...prev, lastName: event.target.value }))}
-            value={form.lastName}
-          />
+        <FormField label="Last name" error={errors.lastName?.message}>
+          <FormInput aria-invalid={!!errors.lastName} className="capitalize" {...register("lastName")} />
         </FormField>
       </div>
       <ModalActions
         onCancel={onClose}
-        onConfirm={() =>
-          canSubmit &&
-          onSubmit({
-            firstName: form.firstName.trim(),
-            lastName: form.lastName.trim(),
-          })
-        }
+        onConfirm={handleSubmit(onSubmit)}
         confirmLabel={isEdit ? "Update driver" : "Add driver"}
         confirmIcon={isEdit ? undefined : Plus}
-        confirmDisabled={!canSubmit}
+        confirmDisabled={!isValid || disabled}
       />
     </AppModal>
   )

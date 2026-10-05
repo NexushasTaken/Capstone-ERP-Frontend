@@ -34,11 +34,6 @@ export interface OrderRider {
   lastName: string
 }
 
-export interface OrderLineForm {
-  productId: string
-  quantity: string
-}
-
 // API request/response shapes
 
 export interface FetchOrdersParams {
