@@ -2,6 +2,7 @@
 
 import { ArcElement, Chart, DoughnutController, Tooltip, type ChartConfiguration } from 'chart.js'
 import { useEffect, useRef } from 'react'
+import { themeColor } from '@/lib/cssColor'
 import type { WarehouseCapacity } from '@/types/inventory'
 import { formatNumber, getCapacityPercentage } from '@/lib/helpers/inventoryHelpers'
 
@@ -24,7 +25,7 @@ export default function WarehouseCapacityChart({ capacity }: WarehouseCapacityCh
         labels: ['Used capacity', 'Available capacity'],
         datasets: [{
           data: [capacity.used, capacity.total - capacity.used],
-          backgroundColor: ['#111513', '#DDE5DF'],
+          backgroundColor: [themeColor('--chart-5'), themeColor('--chart-1')],
           borderWidth: 0,
           borderRadius: 8,
           spacing: 3,
