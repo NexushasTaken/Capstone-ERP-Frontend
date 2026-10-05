@@ -86,17 +86,6 @@ export default function LoginForm() {
                 <button aria-label='Sign In' type='submit' disabled={isSubmitting} className="bg-[#0c0d0d] text-white py-4 rounded-lg mt-8 transition-all hover:scale-105 duration-300 cursor-pointer text-center disabled:cursor-not-allowed disabled:opacity-60">
                   {isSubmitting ? 'Signing in...' : 'Sign In'}
                 </button>
-                
-                {/* <div className="flex justify-center mt-4">
-                    <span className="inline-flex gap-1">
-                        Don&apos;t have an account? 
-                        <Link 
-                            href="/auth/signup" 
-                            className="text-[#0c0d0d] hover:underline font-medium">
-                            Sign up
-                        </Link>
-                    </span>
-                </div> */}
             </form>
         </div>
     </div>
