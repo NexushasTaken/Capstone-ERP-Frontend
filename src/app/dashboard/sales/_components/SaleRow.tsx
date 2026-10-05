@@ -1,4 +1,5 @@
 import { ChevronDown } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { formatDate, formatPeso } from '@/lib/format'
@@ -40,8 +41,7 @@ export default function SaleRow({ sale, columnCount, isExpanded, onExpandedChang
         </TableCell>
         <TableCell className="px-3 py-4">
           <CollapsibleTrigger
-            type="button"
-            className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-accent"
+            render={<Button size="sm" type="button" variant="outline" />}
             aria-label={'View ' + formatSaleId(sale.id) + ' details'}
           >
             View

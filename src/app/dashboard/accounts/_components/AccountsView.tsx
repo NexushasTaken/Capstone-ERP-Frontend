@@ -76,7 +76,6 @@ export default function AccountsView() {
 
           {can(role, 'account:create') && (
             <Button
-              className="rounded-xl cursor-pointer px-3 py-2 text-sm"
               onClick={() => setModal({ type: 'create' })}
               type="button"
             >

@@ -1,5 +1,6 @@
 import DataTable, { type DataTableColumn } from '@/components/DataTable'
 import StatusAction from '@/components/StatusAction'
+import { Button } from '@/components/ui/button'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { formatDate, formatPeso } from '@/lib/format'
 import type { ProductListItem } from '@/types/product'
@@ -53,13 +54,9 @@ export default function ProductsTable({
           <TableCell className="px-3 py-4">{formatDate(product.created_At)}</TableCell>
           <TableCell className="px-3 py-4">
             <div className="flex items-center justify-end gap-2">
-              <button
-                className="cursor-pointer rounded-xl border border-border px-3 py-1.5 text-sm whitespace-nowrap transition-all hover:bg-accent"
-                type="button"
-                onClick={() => onShowDetails(product)}
-              >
+              <Button onClick={() => onShowDetails(product)} size="sm" type="button" variant="outline">
                 See more
-              </button>
+              </Button>
               {actions.length > 0 && (
                 <StatusAction
                   actions={actions}

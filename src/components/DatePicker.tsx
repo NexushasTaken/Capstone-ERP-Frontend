@@ -30,7 +30,7 @@ export function DatePickerSimple({ value, onChange, label = 'Date', minDate, max
     <Field className="w-full gap-1">
       <FieldLabel htmlFor={id} className="text-xs font-normal text-muted-foreground">{label}</FieldLabel>
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger render={<Button type="button" variant="outline" id={id} className="h-10 w-full justify-start rounded-xl border-border bg-background px-3 text-sm font-normal">{date ? format(date, "PPP") : 
+        <PopoverTrigger render={<Button type="button" variant="outline" id={id} className="h-10 w-full justify-start font-normal">{date ? format(date, "PPP") : 
             <span className="flex w-full justify-between items-center">
                 Pick a date
              <CalendarIcon className="transition-all group-hover:scale-105" />

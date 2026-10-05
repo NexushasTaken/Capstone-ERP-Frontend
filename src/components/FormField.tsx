@@ -12,11 +12,6 @@ export function FormField({ label, error, children }: { label: string; error?: s
   )
 }
 
-export function FormInput({ className = '', ...props }: ComponentProps<typeof Input>) {
-  return (
-    <Input
-      className={`h-10 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring/50 ${className}`}
-      {...props}
-    />
-  )
+export function FormInput(props: ComponentProps<typeof Input>) {
+  return <Input {...props} />
 }

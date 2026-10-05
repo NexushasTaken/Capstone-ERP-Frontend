@@ -45,7 +45,7 @@ export default function RestockModal({ item, isPending, onClose, onSubmit }: Res
             <Select items={restockTypeOptions} value={form.restockType} disabled={isPending} onValueChange={(value) => {
               if (value === 1 || value === 2) setForm((previous) => ({ ...previous, restockType: value }))
             }}>
-              <SelectTrigger id="restock-type" className="h-10 w-full rounded-xl border-border bg-background px-3 text-sm">
+              <SelectTrigger id="restock-type" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -63,13 +63,12 @@ export default function RestockModal({ item, isPending, onClose, onSubmit }: Res
               disabled={isPending}
               value={form.quantity}
               onChange={(event) => setForm((previous) => ({ ...previous, quantity: event.target.value }))}
-              className="h-10 rounded-xl border border-border bg-background px-3 text-sm"
             />
           </label>
         </div>
         <div className="flex justify-end gap-2 border-t border-border p-4">
-          <Button type="button" variant="outline" className="rounded-xl border border-border px-3 py-2 text-sm" disabled={isPending} onClick={close}>Cancel</Button>
-          <Button type="submit" className="rounded-xl px-3 py-2 text-sm" disabled={!canSubmit || isPending}>
+          <Button type="button" variant="outline" disabled={isPending} onClick={close}>Cancel</Button>
+          <Button type="submit" disabled={!canSubmit || isPending}>
             {isPending ? <><Spinner data-icon="inline-start" />Saving...</> : 'Restock'}
           </Button>
         </div>

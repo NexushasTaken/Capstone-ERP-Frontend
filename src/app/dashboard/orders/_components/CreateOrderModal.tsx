@@ -149,7 +149,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
                 onValueChange={(value) => updateField('orderTypeId', value ?? '')}
                 value={form.orderTypeId}
               >
-                <SelectTrigger className="h-10 w-full rounded-xl border-border bg-background px-3 text-sm focus-visible:border-ring focus-visible:ring-ring/50">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select order type" />
                 </SelectTrigger>
                 <SelectContent className="capitalize">
@@ -186,7 +186,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
 
             <FormField label="Quantity (total items)">
               <Input
-                className="h-10 rounded-xl border border-border bg-muted/50 px-3 text-sm text-foreground outline-none"
+                className="bg-muted/50"
                 readOnly
                 disabled
                 value={totalQuantity}
@@ -226,7 +226,6 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
 
       <div className="flex justify-end gap-2 border-t border-border p-5">
         <Button
-          className="rounded-xl border-border px-3 py-2 text-sm"
           onClick={onClose}
           type="button"
           variant="outline"
@@ -234,7 +233,6 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
           Cancel
         </Button>
         <Button
-          className="rounded-xl px-3 py-2 text-sm"
           disabled={!canSubmit}
           onClick={() => setIsReviewing(true)}
           type="button"

@@ -41,7 +41,7 @@ export default function OrderStatusFilterSelect({ value, onChange, statusOptions
         onValueChange={(next) => onChange(next === 'all' ? '' : String(next ?? ''))}
         value={value || 'all'}
       >
-        <SelectTrigger aria-label="Filter orders by status" className="h-10 w-full rounded-xl border-border bg-background px-3 text-sm focus-visible:border-ring focus-visible:ring-ring/50">
+        <SelectTrigger aria-label="Filter orders by status" className="w-full">
           <SelectValue placeholder="All statuses" />
         </SelectTrigger>
         <SelectContent>

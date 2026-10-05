@@ -62,7 +62,7 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
             <Select items={damageTypeOptions} value={form.damagedType} disabled={isPending} onValueChange={(value) => {
               if (value === 1 || value === 2) setForm((previous) => ({ ...previous, damagedType: value }))
             }}>
-              <SelectTrigger id="damage-type" className="h-10 w-full rounded-xl border-border bg-background px-3 text-sm">
+              <SelectTrigger id="damage-type" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -81,7 +81,6 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
               disabled={isPending}
               value={form.quantity}
               onChange={(event) => setForm((previous) => ({ ...previous, quantity: event.target.value }))}
-              className="h-10 rounded-xl border border-border bg-background px-3 text-sm"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm text-foreground">
@@ -91,13 +90,13 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
               disabled={isPending}
               value={form.reason}
               onChange={(event) => setForm((previous) => ({ ...previous, reason: event.target.value }))}
-              className="h-28 min-h-28 max-h-28 resize-none field-sizing-fixed overflow-y-auto rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
+              className="h-28 min-h-28 max-h-28 resize-none field-sizing-fixed overflow-y-auto"
             />
           </label>
         </div>
         <div className="flex justify-end gap-2 border-t border-border p-4">
-          <Button type="button" variant="outline" className="rounded-xl border-border px-3 py-2 text-sm" disabled={isPending} onClick={close}>Cancel</Button>
-          <Button type="submit" variant="destructive" className="rounded-xl px-3 py-2 text-sm" disabled={!canSubmit || isPending}>
+          <Button type="button" variant="outline" disabled={isPending} onClick={close}>Cancel</Button>
+          <Button type="submit" variant="destructive" disabled={!canSubmit || isPending}>
             {isPending ? 'Saving...' : 'Mark as damage'}
           </Button>
         </div>

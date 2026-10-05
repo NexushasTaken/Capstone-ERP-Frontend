@@ -75,7 +75,6 @@ export function ModalActions({
   return (
     <div className="flex justify-end gap-2 border-t border-border p-4">
       <Button
-        className="rounded-xl border-border px-3 py-2 text-sm"
         onClick={onCancel}
         type="button"
         variant="outline"
@@ -83,7 +82,6 @@ export function ModalActions({
         Cancel
       </Button>
       <Button
-        className="rounded-xl px-3 py-2 text-sm"
         disabled={confirmDisabled}
         onClick={onConfirm}
         type="button"

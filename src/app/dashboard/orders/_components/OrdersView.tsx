@@ -95,7 +95,6 @@ export default function OrdersView() {
             onExport={() => exportOrders(orders)}
           />
           <Button
-            className="cursor-pointer rounded-xl px-3 py-2 text-sm"
             onClick={() => setIsCreateModalOpen(true)}
             type="button"
           >

@@ -89,7 +89,6 @@ export default function DriversView() {
 
           {can(role, 'driver:add') && (
             <Button
-              className="rounded-xl cursor-pointer px-3 py-2 text-sm"
               onClick={() => setModal({ type: 'add' })}
               type="button"
             >

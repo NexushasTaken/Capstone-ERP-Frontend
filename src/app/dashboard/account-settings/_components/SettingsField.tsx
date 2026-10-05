@@ -15,7 +15,6 @@ export function SettingsField({ label, onChange, ...inputProps }: SettingsFieldP
     <label className={`grid ${fieldLabelColumn} items-center gap-3 text-sm text-foreground`}>
       <span className="text-muted-foreground">{label}</span>
       <Input
-        className="h-10 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
         onChange={(event) => onChange(event.target.value)}
         {...inputProps}
       />
@@ -45,7 +44,7 @@ export function SaveButton({ disabled }: { disabled: boolean }) {
   return (
     <SettingsRow>
       <div className="flex justify-end">
-        <Button className="rounded-xl px-3 py-2 text-sm" disabled={disabled} type="submit">
+        <Button disabled={disabled} type="submit">
           Save changes
         </Button>
       </div>
