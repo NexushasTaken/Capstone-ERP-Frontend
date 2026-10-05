@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-10-05
+
+### Changed
+
+- List pages have a new header: title and buttons on the first row, a wider search box with the filters beside it on the second, so long search hints are no longer cut off and extra filters wrap cleanly.
+- The Products (Categorized / Uncategorized) and Inventory (All / Available / Low stock / Critical) filters are now dropdowns that show the count for each option.
+
 ## [1.5.0] - 2026-10-05
 
 ### Changed

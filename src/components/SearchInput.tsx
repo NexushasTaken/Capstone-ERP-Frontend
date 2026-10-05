@@ -16,7 +16,7 @@ export default function SearchInput({ value, onChange, placeholder }: SearchInpu
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="w-full"
+        className="w-full pr-10"
       />
       {value ? (
         <button

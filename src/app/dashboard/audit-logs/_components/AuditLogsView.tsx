@@ -5,7 +5,7 @@ import { X } from "lucide-react"
 
 import AuditFilterDropdown from "./AuditFilterDropdown"
 import AuditLogsTable from "./AuditLogsTable"
-import PageTitle from "@/components/PageTitle"
+import ListHeader from "@/components/ListHeader"
 import { TablePagination } from "@/components/TablePagination"
 import { useAuditLogs, useUsers } from "@/hooks/useAuditLogs"
 import { Button } from "@/components/ui/button"
@@ -57,47 +57,49 @@ export default function AuditLogsView() {
 
   return (
     <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <PageTitle title="Audit logs" count={rows} />
-
-        <div className="flex flex-wrap items-center gap-2">
-          <AuditFilterDropdown
-            label="User"
-            allLabel="All users"
-            options={toUserFilterOptions(users)}
-            value={userId}
-            onChange={withPageReset(setUserId)}
-            searchPlaceholder="Search users"
-          />
-          <AuditFilterDropdown
-            label="Role"
-            allLabel="All roles"
-            options={auditRoleFilterOptions}
-            value={role}
-            onChange={withPageReset(setRole)}
-          />
-          <AuditFilterDropdown
-            label="Module"
-            allLabel="All modules"
-            options={auditModuleFilterOptions}
-            value={module}
-            onChange={withPageReset(setModule)}
-          />
-          <AuditFilterDropdown
-            label="Action"
-            allLabel="All actions"
-            options={auditActionFilterOptions}
-            value={action}
-            onChange={withPageReset(setAction)}
-          />
-          {hasFilters && (
-            <Button className="text-muted-foreground" onClick={clearFilters} type="button" variant="ghost">
-              <X className="h-4 w-4" />
-              Clear filters
-            </Button>
-          )}
-        </div>
-      </div>
+      <ListHeader
+        title="Audit logs"
+        count={rows}
+        filters={
+          <>
+            <AuditFilterDropdown
+              label="User"
+              allLabel="All users"
+              options={toUserFilterOptions(users)}
+              value={userId}
+              onChange={withPageReset(setUserId)}
+              searchPlaceholder="Search users"
+            />
+            <AuditFilterDropdown
+              label="Role"
+              allLabel="All roles"
+              options={auditRoleFilterOptions}
+              value={role}
+              onChange={withPageReset(setRole)}
+            />
+            <AuditFilterDropdown
+              label="Module"
+              allLabel="All modules"
+              options={auditModuleFilterOptions}
+              value={module}
+              onChange={withPageReset(setModule)}
+            />
+            <AuditFilterDropdown
+              label="Action"
+              allLabel="All actions"
+              options={auditActionFilterOptions}
+              value={action}
+              onChange={withPageReset(setAction)}
+            />
+            {hasFilters && (
+              <Button className="text-muted-foreground" onClick={clearFilters} type="button" variant="ghost">
+                <X className="h-4 w-4" />
+                Clear filters
+              </Button>
+            )}
+          </>
+        }
+      />
 
       <div className="mt-5 min-h-0 overflow-auto scrollbar-none">
         <AuditLogsTable logs={logs} isLoading={isLoading} error={error} hasFilters={hasFilters} />

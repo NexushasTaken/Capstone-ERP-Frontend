@@ -2,14 +2,14 @@
 
 import { useState } from "react"
 import { AlertTriangle, Plus } from "lucide-react"
+import CountFilterSelect from "@/components/CountFilterSelect"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
 import ExportCsvButton from "@/components/ExportCsvButton"
-import PageTitle from "@/components/PageTitle"
+import ListHeader from "@/components/ListHeader"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { exportToCSV } from "@/lib/exportToCsv"
@@ -25,10 +25,6 @@ import InventoryFormModal, { type InventoryFormValues } from "./InventoryFormMod
 import InventoryTable from "./InventoryTable"
 import MarkDamageModal from "./MarkDamageModal"
 import RestockModal from "./RestockModal"
-
-// The selected filter keeps a solid fill; the stock pressed state (bg-muted) is too faint here.
-const selectedFilterClass =
-  "aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90"
 
 const ITEMS_PER_PAGE = 10
 
@@ -141,14 +137,22 @@ export default function InventoryItemsSection() {
       className="relative flex w-full scroll-mt-6 flex-col rounded-2xl p-4 shadow-sm lg:p-5 border border-border"
     >
       <span id="Risks" className="absolute -top-6" aria-hidden="true" />
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <PageTitle
-          as="h2"
-          title="Inventory items"
-          count={countsAvailable ? selectedFilterCount.toLocaleString() : "-"}
-        />
-
-        <div className="flex flex-wrap items-center gap-2">
+      <ListHeader
+        as="h2"
+        title="Inventory items"
+        count={countsAvailable ? selectedFilterCount.toLocaleString() : "-"}
+        actions={
+          <>
+            <ExportCsvButton onExport={() => exportInventory(inventories)} />
+            {can(role, "inventory:add") && (
+              <Button onClick={() => setIsAddModalOpen(true)} type="button">
+                <Plus className="h-4 w-4" />
+                Add inventory
+              </Button>
+            )}
+          </>
+        }
+        search={
           <SearchInput
             value={search}
             onChange={(value) => {
@@ -157,47 +161,35 @@ export default function InventoryItemsSection() {
             }}
             placeholder="Search by name, warehouse, status or ID"
           />
-
-          <ExportCsvButton onExport={() => exportInventory(inventories)} />
-
-          <ToggleGroup
-            aria-label="Filter inventory by status"
-            value={[selectedFilter]}
-            variant="outline"
-            onValueChange={([filter]) => {
-              // Clicking the selected filter again would clear it; keep one selected.
-              if (!filter) return
-              setSelectedFilter(filter as InventoryFilter)
-              setCurrentPage(1)
-            }}
-          >
-            {statusFilters.map((filter) => (
-              <ToggleGroupItem className={selectedFilterClass} key={filter.label} value={filter.label}>
-                {filter.label === "All" ? "All" : capitalize(filter.label)}
-                <span className="ml-1">{countsAvailable ? filter.count.toLocaleString() : "-"}</span>
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-
-          <SortPopover
-            value={sortBy}
-            order={sortOrder}
-            options={inventorySortOptions}
-            onChange={(value, order) => {
-              setSortBy(value)
-              setSortOrder(order)
-              setCurrentPage(1)
-            }}
-          />
-
-          {can(role, "inventory:add") && (
-            <Button onClick={() => setIsAddModalOpen(true)} type="button">
-              <Plus className="h-4 w-4" />
-              Add inventory
-            </Button>
-          )}
-        </div>
-      </div>
+        }
+        filters={
+          <>
+            <CountFilterSelect
+              aria-label="Filter inventory by status"
+              options={statusFilters.map((filter) => ({
+                value: filter.label,
+                label: filter.label === "All" ? "All" : capitalize(filter.label),
+                count: countsAvailable ? filter.count : undefined,
+              }))}
+              value={selectedFilter}
+              onChange={(filter) => {
+                setSelectedFilter(filter as InventoryFilter)
+                setCurrentPage(1)
+              }}
+            />
+            <SortPopover
+              value={sortBy}
+              order={sortOrder}
+              options={inventorySortOptions}
+              onChange={(value, order) => {
+                setSortBy(value)
+                setSortOrder(order)
+                setCurrentPage(1)
+              }}
+            />
+          </>
+        }
+      />
 
       <div className="mt-5 min-h-0 overflow-auto">
         <InventoryTable

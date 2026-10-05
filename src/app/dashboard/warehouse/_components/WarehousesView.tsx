@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
-import PageTitle from "@/components/PageTitle"
+import ListHeader from "@/components/ListHeader"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
 import { TablePagination } from "@/components/TablePagination"
@@ -65,10 +65,18 @@ export default function WarehousesView() {
 
   return (
     <section className="flex w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <PageTitle title="Warehouses" count={rows} />
-
-        <div className="flex flex-wrap items-center gap-2">
+      <ListHeader
+        title="Warehouses"
+        count={rows}
+        actions={
+          can(role, "warehouse:add") && (
+            <Button onClick={() => setModal({ type: "add" })} type="button">
+              <Plus className="h-4 w-4" />
+              Add warehouse
+            </Button>
+          )
+        }
+        search={
           <SearchInput
             value={search}
             onChange={(value) => {
@@ -77,13 +85,8 @@ export default function WarehousesView() {
             }}
             placeholder="Search by name, address or ID"
           />
-
-          {can(role, "warehouse:add") && (
-            <Button onClick={() => setModal({ type: "add" })} type="button">
-              <Plus className="h-4 w-4" />
-              Add warehouse
-            </Button>
-          )}
+        }
+        filters={
           <SortPopover
             value={sortBy}
             order={sortOrder}
@@ -94,8 +97,8 @@ export default function WarehousesView() {
               setCurrentPage(1)
             }}
           />
-        </div>
-      </div>
+        }
+      />
 
       <div className="mt-5 min-h-0 overflow-auto scrollbar-none">
         <WarehousesTable
