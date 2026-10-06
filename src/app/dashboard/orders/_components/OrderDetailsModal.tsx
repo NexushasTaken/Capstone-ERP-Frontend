@@ -33,10 +33,26 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
   )
 }
 
+// Only the latest status change is stored. Processing is the starting status and can't be returned to,
+// so it never has a change time.
+function getStatusChangedLabel(status: string | null) {
+  switch (normalizeOrderText(status).toLowerCase()) {
+    case "shipped":
+      return "Shipped at"
+    case "completed":
+      return "Completed at"
+    case "cancelled":
+      return "Cancelled at"
+    default:
+      return null
+  }
+}
+
 function OrderDetailsBody({ order }: { order: OrderGroup }) {
   const statusLabel = normalizeOrderText(order.orderStatus)
   // Walk-in orders have no driver or addresses.
   const isWalkinOrder = normalizeOrderText(order.orderType).toLowerCase() === "walkin"
+  const statusChangedLabel = getStatusChangedLabel(order.orderStatus)
   const totalQuantity = order.orders.reduce((sum, line) => sum + line.quantity, 0)
 
   return (
@@ -54,6 +70,9 @@ function OrderDetailsBody({ order }: { order: OrderGroup }) {
             </span>
           }
         />
+        {statusChangedLabel && order.updated_At ? (
+          <DetailItem label={statusChangedLabel} value={formatDate(order.updated_At)} />
+        ) : null}
         <DetailItem label="Created at" value={formatDate(order.created_At)} />
         <DetailItem label="Quantity" value={totalQuantity} />
         <DetailItem label="Total" value={formatPeso(order.total)} />

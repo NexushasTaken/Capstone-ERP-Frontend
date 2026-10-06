@@ -21,11 +21,13 @@ interface OrderRowProps {
 export default function OrderRow({ order, statusOptions, onSeeMore, onChangeStatus }: OrderRowProps) {
   const statusLabel = normalizeOrderText(order.orderStatus)
   const isWalkinOrder = normalizeOrderText(order.orderType).toLowerCase() === "walkin"
-  const isShippedOrder = statusLabel.toLowerCase() === "shipped"
-  // Walk-in orders can't be shipped, and shipped orders can't go back to processing.
+  const currentStatus = statusLabel.trim().toLowerCase()
+  const isShippedOrder = currentStatus === "shipped"
+  // Hide the order's current status. Walk-in orders can't be shipped, and shipped orders can't go back to processing.
   const statusActions = statusOptions
     .filter((status) => {
       const actionStatus = status.label.toLowerCase()
+      if (actionStatus === currentStatus) return false
       return !((isWalkinOrder && actionStatus === "shipped") || (isShippedOrder && actionStatus === "processing"))
     })
     .map((status) => ({ label: status.label, value: String(status.id) }))
