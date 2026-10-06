@@ -17,6 +17,7 @@ import { formatOrderNumber, normalizeOrderText } from "@/lib/helpers/orderHelper
 import type { InsertOrderPayload, OrderGroup } from "@/types/order"
 import { useOrderMutations, useOrders, useOrderStatuses } from "../_hooks/useOrders"
 import CreateOrderModal from "./CreateOrderModal"
+import OrderDetailsModal from "./OrderDetailsModal"
 import OrdersList from "./OrdersList"
 import OrderStatusFilterSelect from "./OrderStatusFilterSelect"
 
@@ -25,7 +26,7 @@ export default function OrdersView() {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState("")
   const [selectedOrderStatusFilter, setSelectedOrderStatusFilter] = useState("")
-  const [expandedOrderKey, setExpandedOrderKey] = useState<string | null>(null)
+  const [detailsOrder, setDetailsOrder] = useState<OrderGroup | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const debouncedSearch = useDebouncedValue(search.trim())
   const [pageSize, setPageSize] = usePageSize("orders")
@@ -50,7 +51,6 @@ export default function OrdersView() {
 
   function goToPage(page: number) {
     setCurrentPage(page)
-    setExpandedOrderKey(null)
   }
 
   function handleCreateOrder(payload: InsertOrderPayload) {
@@ -113,8 +113,7 @@ export default function OrdersView() {
           isLoading={isLoading}
           error={error}
           statusOptions={statusOptions}
-          expandedOrderKey={expandedOrderKey}
-          onExpandedOrderChange={setExpandedOrderKey}
+          onSeeMore={setDetailsOrder}
           onChangeStatus={(orderId, orderStatusId) => mutations.updateStatus.mutate({ orderId, orderStatusId })}
         />
       </div>
@@ -137,6 +136,8 @@ export default function OrdersView() {
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={goToPage} />
         </div>
       </div>
+
+      <OrderDetailsModal order={detailsOrder} onClose={() => setDetailsOrder(null)} />
 
       <CreateOrderModal
         open={isCreateModalOpen}

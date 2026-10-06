@@ -19,8 +19,7 @@ interface OrdersListProps {
   isLoading: boolean
   error: unknown
   statusOptions: { id: number; label: string }[]
-  expandedOrderKey: string | null
-  onExpandedOrderChange: (orderKey: string | null) => void
+  onSeeMore: (order: OrderGroup) => void
   onChangeStatus: (orderId: number, orderStatusId: number) => void
 }
 
@@ -29,8 +28,7 @@ export default function OrdersList({
   isLoading,
   error,
   statusOptions,
-  expandedOrderKey,
-  onExpandedOrderChange,
+  onSeeMore,
   onChangeStatus,
 }: OrdersListProps) {
   return (
@@ -42,7 +40,6 @@ export default function OrdersList({
       errorMessage="Failed to load orders"
       isEmpty={orders.length === 0}
       isLoading={isLoading}
-      rowGroups
     >
       {orders.map((order) => {
         const orderKey = getOrderGroupKey(order)
@@ -50,10 +47,8 @@ export default function OrdersList({
           <OrderRow
             key={orderKey}
             order={order}
-            columnCount={columns.length}
             statusOptions={statusOptions}
-            isExpanded={expandedOrderKey === orderKey}
-            onExpandedChange={(open) => onExpandedOrderChange(open ? orderKey : null)}
+            onSeeMore={() => onSeeMore(order)}
             onChangeStatus={(orderStatusId) => onChangeStatus(order.orderId, orderStatusId)}
           />
         )

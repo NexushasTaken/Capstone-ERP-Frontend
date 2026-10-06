@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-10-06
+
+### Changed
+
+- Orders now have a "See more" button that opens the order details in a window, instead of expanding the row.
+
 ## [1.10.1] - 2026-10-06
 
 ### Changed
