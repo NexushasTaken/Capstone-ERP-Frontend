@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatPeso } from "@/lib/format"
 import type { getOrderLineRows } from "@/lib/helpers/orderHelpers"
-import DetailItem from "./DetailItem"
+import DetailItem from "@/components/DetailItem"
 
 interface ConfirmOrderModalProps {
   open: boolean

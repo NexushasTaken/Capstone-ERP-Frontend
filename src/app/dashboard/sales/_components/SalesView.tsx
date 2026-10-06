@@ -21,13 +21,14 @@ import {
 } from "@/lib/helpers/saleHelpers"
 import type { Sale } from "@/types/sale"
 import { useSales } from "../_hooks/useSales"
+import SaleDetailsModal from "./SaleDetailsModal"
 import SalesTable from "./SalesTable"
 
 export default function SalesView() {
   const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState("")
-  const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null)
+  const [detailsSale, setDetailsSale] = useState<Sale | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim())
   const [pageSize, setPageSize] = usePageSize("sales")
 
@@ -44,7 +45,6 @@ export default function SalesView() {
 
   function goToPage(page: number) {
     setCurrentPage(page)
-    setExpandedSaleId(null)
   }
 
   return (
@@ -77,13 +77,7 @@ export default function SalesView() {
       />
 
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
-        <SalesTable
-          sales={sales}
-          isLoading={isLoading}
-          error={error}
-          expandedSaleId={expandedSaleId}
-          onExpandedSaleChange={setExpandedSaleId}
-        />
+        <SalesTable sales={sales} isLoading={isLoading} error={error} onSeeMore={setDetailsSale} />
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
@@ -104,6 +98,8 @@ export default function SalesView() {
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={goToPage} />
         </div>
       </div>
+
+      <SaleDetailsModal sale={detailsSale} onClose={() => setDetailsSale(null)} />
     </section>
   )
 }

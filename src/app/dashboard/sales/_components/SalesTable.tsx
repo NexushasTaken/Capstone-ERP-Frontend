@@ -18,11 +18,10 @@ interface SalesTableProps {
   sales: Sale[]
   isLoading: boolean
   error: unknown
-  expandedSaleId: number | null
-  onExpandedSaleChange: (saleId: number | null) => void
+  onSeeMore: (sale: Sale) => void
 }
 
-export default function SalesTable({ sales, isLoading, error, expandedSaleId, onExpandedSaleChange }: SalesTableProps) {
+export default function SalesTable({ sales, isLoading, error, onSeeMore }: SalesTableProps) {
   return (
     <DataTable
       className="min-w-220"
@@ -32,16 +31,9 @@ export default function SalesTable({ sales, isLoading, error, expandedSaleId, on
       errorMessage="Failed to load sales"
       isEmpty={sales.length === 0}
       isLoading={isLoading}
-      rowGroups
     >
       {sales.map((sale) => (
-        <SaleRow
-          key={sale.id}
-          sale={sale}
-          columnCount={columns.length}
-          isExpanded={expandedSaleId === sale.id}
-          onExpandedChange={(open) => onExpandedSaleChange(open ? sale.id : null)}
-        />
+        <SaleRow key={sale.id} sale={sale} onSeeMore={() => onSeeMore(sale)} />
       ))}
     </DataTable>
   )
