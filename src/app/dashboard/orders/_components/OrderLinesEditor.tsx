@@ -8,11 +8,14 @@ import { formatPeso } from "@/lib/format"
 import type { getOrderLineRows } from "@/lib/helpers/orderHelpers"
 import type { ProductListItem } from "@/types/product"
 import { emptyOrderLine, type OrderFields } from "../_lib/orderSchema"
+import OrderTotalRows from "./OrderTotalRows"
 
 interface OrderLinesEditorProps {
   /** The form's order lines with product, unit price and subtotal filled in. */
   lineRows: ReturnType<typeof getOrderLineRows>
+  /** Sum of the line subtotals, before the discount. */
   totalAmount: number
+  discountPercent?: number
   products: ProductListItem[]
   productsLoading: boolean
   productsError: unknown
@@ -23,6 +26,7 @@ interface OrderLinesEditorProps {
 export default function OrderLinesEditor({
   lineRows,
   totalAmount,
+  discountPercent,
   products,
   productsLoading,
   productsError,
@@ -139,15 +143,12 @@ export default function OrderLinesEditor({
             })}
           </TableBody>
           <TableFooter className="border-t border-border bg-background">
-            <TableRow className="hover:bg-transparent">
-              <TableCell className="text-right text-sm font-semibold uppercase text-foreground" colSpan={4}>
-                Total
-              </TableCell>
-              <TableCell className="text-center text-base font-medium text-green-700">
-                {formatPeso(totalAmount)}
-              </TableCell>
-              <TableCell />
-            </TableRow>
+            <OrderTotalRows
+              discountPercent={discountPercent}
+              labelColSpan={4}
+              subtotal={totalAmount}
+              trailingCells={1}
+            />
           </TableFooter>
         </Table>
       </div>

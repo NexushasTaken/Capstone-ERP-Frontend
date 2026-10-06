@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] - 2026-10-06
+
+### Added
+
+- Create order has a *Discount (%)* field. The items table and the review step show the subtotal and discount above the total.
+- Order and sale details show the subtotal and discount when an order has one.
+- Orders and sales CSV exports include the discount percent.
+
+### Changed
+
+- Order and sale totals are shown after the discount.
+
+
 ## [1.13.0] - 2026-10-06
 
 ### Added

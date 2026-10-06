@@ -171,6 +171,7 @@ function exportOrders(groups: OrderGroup[]) {
       { header: "Driver", value: (order) => order.driverName || "Unassigned" },
       { header: "Quantity", value: (order) => order.quantity },
       { header: "Amount", value: (order) => order.totalAmount },
+      { header: "Order discount (%)", value: (order) => order.discountPercent },
       {
         header: "Pickup address",
         value: (order) => order.pickUpAddress ?? "-",

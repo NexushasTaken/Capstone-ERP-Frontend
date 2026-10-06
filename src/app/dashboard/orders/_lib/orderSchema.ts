@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { positiveInt, requiredId, requiredString } from "@/lib/validation"
+import { positiveInt, requiredId, requiredNumber, requiredString } from "@/lib/validation"
 
 export interface OrderLineFields {
   productId: number
@@ -12,6 +12,7 @@ export interface OrderFields {
   customerName: string
   pickUpAddress: string
   deliveryAddress: string
+  discountPercent: number
   orderLines: OrderLineFields[]
 }
 
@@ -23,6 +24,7 @@ export const emptyOrder: OrderFields = {
   customerName: "",
   pickUpAddress: "",
   deliveryAddress: "",
+  discountPercent: 0,
   orderLines: [emptyOrderLine],
 }
 
@@ -36,6 +38,9 @@ export function orderSchema(isWalkin: boolean): z.ZodType<OrderFields, OrderFiel
   return z.object({
     orderTypeId: requiredId("Select an order type."),
     customerName: requiredString("Customer name is required."),
+    discountPercent: requiredNumber("Discount must be a number.")
+      .min(0, "Discount can't be negative.")
+      .max(100, "Discount can't be more than 100%."),
     orderLines: z.array(orderLineSchema).min(1, "Add at least one product."),
     ...(isWalkin
       ? { deliveryRiderId: z.number(), pickUpAddress: z.string(), deliveryAddress: z.string() }

@@ -39,6 +39,12 @@ function SaleDetailsBody({ sale }: { sale: Sale }) {
         <DetailItem label="Status" value={getSaleStatusLabel(sale)} />
         <DetailItem label="Sale date" value={formatDate(sale.created_At)} />
         <DetailItem label="Quantity" value={getSaleQuantity(sale)} />
+        {sale.discountPercent > 0 && (
+          <>
+            <DetailItem label="Subtotal" value={formatPeso(sale.subtotal)} />
+            <DetailItem label={`Discount (${sale.discountPercent}%)`} value={`-${formatPeso(sale.discountAmount)}`} />
+          </>
+        )}
         <DetailItem label="Total amount" value={formatPeso(sale.total)} />
         <DetailItem label="Driver" value={sale.driverName || "Unassigned"} />
         <DetailItem label="Pickup address" value={sale.pickUpAddress || "-"} />

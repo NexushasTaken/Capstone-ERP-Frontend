@@ -14,6 +14,10 @@ export interface Sale {
   pickUpAddress: string
   deliveryAddress: string
   orders: SaleLine[]
+  subtotal: number
+  discountPercent: number
+  discountAmount: number
+  /** Net of the discount. */
   total: number
   created_At: string
 }

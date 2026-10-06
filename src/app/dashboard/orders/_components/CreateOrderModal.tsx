@@ -90,6 +90,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
       customerName: order.customerName,
       pickUpAddress: isWalkin ? "" : order.pickUpAddress,
       deliveryAddress: isWalkin ? "" : order.deliveryAddress,
+      discountPercent: order.discountPercent,
       orderLines: order.orderLines,
     })
     setIsReviewing(false)
@@ -101,6 +102,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
     ...(isWalkin ? [] : [{ label: "Delivery rider", value: selectedRiderLabel || "-" }]),
     { label: "Customer", value: values.customerName || "-" },
     { label: "Quantity", value: totalQuantity },
+    { label: "Discount", value: `${Number(values.discountPercent) || 0}%` },
     ...(isWalkin
       ? []
       : [
@@ -179,6 +181,18 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
               <FormInput aria-invalid={!!errors.customerName} className="capitalize" {...register("customerName")} />
             </FormField>
 
+            <FormField label="Discount (%)" error={errors.discountPercent?.message}>
+              <FormInput
+                aria-invalid={!!errors.discountPercent}
+                max={100}
+                min={0}
+                step="any"
+                type="number"
+                {...register("discountPercent", { valueAsNumber: true })}
+              />
+              <span className="text-xs text-muted-foreground">Taken off the total of the items below</span>
+            </FormField>
+
             <FormField label="Quantity (total items)">
               <Input className="bg-muted/50" readOnly disabled value={totalQuantity} />
               <span className="text-xs text-muted-foreground">Calculated from items below</span>
@@ -201,6 +215,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
           <OrderLinesEditor
             lineRows={lineRows}
             totalAmount={totalAmount}
+            discountPercent={values.discountPercent}
             products={products}
             productsLoading={productsLoading}
             productsError={productsError}
@@ -224,6 +239,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
         details={reviewDetails}
         lineRows={lineRows}
         totalAmount={totalAmount}
+        discountPercent={values.discountPercent}
         disabled={!canSubmit}
         onBack={() => setIsReviewing(false)}
         onConfirm={handleConfirm}

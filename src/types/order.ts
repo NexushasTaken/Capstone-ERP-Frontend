@@ -16,6 +16,10 @@ export interface OrderGroup {
   created_At: string
   updated_At: string | null
   orders: OrderLine[]
+  subtotal: number
+  discountPercent: number
+  discountAmount: number
+  /** Net of the discount. */
   total: number
 }
 
@@ -57,6 +61,7 @@ export interface InsertOrderPayload {
   customerName: string
   pickUpAddress: string
   deliveryAddress: string
+  discountPercent: number
   orderLines: { productId: number; quantity: number }[]
 }
 
