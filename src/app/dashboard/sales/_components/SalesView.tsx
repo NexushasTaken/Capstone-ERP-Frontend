@@ -116,6 +116,7 @@ function exportSales(sales: Sale[]) {
       },
       { header: "Customer", value: (sale) => getSaleCustomerName(sale) },
       { header: "Quantity", value: (sale) => getSaleQuantity(sale) },
+      { header: "Discount (%)", value: (sale) => sale.discountPercent },
       { header: "Total amount", value: (sale) => sale.total },
       { header: "Sale date", value: (sale) => formatDate(sale.created_At) },
       { header: "Status", value: (sale) => getSaleStatusLabel(sale) },

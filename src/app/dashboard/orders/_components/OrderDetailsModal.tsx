@@ -75,6 +75,12 @@ function OrderDetailsBody({ order }: { order: OrderGroup }) {
         ) : null}
         <DetailItem label="Created at" value={formatDate(order.created_At)} />
         <DetailItem label="Quantity" value={totalQuantity} />
+        {order.discountPercent > 0 && (
+          <>
+            <DetailItem label="Subtotal" value={formatPeso(order.subtotal)} />
+            <DetailItem label={`Discount (${order.discountPercent}%)`} value={`-${formatPeso(order.discountAmount)}`} />
+          </>
+        )}
         <DetailItem label="Total" value={formatPeso(order.total)} />
         {isWalkinOrder ? null : (
           <>

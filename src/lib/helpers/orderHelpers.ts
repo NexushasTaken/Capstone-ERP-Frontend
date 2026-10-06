@@ -65,3 +65,9 @@ export function getOrderLineQuantityTotal(orderLines: ReturnType<typeof getOrder
 export function getOrderLineAmountTotal(orderLines: ReturnType<typeof getOrderLineRows>) {
   return orderLines.reduce((total, line) => total + line.subtotal, 0)
 }
+
+// Mirrors the backend's OrderMath.DiscountAmount: the percent of the subtotal, rounded to centavos.
+export function getOrderDiscountAmount(subtotal: number, discountPercent?: number) {
+  const percent = Number(discountPercent) || 0
+  return Math.round(subtotal * percent) / 100
+}

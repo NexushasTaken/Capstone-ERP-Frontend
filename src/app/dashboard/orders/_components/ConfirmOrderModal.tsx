@@ -5,12 +5,15 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { formatPeso } from "@/lib/format"
 import type { getOrderLineRows } from "@/lib/helpers/orderHelpers"
 import DetailItem from "@/components/DetailItem"
+import OrderTotalRows from "./OrderTotalRows"
 
 interface ConfirmOrderModalProps {
   open: boolean
   details: { label: string; value: string | number }[]
   lineRows: ReturnType<typeof getOrderLineRows>
+  /** Sum of the line subtotals, before the discount. */
   totalAmount: number
+  discountPercent?: number
   disabled: boolean
   onBack: () => void
   onConfirm: () => void
@@ -22,6 +25,7 @@ export default function ConfirmOrderModal({
   details,
   lineRows,
   totalAmount,
+  discountPercent,
   disabled,
   onBack,
   onConfirm,
@@ -75,14 +79,7 @@ export default function ConfirmOrderModal({
               ))}
             </TableBody>
             <TableFooter className="border-t border-border bg-background">
-              <TableRow className="hover:bg-transparent">
-                <TableCell className="text-right text-sm font-semibold uppercase text-foreground" colSpan={4}>
-                  Total
-                </TableCell>
-                <TableCell className="text-center text-base font-medium text-green-700">
-                  {formatPeso(totalAmount)}
-                </TableCell>
-              </TableRow>
+              <OrderTotalRows discountPercent={discountPercent} labelColSpan={4} subtotal={totalAmount} />
             </TableFooter>
           </Table>
         </div>
