@@ -14,6 +14,7 @@ export interface OrderGroup {
   pickUpAddress: string | null
   deliveryAddress: string | null
   created_At: string
+  updated_At: string | null
   orders: OrderLine[]
   total: number
 }
