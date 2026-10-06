@@ -70,6 +70,7 @@ export const auditModuleOptions: AuditModuleOption[] = [
   { value: 4, key: "Order", label: "Order" },
   { value: 5, key: "Inventory", label: "Inventory" },
   { value: 6, key: "Warehouse", label: "Warehouse" },
+  { value: 7, key: "Account", label: "Account" },
 ]
 
 // Values are sent as-is and must match the UserRole table exactly.
