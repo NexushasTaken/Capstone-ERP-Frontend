@@ -61,7 +61,18 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
               <span className="block text-xs text-muted-foreground">Created at</span>
               <span className="font-semibold text-foreground">{product ? formatDate(product.created_At) : ""}</span>
             </div>
-            {/* createdBy / updatedBy / updatedAt dto */}
+            <div>
+              <span className="block text-xs text-muted-foreground">Created by</span>
+              <span className="font-semibold text-foreground capitalize">{product?.createdByName ?? "—"}</span>
+            </div>
+            <div>
+              <span className="block text-xs text-muted-foreground">Last updated</span>
+              <span className="font-semibold text-foreground">{product ? formatDate(product.updated_At) : ""}</span>
+            </div>
+            <div>
+              <span className="block text-xs text-muted-foreground">Updated by</span>
+              <span className="font-semibold text-foreground capitalize">{product?.updatedByName ?? "—"}</span>
+            </div>
           </div>
         </div>
       </div>

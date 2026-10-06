@@ -97,6 +97,9 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
           price: values.price,
           categoryName: values.categoryName,
           created_At: new Date().toISOString(),
+          createdByName: null,
+          updated_At: null,
+          updatedByName: null,
         }
         return {
           ...current,

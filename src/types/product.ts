@@ -5,6 +5,9 @@ export interface ProductListItem {
   price: number
   categoryName: string | null
   created_At: string
+  createdByName: string | null
+  updated_At: string | null
+  updatedByName: string | null
 }
 
 export type ProductCategoryFilter = "Categorized" | "Uncategorized"
