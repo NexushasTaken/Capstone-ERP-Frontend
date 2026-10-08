@@ -13,7 +13,7 @@ import type { StatusActionItem } from "@/types/statusAction"
 
 const columns: DataTableColumn[] = [
   "Inventory ID",
-  "Name",
+  "Product",
   "Category",
   "Quantity",
   "Reorder point",

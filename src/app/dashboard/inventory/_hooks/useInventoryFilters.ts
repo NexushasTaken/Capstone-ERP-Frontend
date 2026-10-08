@@ -12,9 +12,6 @@ export interface InventoryFilters {
   category: string
   minQuantity: string
   maxQuantity: string
-  /** yyyy-MM-dd, or "" when unset. */
-  dateFrom: string
-  dateTo: string
   sortBy: InventorySortBy
   sortOrder: "asc" | "desc"
   page: number
@@ -30,8 +27,6 @@ const paramNames: Record<keyof InventoryFilters, string> = {
   category: "category",
   minQuantity: "minQty",
   maxQuantity: "maxQty",
-  dateFrom: "from",
-  dateTo: "to",
   sortBy: "sort",
   sortOrder: "order",
   page: "page",
@@ -44,8 +39,6 @@ const defaults: InventoryFilters = {
   category: "",
   minQuantity: "",
   maxQuantity: "",
-  dateFrom: "",
-  dateTo: "",
   sortBy: "latest",
   sortOrder: "asc",
   page: 1,
@@ -55,10 +48,6 @@ const sortKeys: InventorySortBy[] = ["latest", "name", "quantity", "reorderPoint
 
 function readCount(value: string | null) {
   return value !== null && /^\d+$/.test(value) ? value : ""
-}
-
-function readDate(value: string | null) {
-  return value !== null && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : ""
 }
 
 /**
@@ -80,8 +69,6 @@ export function useInventoryFilters() {
     category: readCount(searchParams.get(paramNames.category)),
     minQuantity: readCount(searchParams.get(paramNames.minQuantity)),
     maxQuantity: readCount(searchParams.get(paramNames.maxQuantity)),
-    dateFrom: readDate(searchParams.get(paramNames.dateFrom)),
-    dateTo: readDate(searchParams.get(paramNames.dateTo)),
     sortBy: sort && sortKeys.includes(sort) ? sort : defaults.sortBy,
     sortOrder: searchParams.get(paramNames.sortOrder) === "desc" ? "desc" : defaults.sortOrder,
     page: Number.isInteger(page) && page > 0 ? page : defaults.page,
@@ -105,9 +92,7 @@ export function useInventoryFilters() {
     filters.warehouse !== defaults.warehouse ||
     filters.category !== defaults.category ||
     filters.minQuantity !== defaults.minQuantity ||
-    filters.maxQuantity !== defaults.maxQuantity ||
-    filters.dateFrom !== defaults.dateFrom ||
-    filters.dateTo !== defaults.dateTo
+    filters.maxQuantity !== defaults.maxQuantity
 
   function clearFilters() {
     update({
@@ -116,8 +101,6 @@ export function useInventoryFilters() {
       category: defaults.category,
       minQuantity: defaults.minQuantity,
       maxQuantity: defaults.maxQuantity,
-      dateFrom: defaults.dateFrom,
-      dateTo: defaults.dateTo,
     })
   }
 

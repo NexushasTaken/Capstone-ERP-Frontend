@@ -4,31 +4,29 @@ import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
 import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
-import { DatePickerSimple } from "@/components/DatePicker"
 import EntityDropdown from "@/components/EntityDropdown"
 import { FormField, FormInput } from "@/components/FormField"
 import { useInventoryProductSearch } from "@/hooks/useInventoryProductSearch"
 import { formatPeso } from "@/lib/format"
-import { formatDateForApi, formatInventoryId } from "@/lib/helpers/inventoryHelpers"
+import { formatInventoryId } from "@/lib/helpers/inventoryHelpers"
 import type { InventoryListItem } from "@/types/inventory"
 import { useSelectableWarehouses } from "../_hooks/useInventory"
 import { inventorySchema, type InventoryFields } from "../_lib/inventorySchema"
 
 export interface InventoryFormValues {
-  name: string
   productId: number
+  /** For the optimistic row; the API names the item after its product. */
+  productName: string
   warehouseId: number
   warehouseName: string | null
   reorderPoint: number
   /** Only set when adding. */
   quantity: number
-  /** Only set when adding. */
-  dateArrived: string
 }
 
 interface InventoryFormModalProps {
   open: boolean
-  /** The item being edited, or `null` to add a new one (adding also asks for quantity and arrival date). */
+  /** The item being edited, or `null` to add a new one. Editing only changes the reorder point. */
   item: InventoryListItem | null
   disabled: boolean
   onClose: () => void
@@ -46,29 +44,26 @@ export default function InventoryFormModal({ open, item, disabled, onClose, onSu
     resolver: zodResolver(inventorySchema(isEdit)),
     mode: "onTouched",
     defaultValues: {
-      name: item?.name ?? "",
       productId: item?.productId,
       warehouseId: item?.warehouseId,
       reorderPoint: item?.reorderPoint,
       quantity: item?.quantity,
-      dateArrived: item?.dateArrived ?? "",
     },
   })
-  const { products, isLoading: productsLoading, error: productsError } = useInventoryProductSearch(open)
-  const { warehouses, isLoading: warehousesLoading } = useSelectableWarehouses(open)
+  const { products, isLoading: productsLoading, error: productsError } = useInventoryProductSearch(open && !isEdit)
+  const { warehouses, isLoading: warehousesLoading } = useSelectableWarehouses(open && !isEdit)
 
   const productName = (id?: number) => products.find((product) => product.id === id)?.name ?? ""
   const warehouseName = (id?: number) => warehouses.find((warehouse) => warehouse.id === id)?.name ?? null
 
   const submit = handleSubmit((values) =>
     onSubmit({
-      name: values.name,
       productId: values.productId,
+      productName: productName(values.productId),
       warehouseId: values.warehouseId,
       warehouseName: warehouseName(values.warehouseId),
       reorderPoint: values.reorderPoint,
       quantity: values.quantity ?? 0,
-      dateArrived: isEdit ? (values.dateArrived ?? "") : formatDateForApi(values.dateArrived ?? ""),
     }),
   )
 
@@ -80,90 +75,79 @@ export default function InventoryFormModal({ open, item, disabled, onClose, onSu
         onClose={onClose}
       />
       <ModalBody>
-        <FormField label="Name" error={errors.name?.message}>
-          <FormInput aria-invalid={!!errors.name} className={isEdit ? "" : "capitalize"} {...register("name")} />
-        </FormField>
-
-        {!isEdit && (
-          <FormField label="Quantity" error={errors.quantity?.message}>
-            <FormInput
-              aria-invalid={!!errors.quantity}
-              min={1}
-              type="number"
-              {...register("quantity", { valueAsNumber: true })}
-            />
-          </FormField>
-        )}
-
-        <FormField label="Product" error={errors.productId?.message}>
-          <Controller
-            control={control}
-            name="productId"
-            render={({ field }) => (
-              <EntityDropdown
-                options={products.map((product) => ({
-                  id: product.id,
-                  label: product.name,
-                  sublabel: `${product.categoryName} · ${formatPeso(product.price)}`,
-                }))}
-                value={productName(field.value)}
-                placeholder="Select a product"
-                emptyLabel={productsError ? "Failed to load products. Try searching again." : "No products found."}
-                addHref="/dashboard/product"
-                addLabel="Add product"
-                isLoading={productsLoading}
-                searchPlaceholder="Search products..."
-                onSelect={field.onChange}
+        {isEdit ? (
+          <>
+            <FormField label="Product">
+              <FormInput className="capitalize" disabled value={item.name} />
+            </FormField>
+            <FormField label="Warehouse">
+              <FormInput className="capitalize" disabled value={item.warehouseName} />
+            </FormField>
+          </>
+        ) : (
+          <>
+            <FormField label="Product" error={errors.productId?.message}>
+              <Controller
+                control={control}
+                name="productId"
+                render={({ field }) => (
+                  <EntityDropdown
+                    options={products.map((product) => ({
+                      id: product.id,
+                      label: product.name,
+                      sublabel: `${product.categoryName} · ${formatPeso(product.price)}`,
+                    }))}
+                    value={productName(field.value)}
+                    placeholder="Select a product"
+                    emptyLabel={productsError ? "Failed to load products. Try searching again." : "No products found."}
+                    addHref="/dashboard/product"
+                    addLabel="Add product"
+                    isLoading={productsLoading}
+                    searchPlaceholder="Search products..."
+                    onSelect={field.onChange}
+                  />
+                )}
               />
-            )}
-          />
-        </FormField>
+            </FormField>
 
-        <FormField label="Warehouse" error={errors.warehouseId?.message}>
-          <Controller
-            control={control}
-            name="warehouseId"
-            render={({ field }) => (
-              <EntityDropdown
-                options={warehouses.map((warehouse) => ({
-                  id: warehouse.id,
-                  label: warehouse.name,
-                  sublabel: warehouse.address,
-                }))}
-                value={warehouseName(field.value) ?? ""}
-                placeholder="Select a warehouse"
-                emptyLabel="No warehouses found."
-                addHref="/dashboard/warehouse"
-                addLabel="Add warehouse"
-                isLoading={warehousesLoading}
-                onSelect={field.onChange}
+            <FormField label="Warehouse" error={errors.warehouseId?.message}>
+              <Controller
+                control={control}
+                name="warehouseId"
+                render={({ field }) => (
+                  <EntityDropdown
+                    options={warehouses.map((warehouse) => ({
+                      id: warehouse.id,
+                      label: warehouse.name,
+                      sublabel: warehouse.address,
+                    }))}
+                    value={warehouseName(field.value) ?? ""}
+                    placeholder="Select a warehouse"
+                    emptyLabel="No warehouses found."
+                    addHref="/dashboard/warehouse"
+                    addLabel="Add warehouse"
+                    isLoading={warehousesLoading}
+                    onSelect={field.onChange}
+                  />
+                )}
               />
-            )}
-          />
-        </FormField>
+            </FormField>
 
-        {!isEdit && (
-          <Controller
-            control={control}
-            name="dateArrived"
-            render={({ field, fieldState }) => (
-              <DatePickerSimple
-                label="Date arrived"
-                value={field.value ?? ""}
-                onChange={(value) => {
-                  field.onChange(value)
-                  field.onBlur()
-                }}
-                error={fieldState.error?.message}
+            <FormField label="Quantity" error={errors.quantity?.message}>
+              <FormInput
+                aria-invalid={!!errors.quantity}
+                min={1}
+                type="number"
+                {...register("quantity", { valueAsNumber: true })}
               />
-            )}
-          />
+            </FormField>
+          </>
         )}
 
         <FormField label="Reorder point" error={errors.reorderPoint?.message}>
           <FormInput
             aria-invalid={!!errors.reorderPoint}
-            min={0}
+            min={1}
             type="number"
             {...register("reorderPoint", { valueAsNumber: true })}
           />

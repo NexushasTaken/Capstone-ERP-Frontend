@@ -13,7 +13,7 @@ import type { InventoryListItem, RestockInventoryPayload } from "@/types/invento
 import { restockSchema, type RestockFormValues } from "../_lib/inventorySchema"
 
 const restockTypeOptions = [
-  { value: 1, label: "Increase Stock" },
+  { value: 1, label: "Receive stock" },
   { value: 2, label: "Return Stock" },
 ]
 

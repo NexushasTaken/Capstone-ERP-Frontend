@@ -1,38 +1,25 @@
 import { z } from "zod"
-import { positiveInt, requiredId, requiredNumber, requiredString } from "@/lib/validation"
+import { positiveInt, requiredId, requiredString } from "@/lib/validation"
 
 export interface InventoryFields {
-  name: string
   productId: number
   warehouseId: number
   reorderPoint: number
   /** Only asked for when adding. */
   quantity?: number
-  /** Only asked for when adding, as `yyyy-MM-dd`. */
-  dateArrived?: string
 }
 
-// Adding also asks for quantity and arrival date, and (like the backend) needs a reorder point above 0.
+// An item is one product in one warehouse. Editing only changes the reorder point; like the backend, it must be above 0.
 export function inventorySchema(isEdit: boolean): z.ZodType<InventoryFields, InventoryFields> {
   const common = {
-    name: requiredString("Name is required."),
     productId: requiredId("Select a product."),
     warehouseId: requiredId("Select a warehouse."),
+    reorderPoint: positiveInt("Reorder point must be greater than 0."),
   }
   if (isEdit) {
-    return z.object({
-      ...common,
-      reorderPoint: requiredNumber("Reorder point is required.").int().min(0, "Reorder point can't be negative."),
-      quantity: z.number().optional(),
-      dateArrived: z.string().optional(),
-    })
+    return z.object({ ...common, quantity: z.number().optional() })
   }
-  return z.object({
-    ...common,
-    reorderPoint: positiveInt("Reorder point must be greater than 0."),
-    quantity: positiveInt("Quantity must be greater than 0."),
-    dateArrived: requiredString("Pick the arrival date."),
-  })
+  return z.object({ ...common, quantity: positiveInt("Quantity must be greater than 0.") })
 }
 
 export const restockSchema = z.object({

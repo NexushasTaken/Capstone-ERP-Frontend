@@ -11,11 +11,9 @@ import SortPopover from "@/components/SortPopover"
 import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
-import { DatePickerSimple } from "@/components/DatePicker"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { usePageSize } from "@/hooks/usePageSize"
 import { exportToCSV } from "@/lib/exportToCsv"
-import { formatDate } from "@/lib/format"
 import { formatInventoryId, getInventoryFilter, inventorySortOptions, titleCase } from "@/lib/helpers/inventoryHelpers"
 import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
 import { allowedActions, can } from "@/lib/permissions"
@@ -96,8 +94,6 @@ export default function InventoryItemsSection() {
     categoryId: Number(filters.category) || undefined,
     minQuantity: filters.minQuantity === "" ? undefined : Number(filters.minQuantity),
     maxQuantity: filters.maxQuantity === "" ? undefined : Number(filters.maxQuantity),
-    dateFrom: filters.dateFrom || undefined,
-    dateTo: filters.dateTo || undefined,
   }
   const { data: inventoriesResponse, isLoading, error } = useInventories(listParams)
   const { data: statusCounts, isError: statusCountsError } = useInventoryStatusCounts()
@@ -140,14 +136,7 @@ export default function InventoryItemsSection() {
 
   function handleUpdateInventory(values: InventoryFormValues) {
     if (modal?.type !== "edit") return
-    mutations.updateInventory.mutate({
-      id: modal.item.id,
-      name: values.name,
-      productId: values.productId,
-      warehouseId: values.warehouseId,
-      warehouseName: values.warehouseName,
-      reorderPoint: values.reorderPoint,
-    })
+    mutations.updateInventory.mutate({ id: modal.item.id, reorderPoint: values.reorderPoint })
     closeModal()
   }
 
@@ -179,7 +168,7 @@ export default function InventoryItemsSection() {
           </>
         }
         search={
-          <SearchInput value={search} onChange={setSearch} placeholder="Search by name, warehouse, status or ID" />
+          <SearchInput value={search} onChange={setSearch} placeholder="Search by product, warehouse, status or ID" />
         }
         filters={
           <>
@@ -220,22 +209,6 @@ export default function InventoryItemsSection() {
               max={filters.maxQuantity}
               onChange={({ min, max }) => update({ minQuantity: min, maxQuantity: max })}
             />
-            <div className="w-44">
-              <DatePickerSimple
-                label="Arrived from"
-                value={filters.dateFrom}
-                maxDate={filters.dateTo ? new Date(`${filters.dateTo}T00:00:00`) : undefined}
-                onChange={(dateFrom) => update({ dateFrom })}
-              />
-            </div>
-            <div className="w-44">
-              <DatePickerSimple
-                label="Arrived to"
-                value={filters.dateTo}
-                minDate={filters.dateFrom ? new Date(`${filters.dateFrom}T00:00:00`) : undefined}
-                onChange={(dateTo) => update({ dateTo })}
-              />
-            </div>
             <SortPopover
               value={sortBy}
               order={sortOrder}
@@ -355,7 +328,6 @@ function exportInventory(items: InventoryListItem[]) {
       { header: "Category", value: (item) => item.categoryName },
       { header: "Warehouse", value: (item) => item.warehouseName },
       { header: "Status", value: (item) => item.status },
-      { header: "Date arrived", value: (item) => formatDate(item.dateArrived) },
     ],
     "inventory",
   )

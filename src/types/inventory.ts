@@ -1,6 +1,7 @@
 export interface InventoryListItem {
   id: number
   productId: number
+  /** The product's name; an item is one product stocked in one warehouse. */
   name: string
   quantity: number
   reorderPoint: number
@@ -8,7 +9,6 @@ export interface InventoryListItem {
   warehouseName: string
   status: string
   categoryName: string
-  dateArrived: string
 }
 
 export type InventoryFilter = "All" | string
@@ -66,25 +66,18 @@ export interface FetchInventoriesParams {
   categoryId?: number
   minQuantity?: number
   maxQuantity?: number
-  /** Date arrived range, yyyy-MM-dd, both ends inclusive. */
-  dateFrom?: string
-  dateTo?: string
 }
 
 export interface InsertInventoryPayload {
-  name: string
   quantity: number
   productId: number
   warehouseId: number
-  dateArrived: string
   reorderPoint: number
 }
 
+// Only the reorder point can change; product and warehouse are fixed.
 export interface UpdateInventoryPayload {
   id: number
-  name: string
-  productId: number
-  warehouseId: number
   reorderPoint: number
 }
 

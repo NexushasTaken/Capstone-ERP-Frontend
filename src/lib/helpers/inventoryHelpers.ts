@@ -39,15 +39,6 @@ export function getInventoryStatusStyleFromLabel(status: string) {
   }
 }
 
-export function formatDateForApi(isoDateString: string): string {
-  const date = new Date(isoDateString)
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-}
-
 export const inventorySortOptions = [
   {
     label: "Latest added",
@@ -55,12 +46,12 @@ export const inventorySortOptions = [
     order: "asc" as const,
   },
   {
-    label: "Name (A to Z)",
+    label: "Product (A to Z)",
     value: "name" as InventorySortBy,
     order: "asc" as const,
   },
   {
-    label: "Name (Z to A)",
+    label: "Product (Z to A)",
     value: "name" as InventorySortBy,
     order: "desc" as const,
   },

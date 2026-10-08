@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-10-08
+
+### Changed
+
+- **BREAKING:** Needs Backend 3.0.0. An inventory item is now one product in one warehouse, shown by its product name.
+- *Add inventory* asks for product, warehouse, quantity and reorder point. Adding a product that is already in that warehouse shows an error.
+- *Edit inventory* only changes the reorder point. The product and warehouse are shown but can't be changed. The reorder point must be above 0.
+- The *Restock* option *Increase Stock* is now *Receive stock*. The audit log calls it *Stock received*.
+- The inventory table's *Name* column is now *Product*. Search and the A–Z sorts are by product name.
+- Inventory details show the category instead of the arrival date.
+
+### Removed
+
+- The *Arrived from* / *Arrived to* filters, and the *Date arrived* column in the inventory CSV export.
+
 ## [1.14.1] - 2026-10-06
 
 ### Changed
