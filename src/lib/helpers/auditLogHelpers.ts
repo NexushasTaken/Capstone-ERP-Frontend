@@ -36,7 +36,7 @@ export const auditActionOptions: AuditActionOption[] = [
   {
     value: 5,
     key: "IncreaseStock",
-    label: "Stock added",
+    label: "Stock received",
     Icon: PackagePlus,
     className: "bg-green-50 text-green-700",
   },

@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { Truck, Warehouse as WarehouseIcon } from "lucide-react"
+import { Tag, Warehouse as WarehouseIcon } from "lucide-react"
 import CloseButton from "@/components/CloseButton"
 import { ModalTitle } from "@/components/AppModal"
 import SeeMoreModal from "@/components/SeeMoreModal"
@@ -49,8 +49,8 @@ export default function InventoryDetailsModal({ item, onClose }: InventoryDetail
             <InfoTile icon={<WarehouseIcon className="text-muted-foreground w-6 h-6" />} label="Warehouse">
               <span className="capitalize">{item?.warehouseName}</span>
             </InfoTile>
-            <InfoTile icon={<Truck className="text-muted-foreground w-6 h-6" />} label="Date arrived">
-              {item ? formatDate(item.dateArrived) : ""}
+            <InfoTile icon={<Tag className="text-muted-foreground w-6 h-6" />} label="Category">
+              <span className="capitalize">{item?.categoryName}</span>
             </InfoTile>
           </div>
         </div>
