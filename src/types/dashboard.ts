@@ -25,16 +25,63 @@ export interface DashboardInventoryContent {
   inventoryStatus: DashboardInventoryStatusItem[]
 }
 
-export interface InventoryForecastItem {
-  inventoryId: number
-  name: string
-  earliestStockOutDay: string
+// How the forecast for a product was made (Backend ForecastMethodEnum)
+export enum ForecastMethod {
+  YearlySsa = 1,
+  Average = 3,
+  AverageFallback = 4,
 }
 
+// One row of the Demand Forecast & Restock Recommendations card. Demand values are 4-week totals.
+export interface DemandForecastItem {
+  productId: number
+  name: string | null
+  lowDemand: number
+  expectedDemand: number
+  busyDemand: number
+  stockOnHand: number
+  weeksLeft: number | null
+  runsOutAround: string | null
+  suggestedOrder: number
+  method: ForecastMethod
+  historyWeeks: number
+  aiErrorPercent: number | null
+  baselineErrorPercent: number | null
+}
+
+// Backtest over the last 12 weeks: how far off the AI and the simple 4-week average were
+export interface ForecastAccuracy {
+  aiErrorPercent: number
+  baselineErrorPercent: number
+  productsTested: number
+}
+
+export interface DemandHistoryPoint {
+  weekStart: string
+  demand: number
+}
+
+export interface DemandForecastPoint {
+  weekStart: string
+  low: number
+  expected: number
+  busyCase: number
+}
+
+export interface DemandChart {
+  product: DemandForecastItem
+  history: DemandHistoryPoint[]
+  forecast: DemandForecastPoint[]
+}
+
+// API request/response shapes
 export interface InventoryForecastContent {
-  forecastResults: InventoryForecastItem[]
+  forecastResults: DemandForecastItem[]
   pageCount: number
   rows: number
+  needOrderCount: number
+  accuracy: ForecastAccuracy | null
+  generatedAt: string | null
 }
 
 export interface FetchInventoryForecastParams {

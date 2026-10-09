@@ -1,5 +1,5 @@
+import DemandForecastCard from "./DemandForecastCard"
 import InventoryOverview from "./InventoryOverview"
-import PredictedStockouts from "./PredictedStockouts"
 import SalesOverviewCard from "./SalesOverviewCard"
 
 export default function DashboardView() {
@@ -9,7 +9,7 @@ export default function DashboardView() {
 
       <div className="flex flex-col xl:flex-row gap-4 w-full">
         <div className="flex flex-col w-full h-full gap-4">
-          <PredictedStockouts />
+          <DemandForecastCard />
         </div>
         <InventoryOverview />
       </div>
