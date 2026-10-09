@@ -17,7 +17,7 @@ interface AuthGuardProps {
 export default function AuthGuard({ children }: AuthGuardProps) {
   const pathname = usePathname()
   // Same source as the sidebar, so a visible link always opens its page.
-  const { data: currentUser } = useCurrentUser()
+  const { data: currentUser, isLoading: isLoadingCurrentUser } = useCurrentUser()
 
   const [status, setStatus] = useState<"loading" | "authorized" | "unauthorized" | "forbidden" | "error">("loading")
 
@@ -64,7 +64,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     }
   }, [pathname])
 
-  if (status === "loading") {
+  if (status === "loading" || isLoadingCurrentUser) {
     return (
       <div className="flex h-screen">
         <Loading />
