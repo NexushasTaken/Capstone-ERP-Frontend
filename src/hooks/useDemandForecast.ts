@@ -14,13 +14,12 @@ export function useDemandForecast(params: FetchInventoryForecastParams) {
   })
 }
 
-/** Weekly demand and the forecast of one product, loaded only while its chart is open. weeks 0 = all history. */
-export function useDemandChart(productId: number | null, weeks: number) {
+/** The forecast of one product beside the same season in earlier years, loaded only while its chart is open. */
+export function useDemandChart(productId: number | null) {
   return useQuery({
-    queryKey: queryKeys.dashboard.demandChart(productId ?? 0, weeks),
-    queryFn: ({ signal }) => fetchDemandChart(productId!, weeks, signal),
+    queryKey: queryKeys.dashboard.demandChart(productId ?? 0),
+    queryFn: ({ signal }) => fetchDemandChart(productId!, signal),
     enabled: productId !== null,
-    placeholderData: keepPreviousData,
   })
 }
 

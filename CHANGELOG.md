@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2026-10-09
+
+### Changed
+
+- The demand chart compares the forecast with the same season in earlier years: 3 months either side of the forecast start, with the same weeks of each earlier year as a grey line (lighter the older the year) and the forecast weeks highlighted. Buttons choose last year, 2 years, 3 years or all years. Needs Backend 5.0.0.
+
+### Added
+
+- A "Same 4 weeks" table under the demand chart: the forecast next to what sold in the same 4 weeks of each shown year, and how much higher or lower the forecast is.
+
+### Removed
+
+- The 6 months / 1 year / 2 years / All range buttons and the dotted "same weeks last year" line.
+
 ## [3.1.2] - 2026-10-09
 
 ### Fixed
