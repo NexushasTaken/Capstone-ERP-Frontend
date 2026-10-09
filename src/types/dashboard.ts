@@ -28,6 +28,8 @@ export interface DashboardInventoryContent {
 // How the forecast for a product was made (Backend ForecastMethodEnum)
 export enum ForecastMethod {
   YearlySsa = 1,
+  // Only the ML.NET experiment backend (experiment/mlnet-ssa-forecast) sends this
+  ShortSsa = 2,
   Average = 3,
   AverageFallback = 4,
 }
