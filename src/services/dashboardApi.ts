@@ -66,6 +66,8 @@ export async function fetchInventoryForecast(
   })
   if (params.page !== undefined) query.set("page", String(params.page))
   if (params.pageSize !== undefined) query.set("pageSize", String(params.pageSize))
+  if (params.search) query.set("search", params.search)
+  if (params.needOrderOnly) query.set("needOrderOnly", "true")
   const response = await fetch(`/api/Dashboard/inventory/forecast?${query.toString()}`, {
     signal,
     method: "GET",
@@ -86,8 +88,9 @@ export async function fetchInventoryForecast(
   return { ...rest, items: forecastResults }
 }
 
-export async function fetchDemandChart(productId: number, signal?: AbortSignal): Promise<DemandChart> {
-  const response = await fetch(`/api/Dashboard/inventory/forecast/${productId}`, {
+/** weeks: how much history to show; 0 shows all of it. */
+export async function fetchDemandChart(productId: number, weeks: number, signal?: AbortSignal): Promise<DemandChart> {
+  const response = await fetch(`/api/Dashboard/inventory/forecast/${productId}?weeks=${weeks}`, {
     signal,
     method: "GET",
     credentials: "include",

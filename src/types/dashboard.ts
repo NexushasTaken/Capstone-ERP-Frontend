@@ -72,6 +72,8 @@ export interface DemandChart {
   product: DemandForecastItem
   history: DemandHistoryPoint[]
   forecast: DemandForecastPoint[]
+  /** Demand 52 weeks before each history and forecast week; null before the product's history. */
+  lastYear: (number | null)[]
 }
 
 // API request/response shapes
@@ -88,4 +90,6 @@ export interface FetchInventoryForecastParams {
   forceForecast?: boolean
   page?: number
   pageSize?: number
+  search?: string
+  needOrderOnly?: boolean
 }
