@@ -132,11 +132,13 @@ export default function ForecastView() {
             }}
           />
         </div>
-        <TablePagination
-          currentPage={Math.min(currentPage, pageCount)}
-          onPageChange={setCurrentPage}
-          totalPages={pageCount}
-        />
+        <div className="flex">
+          <TablePagination
+            currentPage={Math.min(currentPage, pageCount)}
+            onPageChange={setCurrentPage}
+            totalPages={pageCount}
+          />
+        </div>
       </div>
 
       {chartProduct && <DemandChartDialog onClose={() => setChartProduct(null)} product={chartProduct} />}
