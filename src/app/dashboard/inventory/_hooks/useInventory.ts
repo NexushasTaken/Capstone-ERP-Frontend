@@ -45,14 +45,14 @@ export function useInventoryStatusCounts() {
   })
 }
 
-/** How many products are forecast to run out (only the row count is needed). */
-export function useForecastRiskCount() {
+/** How many products need ordering now (suggested order above 0). */
+export function useNeedOrderCount() {
   const params = { page: 1, pageSize: 1 }
   const { data } = useQuery({
     queryKey: queryKeys.dashboard.inventoryForecast(params),
     queryFn: ({ signal }) => fetchInventoryForecast(params, signal),
   })
-  return data?.rows ?? 0
+  return data?.needOrderCount ?? 0
 }
 
 const ALL_WAREHOUSES = { page: 1, pageSize: 1000 }

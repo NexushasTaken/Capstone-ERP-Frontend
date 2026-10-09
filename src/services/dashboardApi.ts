@@ -1,6 +1,7 @@
 import { ApiEnvelope } from "@/types/api"
 import type {
   DashboardInventoryContent,
+  DemandChart,
   FetchInventoryForecastParams,
   FetchSalesOverviewParams,
   InventoryForecastContent,
@@ -59,11 +60,7 @@ export async function fetchDashboardInventory(signal?: AbortSignal): Promise<Das
 export async function fetchInventoryForecast(
   params: FetchInventoryForecastParams = {},
   signal?: AbortSignal,
-): Promise<{
-  items: InventoryForecastContent["forecastResults"]
-  pageCount: number
-  rows: number
-}> {
+): Promise<Omit<InventoryForecastContent, "forecastResults"> & { items: InventoryForecastContent["forecastResults"] }> {
   const query = new URLSearchParams({
     forceForecast: String(params.forceForecast ?? false),
   })
@@ -85,9 +82,26 @@ export async function fetchInventoryForecast(
     throw new ApiError(data.message || "Failed to fetch inventory forecast", response.status, data.errors)
   }
 
-  return {
-    items: data.content.forecastResults,
-    pageCount: data.content.pageCount,
-    rows: data.content.rows,
+  const { forecastResults, ...rest } = data.content
+  return { ...rest, items: forecastResults }
+}
+
+export async function fetchDemandChart(productId: number, signal?: AbortSignal): Promise<DemandChart> {
+  const response = await fetch(`/api/Dashboard/inventory/forecast/${productId}`, {
+    signal,
+    method: "GET",
+    credentials: "include",
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch demand chart: ${response.status}`)
   }
+
+  const data: ApiEnvelope<DemandChart> = await response.json()
+
+  if (!data.success) {
+    throw new ApiError(data.message || "Failed to fetch demand chart", response.status, data.errors)
+  }
+
+  return data.content
 }

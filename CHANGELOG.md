@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-10-09
+
+### Added
+
+- Clicking a product in the forecast card (or its *Chart* button) opens its weekly demand chart: the last 26 weeks of sales, the dashed 4-week forecast and the shaded 95% range.
+
+### Changed
+
+- **BREAKING:** Needs Backend 4.0.0. The dashboard's *Predicted stockouts* card is now *Demand Forecast & Restock Recommendations*. For each product it shows the forecasted demand for the next 4 weeks with its range, stock on hand, when it runs out, the suggested order and how the forecast was made. Products that run out first are on top.
+- The card shows how accurate the forecast was over the last 12 weeks, compared with a simple 4-week average, and how many products need ordering.
+- *Force Forecast* refreshes the card, the charts and the inventory page's count together.
+- The inventory page's *Forecast risks* card is now *Need ordering* and counts products with a suggested order.
+
 ## [2.0.1] - 2026-10-09
 
 ### Fixed
