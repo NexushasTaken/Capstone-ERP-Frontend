@@ -70,12 +70,22 @@ export interface DemandForecastPoint {
   busyCase: number
 }
 
+/** The same season in an earlier year: 13 weeks before and after the date the forecast starts. */
+export interface DemandPastYear {
+  year: number
+  /** 26 weekly values; null before the product's history. */
+  weeks: (number | null)[]
+  /** Demand in the 4 weeks lined up with the forecast; null if the history doesn't cover them. */
+  sameWeeksTotal: number | null
+}
+
 export interface DemandChart {
   product: DemandForecastItem
+  /** The 13 weeks before the forecast (fewer for a newer product). */
   history: DemandHistoryPoint[]
   forecast: DemandForecastPoint[]
-  /** Demand 52 weeks before each history and forecast week; null before the product's history. */
-  lastYear: (number | null)[]
+  /** Newest first. */
+  pastYears: DemandPastYear[]
 }
 
 // API request/response shapes

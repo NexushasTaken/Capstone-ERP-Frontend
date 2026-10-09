@@ -88,9 +88,8 @@ export async function fetchInventoryForecast(
   return { ...rest, items: forecastResults }
 }
 
-/** weeks: how much history to show; 0 shows all of it. */
-export async function fetchDemandChart(productId: number, weeks: number, signal?: AbortSignal): Promise<DemandChart> {
-  const response = await fetch(`/api/Dashboard/inventory/forecast/${productId}?weeks=${weeks}`, {
+export async function fetchDemandChart(productId: number, signal?: AbortSignal): Promise<DemandChart> {
+  const response = await fetch(`/api/Dashboard/inventory/forecast/${productId}`, {
     signal,
     method: "GET",
     credentials: "include",
