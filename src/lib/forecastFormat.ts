@@ -5,13 +5,17 @@ export const forecastMethodLabel: Record<ForecastMethod, { label: string; hint: 
     label: "AI (yearly pattern)",
     hint: "SSA learned this product's trend and yearly season from 2+ years of sales.",
   },
+  [ForecastMethod.ShortSsa]: {
+    label: "AI (short pattern)",
+    hint: "SSA learned this product's recent trend from its shorter sales history.",
+  },
   [ForecastMethod.Average]: {
     label: "Average",
-    hint: "Less than about 2 years of sales, so this is the average of the last 4 weeks.",
+    hint: "Not enough sales history for the AI yet, so this is the average of the last 4 weeks.",
   },
   [ForecastMethod.AverageFallback]: {
     label: "Average (fallback)",
-    hint: "The AI couldn't find a pattern in this product's sales, so this is the average of the last 4 weeks.",
+    hint: "The AI couldn't give a reliable forecast for this product, so this is the average of the last 4 weeks.",
   },
 }
 
