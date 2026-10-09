@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-10-09
+
+### Added
+
+- Demand Forecast page in the sidebar (Operations), for owners and secretaries: the full forecast table with search by product, an "All products / Need ordering" filter, rows per page and Export to CSV.
+- The demand chart has 6 months / 1 year / 2 years / All range buttons and a dotted "Same weeks last year" line.
+
+### Changed
+
+- The dashboard shows a Restock Summary (products that need ordering, forecast accuracy and the 5 running out first) in place of the full forecast table, with a "View all" link to the new page.
+- Inventory Overview on the dashboard takes half the width, beside the Restock Summary, instead of being squeezed.
+
 ## [3.0.0] - 2026-10-09
 
 ### Added

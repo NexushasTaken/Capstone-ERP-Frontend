@@ -21,7 +21,8 @@ export const queryKeys = {
     inventory: ["dashboard", "inventory"] as const,
     inventoryForecast: (params: FetchInventoryForecastParams = {}) =>
       ["dashboard", "inventory", "forecast", params] as const,
-    demandChart: (productId: number) => ["dashboard", "inventory", "forecast", "chart", productId] as const,
+    demandChart: (productId: number, weeks: number) =>
+      ["dashboard", "inventory", "forecast", "chart", productId, weeks] as const,
   },
   inventories: {
     productsForInsert: ["inventories", "productsForInsert"] as const,

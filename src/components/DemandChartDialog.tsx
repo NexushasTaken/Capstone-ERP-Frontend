@@ -12,14 +12,15 @@ import {
   Tooltip,
   type ChartConfiguration,
 } from "chart.js"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import AppModal, { ModalBody, ModalHeader } from "@/components/AppModal"
 import Loading from "@/components/Loading"
+import { Button } from "@/components/ui/button"
 import { formatDate } from "@/lib/format"
 import { themeColor } from "@/lib/cssColor"
 import type { DemandChart, DemandForecastItem } from "@/types/dashboard"
-import { useDemandChart } from "../_hooks/useDemandForecast"
-import { forecastMethodLabel, formatDemandRange, formatUnits } from "../_lib/forecastFormat"
+import { useDemandChart } from "@/hooks/useDemandForecast"
+import { forecastMethodLabel, formatDemandRange, formatUnits } from "@/lib/forecastFormat"
 
 Chart.register(CategoryScale, Filler, Legend, LinearScale, LineController, LineElement, PointElement, Tooltip)
 
@@ -28,13 +29,26 @@ interface DemandChartDialogProps {
   onClose: () => void
 }
 
-// "Oct 5": the week a point starts on
-function weekLabel(weekStart: string) {
-  return new Date(`${weekStart}T00:00:00`).toLocaleDateString("en-PH", { month: "short", day: "numeric" })
+// How much demand history the chart shows, in weeks; 0 is all of it
+const RANGES = [
+  { label: "6 months", weeks: 26 },
+  { label: "1 year", weeks: 52 },
+  { label: "2 years", weeks: 104 },
+  { label: "All", weeks: 0 },
+]
+
+// "Oct 5" (or "Oct 5, 2025" when the chart spans more than half a year): the week a point starts on
+function weekLabel(weekStart: string, withYear: boolean) {
+  return new Date(`${weekStart}T00:00:00`).toLocaleDateString("en-PH", {
+    month: "short",
+    day: "numeric",
+    year: withYear ? "numeric" : undefined,
+  })
 }
 
 export default function DemandChartDialog({ product, onClose }: DemandChartDialogProps) {
-  const chartQuery = useDemandChart(product.productId)
+  const [weeks, setWeeks] = useState(RANGES[0].weeks)
+  const chartQuery = useDemandChart(product.productId, weeks)
   const method = forecastMethodLabel[product.method]
 
   return (
@@ -66,6 +80,21 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
           </div>
         </dl>
 
+        <div aria-label="Chart range" className="flex flex-wrap gap-2" role="group">
+          {RANGES.map((range) => (
+            <Button
+              aria-pressed={weeks === range.weeks}
+              key={range.label}
+              onClick={() => setWeeks(range.weeks)}
+              size="sm"
+              type="button"
+              variant={weeks === range.weeks ? "default" : "outline"}
+            >
+              {range.label}
+            </Button>
+          ))}
+        </div>
+
         <div className="h-80 w-full">
           {chartQuery.isLoading ? (
             <div className="flex h-full items-center justify-center">
@@ -81,7 +110,8 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
         </div>
 
         <p className="text-xs text-muted-foreground">
-          {method?.hint} The shaded band is the 95% range: a normal month lands inside it.
+          {method?.hint} The shaded band is the 95% range: a normal month lands inside it. The dotted line is the same
+          weeks one year earlier.
           {product.aiErrorPercent != null &&
             product.baselineErrorPercent != null &&
             ` Over the last 12 weeks the AI was off by ±${Math.round(product.aiErrorPercent)}% for this product, a simple 4-week average by ±${Math.round(product.baselineErrorPercent)}%.`}
@@ -99,7 +129,10 @@ function DemandLineChart({ chart }: { chart: DemandChart }) {
 
     const history = chart.history
     const forecast = chart.forecast
-    const labels = [...history, ...forecast].map((point) => weekLabel(point.weekStart))
+    const withYear = history.length > 26
+    const labels = [...history, ...forecast].map((point) => weekLabel(point.weekStart, withYear))
+    // Points get crowded past a year; keep only the lines
+    const pointRadius = history.length > 52 ? 0 : 2
     const gap = (count: number) => Array<number | null>(count).fill(null)
 
     // The forecast lines start at the last actual week so they join the actual line
@@ -109,6 +142,7 @@ function DemandLineChart({ chart }: { chart: DemandChart }) {
     const actualColor = themeColor("--chart-5")
     const forecastColor = themeColor("--chart-3")
     const labelColor = themeColor("--muted-foreground")
+    const lastYearColor = themeColor("--muted-foreground", 0.6)
 
     const config: ChartConfiguration<"line", (number | null)[], string> = {
       type: "line",
@@ -121,7 +155,7 @@ function DemandLineChart({ chart }: { chart: DemandChart }) {
             borderColor: actualColor,
             backgroundColor: actualColor,
             borderWidth: 2,
-            pointRadius: 2,
+            pointRadius,
             tension: 0.3,
           },
           {
@@ -147,7 +181,17 @@ function DemandLineChart({ chart }: { chart: DemandChart }) {
             backgroundColor: forecastColor,
             borderDash: [6, 4],
             borderWidth: 2,
-            pointRadius: 2,
+            pointRadius,
+            tension: 0.3,
+          },
+          {
+            label: "Same weeks last year",
+            data: chart.lastYear,
+            borderColor: lastYearColor,
+            backgroundColor: lastYearColor,
+            borderDash: [2, 3],
+            borderWidth: 1.5,
+            pointRadius: 0,
             tension: 0.3,
           },
         ],
@@ -172,7 +216,7 @@ function DemandLineChart({ chart }: { chart: DemandChart }) {
             filter: (item) =>
               item.dataset.label !== "Low" &&
               item.raw !== null &&
-              !(item.datasetIndex > 0 && item.dataIndex === history.length - 1),
+              !(item.datasetIndex >= 1 && item.datasetIndex <= 3 && item.dataIndex === history.length - 1),
             callbacks: {
               label: (context) => {
                 if (context.dataset.label === "95% range") {

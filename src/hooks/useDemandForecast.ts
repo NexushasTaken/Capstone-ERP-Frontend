@@ -14,16 +14,17 @@ export function useDemandForecast(params: FetchInventoryForecastParams) {
   })
 }
 
-/** Weekly demand and the forecast of one product, loaded only while its chart is open. */
-export function useDemandChart(productId: number | null) {
+/** Weekly demand and the forecast of one product, loaded only while its chart is open. weeks 0 = all history. */
+export function useDemandChart(productId: number | null, weeks: number) {
   return useQuery({
-    queryKey: queryKeys.dashboard.demandChart(productId ?? 0),
-    queryFn: ({ signal }) => fetchDemandChart(productId!, signal),
+    queryKey: queryKeys.dashboard.demandChart(productId ?? 0, weeks),
+    queryFn: ({ signal }) => fetchDemandChart(productId!, weeks, signal),
     enabled: productId !== null,
+    placeholderData: keepPreviousData,
   })
 }
 
-/** Re-runs the forecast now, then refetches every forecast view (card, chart, "need ordering" count). */
+/** Re-runs the forecast now, then refetches every forecast view (page, dashboard summary, chart, "need ordering" count). */
 export function useForceForecast(onDone: () => void) {
   const queryClient = useQueryClient()
   return useMutation({

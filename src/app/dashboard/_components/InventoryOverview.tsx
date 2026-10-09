@@ -51,7 +51,7 @@ export default function InventoryOverview() {
   const attentionTotalPages = inventoriesResponse?.pageCount ?? 0
 
   return (
-    <div className="flex h-full w-full xl:w-3/5 overflow-y-auto flex-col rounded-lg bg-muted p-4 scrollbar-none">
+    <div className="flex h-full w-full overflow-y-auto flex-col rounded-lg bg-muted p-4 scrollbar-none">
       <div className="flex flex-wrap gap-4 lg:gap-0 items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Inventory Overview</h2>
