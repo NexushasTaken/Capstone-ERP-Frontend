@@ -103,8 +103,8 @@ export default function ForecastView() {
         <span>Expected sales for the next 4 weeks, with a 95% range, and how much to order to cover a busy month.</span>
         {accuracy && accuracy.productsTested > 0 && (
           <span>
-            Last 12 weeks: the AI was off by ±{Math.round(accuracy.aiErrorPercent)}%, a simple 4-week average by ±
-            {Math.round(accuracy.baselineErrorPercent)}% ({accuracy.productsTested} products tested).
+            Last 12 weeks: the SSA forecast was off by ±{Math.round(accuracy.ssaErrorPercent)}%, a simple 4-week average
+            by ±{Math.round(accuracy.baselineErrorPercent)}% ({accuracy.productsTested} products tested).
           </span>
         )}
       </div>
