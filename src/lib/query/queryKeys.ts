@@ -3,7 +3,7 @@ import type { FetchOrdersParams } from "@/types/order"
 import type { FetchProductsParams } from "@/types/product"
 import type { FetchDriversParams } from "@/types/driver"
 import type { FetchSalesParams } from "@/types/sale"
-import type { FetchInventoryForecastParams } from "@/types/dashboard"
+import type { DemandBacktestParams, FetchInventoryForecastParams } from "@/types/dashboard"
 import type { FetchCategoriesParams } from "@/types/category"
 import type { FetchAuditLogsParams } from "@/types/auditLog"
 import type { FetchAccountsParams } from "@/types/account"
@@ -22,6 +22,8 @@ export const queryKeys = {
     inventoryForecast: (params: FetchInventoryForecastParams = {}) =>
       ["dashboard", "inventory", "forecast", params] as const,
     demandChart: (productId: number) => ["dashboard", "inventory", "forecast", "chart", productId] as const,
+    demandBacktest: (productId: number, params: DemandBacktestParams) =>
+      ["dashboard", "inventory", "forecast", "backtest", productId, params] as const,
   },
   inventories: {
     productsForInsert: ["inventories", "productsForInsert"] as const,

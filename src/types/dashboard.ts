@@ -88,6 +88,31 @@ export interface DemandChart {
   pastYears: DemandPastYear[]
 }
 
+/** One hidden week of a backtest: what really sold, the AI's guess with its 95% range, and the simple guess. */
+export interface DemandBacktestWeek {
+  weekStart: string
+  actual: number
+  low: number
+  expected: number
+  busyCase: number
+  baseline: number
+}
+
+/** One product's backtest: hide some weeks, predict them from the weeks before, compare with what sold. */
+export interface DemandBacktest {
+  hiddenWeeks: number
+  endWeeksAgo: number
+  /** False when there are fewer than 2 years of sales before the hidden weeks. */
+  testable: boolean
+  /** Weeks the AI learned from. */
+  trainWeeks: number
+  /** Up to 13 weeks just before the hidden ones. */
+  before: DemandHistoryPoint[]
+  weeks: DemandBacktestWeek[]
+  aiErrorPercent: number | null
+  baselineErrorPercent: number | null
+}
+
 // API request/response shapes
 export interface InventoryForecastContent {
   forecastResults: DemandForecastItem[]
@@ -104,4 +129,9 @@ export interface FetchInventoryForecastParams {
   pageSize?: number
   search?: string
   needOrderOnly?: boolean
+}
+
+export interface DemandBacktestParams {
+  hiddenWeeks: number
+  endWeeksAgo: number
 }

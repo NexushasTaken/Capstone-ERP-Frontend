@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2026-10-10
+
+### Added
+
+- A "Show test" switch under the demand chart, off every time the chart opens. It shows the forecast test for that product: choose how many weeks to hide (4, 8, 12, 26 or 52) and when they end (now, 3, 6 or 9 months ago). The test chart draws the real sales, the AI's forecast with its 95% range and the simple 4-week guess over the hidden weeks, with how far off each was. Choices without 2 years of earlier sales are disabled, and tests of 26 or 52 weeks warn that they look much further ahead than the app's 4-week forecast. Needs Backend 5.1.0.
+
+### Changed
+
+- The demand chart dialog scrolls when its content is taller than the screen.
+
 ## [3.2.0] - 2026-10-09
 
 ### Changed
