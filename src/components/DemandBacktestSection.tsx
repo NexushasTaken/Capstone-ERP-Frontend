@@ -14,7 +14,7 @@ interface DemandBacktestSectionProps {
   product: DemandForecastItem
 }
 
-// How many weeks to hide from the AI
+// How many weeks to hide from SSA
 const HIDDEN_CHOICES = [4, 8, 12, 26, 52]
 
 // Where the hidden weeks end: weeks before now (the backend accepts only these)
@@ -25,7 +25,7 @@ const END_CHOICES = [
   { weeksAgo: 39, label: "9 months ago" },
 ]
 
-// The AI needs 2 years of sales before the hidden weeks to see the yearly season twice
+// SSA needs 2 years of sales before the hidden weeks to see the yearly season twice
 const MIN_TRAIN_WEEKS = 104
 
 // Tests longer than this look much further ahead than the app's own 4-week forecast
@@ -37,14 +37,14 @@ function weekLabel(weekStart: string) {
 }
 
 /**
- * The backtest made visible: hide some weeks of a product's sales, let the AI predict them from the weeks
+ * The backtest made visible: hide some weeks of a product's sales, let SSA predict them from the weeks
  * before, and draw its guess next to what really sold and next to the simple 4-week average.
  */
 export default function DemandBacktestSection({ product }: DemandBacktestSectionProps) {
   const [hiddenWeeks, setHiddenWeeks] = useState(12)
   const [endWeeksAgo, setEndWeeksAgo] = useState(0)
 
-  // Enough history before the hidden weeks for the AI to learn from?
+  // Enough history before the hidden weeks to fit SSA on?
   const fits = (hidden: number, end: number) => product.historyWeeks - end - hidden >= MIN_TRAIN_WEEKS
   const usesAi = product.method === ForecastMethod.YearlySsa
 
@@ -54,7 +54,7 @@ export default function DemandBacktestSection({ product }: DemandBacktestSection
   if (!usesAi) {
     return (
       <p className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-        This product isn&apos;t forecast by the AI, so there is nothing to test. The AI needs about 2¼ years of sales.
+        This product isn&apos;t forecast by SSA, so there is nothing to test. SSA needs about 2¼ years of sales.
       </p>
     )
   }
@@ -71,8 +71,8 @@ export default function DemandBacktestSection({ product }: DemandBacktestSection
   return (
     <section aria-label="Forecast test" className="flex flex-col gap-3 rounded-lg border border-border p-3">
       <p className="text-sm text-muted-foreground">
-        The test hides some weeks of real sales from the AI, lets it predict them from the weeks before, and compares
-        its guess with what really sold and with a simple 4-week average.
+        The test hides some weeks of real sales from SSA, lets it predict them from the weeks before, and compares its
+        guess with what really sold and with a simple 4-week average.
       </p>
 
       <div aria-label="Weeks to hide" className="flex flex-wrap items-center gap-2" role="group">
@@ -113,7 +113,7 @@ export default function DemandBacktestSection({ product }: DemandBacktestSection
         <p className="text-sm">
           Hiding <span className="font-medium">{formatDate(test.weeks[0].weekStart)}</span> to{" "}
           <span className="font-medium">{formatDate(test.weeks.at(-1)!.weekStart)}</span> ({test.hiddenWeeks} weeks).
-          The AI learned from the {test.trainWeeks} weeks before.
+          SSA was fitted on the {test.trainWeeks} weeks before.
         </p>
       )}
 
@@ -128,17 +128,17 @@ export default function DemandBacktestSection({ product }: DemandBacktestSection
           </p>
         ) : test && !test.testable ? (
           <p className="text-center text-sm text-muted-foreground">
-            Not enough sales history for this test. The AI needs 2 years of sales before the hidden weeks.
+            Not enough sales history for this test. SSA needs 2 years of sales before the hidden weeks.
           </p>
         ) : test ? (
           <BacktestLineChart test={test} />
         ) : null}
       </div>
 
-      {test?.testable && test.aiErrorPercent != null && test.baselineErrorPercent != null && (
+      {test?.testable && test.ssaErrorPercent != null && test.baselineErrorPercent != null && (
         <p className="text-sm">
-          Over these {test.hiddenWeeks} weeks the AI was off by{" "}
-          <span className="font-medium">±{Math.round(test.aiErrorPercent)}%</span>, a simple 4-week average by{" "}
+          Over these {test.hiddenWeeks} weeks the SSA forecast was off by{" "}
+          <span className="font-medium">±{Math.round(test.ssaErrorPercent)}%</span>, a simple 4-week average by{" "}
           <span className="font-medium">±{Math.round(test.baselineErrorPercent)}%</span>. Lower is better.
         </p>
       )}
@@ -163,11 +163,11 @@ function BacktestLineChart({ test }: { test: DemandBacktest }) {
     const weeks = test.weeks
     const labels = [...before, ...weeks].map((point) => weekLabel(point.weekStart))
     const beforeGap = Array<number | null>(before.length).fill(null)
-    // The AI's lines only cover the hidden weeks
+    // SSA's lines only cover the hidden weeks
     const hiddenOnly = (values: number[]) => [...beforeGap, ...values]
 
     const actualColor = themeColor("--chart-5")
-    const aiColor = themeColor("--chart-3")
+    const ssaColor = themeColor("--chart-3")
     const baselineColor = themeColor("--chart-2")
     const labelColor = themeColor("--muted-foreground")
     const hiddenWeeksColor = themeColor("--chart-3", 0.08)
@@ -216,10 +216,10 @@ function BacktestLineChart({ test }: { test: DemandBacktest }) {
             tension: 0.3,
           },
           {
-            label: "AI forecast",
+            label: "SSA forecast",
             data: hiddenOnly(weeks.map((week) => week.expected)),
-            borderColor: aiColor,
-            backgroundColor: aiColor,
+            borderColor: ssaColor,
+            backgroundColor: ssaColor,
             borderDash: [6, 4],
             borderWidth: 2,
             pointRadius: 2,
@@ -285,5 +285,5 @@ function BacktestLineChart({ test }: { test: DemandBacktest }) {
     return () => instance.destroy()
   }, [test])
 
-  return <canvas aria-label="Forecast test chart: real sales, AI forecast and simple guess" ref={canvasRef} />
+  return <canvas aria-label="Forecast test chart: real sales, SSA forecast and simple guess" ref={canvasRef} />
 }

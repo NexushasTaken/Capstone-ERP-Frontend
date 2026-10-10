@@ -47,13 +47,13 @@ export interface DemandForecastItem {
   suggestedOrder: number
   method: ForecastMethod
   historyWeeks: number
-  aiErrorPercent: number | null
+  ssaErrorPercent: number | null
   baselineErrorPercent: number | null
 }
 
-// Backtest over the last 12 weeks: how far off the AI and the simple 4-week average were
+// Backtest over the last 12 weeks: how far off SSA and the simple 4-week average were
 export interface ForecastAccuracy {
-  aiErrorPercent: number
+  ssaErrorPercent: number
   baselineErrorPercent: number
   productsTested: number
 }
@@ -88,7 +88,7 @@ export interface DemandChart {
   pastYears: DemandPastYear[]
 }
 
-/** One hidden week of a backtest: what really sold, the AI's guess with its 95% range, and the simple guess. */
+/** One hidden week of a backtest: what really sold, SSA's guess with its 95% range, and the simple guess. */
 export interface DemandBacktestWeek {
   weekStart: string
   actual: number
@@ -104,12 +104,12 @@ export interface DemandBacktest {
   endWeeksAgo: number
   /** False when there are fewer than 2 years of sales before the hidden weeks. */
   testable: boolean
-  /** Weeks the AI learned from. */
+  /** Weeks SSA was fitted on. */
   trainWeeks: number
   /** Up to 13 weeks just before the hidden ones. */
   before: DemandHistoryPoint[]
   weeks: DemandBacktestWeek[]
-  aiErrorPercent: number | null
+  ssaErrorPercent: number | null
   baselineErrorPercent: number | null
 }
 

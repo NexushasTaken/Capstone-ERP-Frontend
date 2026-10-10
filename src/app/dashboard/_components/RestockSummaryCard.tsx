@@ -46,7 +46,7 @@ export default function RestockSummaryCard() {
         </p>
         {accuracy && accuracy.productsTested > 0 && (
           <p className="mt-1 text-xs text-muted-foreground">
-            Forecast accuracy, last 12 weeks: AI ±{Math.round(accuracy.aiErrorPercent)}%, simple average ±
+            Forecast accuracy, last 12 weeks: SSA ±{Math.round(accuracy.ssaErrorPercent)}%, simple average ±
             {Math.round(accuracy.baselineErrorPercent)}%
           </p>
         )}

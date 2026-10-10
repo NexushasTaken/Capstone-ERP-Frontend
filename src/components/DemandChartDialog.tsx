@@ -143,9 +143,9 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
         <p className="text-xs text-muted-foreground">
           {method?.hint} The shaded band is the 95% range: a normal month lands inside it. The grey lines are the same
           weeks in earlier years, lighter the older the year, and the highlighted weeks are the ones being forecast.
-          {product.aiErrorPercent != null &&
+          {product.ssaErrorPercent != null &&
             product.baselineErrorPercent != null &&
-            ` Over the last 12 weeks the AI was off by ±${Math.round(product.aiErrorPercent)}% for this product, a simple 4-week average by ±${Math.round(product.baselineErrorPercent)}%.`}
+            ` Over the last 12 weeks the SSA forecast was off by ±${Math.round(product.ssaErrorPercent)}% for this product, a simple 4-week average by ±${Math.round(product.baselineErrorPercent)}%.`}
         </p>
 
         <div>

@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.4.0] - 2026-10-10
+
+### Changed
+
+- The forecast no longer calls itself "AI". The method column shows _SSA (yearly pattern)_ or _SSA (short pattern)_, the accuracy lines on the Demand Forecast page, the Restock Summary card and the demand chart compare "the SSA forecast" with the simple 4-week average, and the forecast test's chart legend and messages say "SSA" instead of "the AI". Needs Backend 6.0.0.
+
 ## [3.3.0] - 2026-10-10
 
 ### Added
