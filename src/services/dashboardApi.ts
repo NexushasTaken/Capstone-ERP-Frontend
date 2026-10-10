@@ -1,6 +1,8 @@
 import { ApiEnvelope } from "@/types/api"
 import type {
   DashboardInventoryContent,
+  DemandBacktest,
+  DemandBacktestParams,
   DemandChart,
   FetchInventoryForecastParams,
   FetchSalesOverviewParams,
@@ -103,6 +105,30 @@ export async function fetchDemandChart(productId: number, signal?: AbortSignal):
 
   if (!data.success) {
     throw new ApiError(data.message || "Failed to fetch demand chart", response.status, data.errors)
+  }
+
+  return data.content
+}
+
+export async function fetchDemandBacktest(
+  productId: number,
+  params: DemandBacktestParams,
+  signal?: AbortSignal,
+): Promise<DemandBacktest> {
+  const query = new URLSearchParams({
+    hiddenWeeks: String(params.hiddenWeeks),
+    endWeeksAgo: String(params.endWeeksAgo),
+  })
+  const response = await fetch(`/api/Dashboard/inventory/forecast/${productId}/backtest?${query.toString()}`, {
+    signal,
+    method: "GET",
+    credentials: "include",
+  })
+
+  const data: ApiEnvelope<DemandBacktest> = await response.json()
+
+  if (!response.ok || !data.success) {
+    throw new ApiError(data.message || "Failed to fetch the test", response.status, data.errors)
   }
 
   return data.content

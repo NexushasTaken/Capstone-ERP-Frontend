@@ -2,9 +2,9 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { fetchDemandChart, fetchInventoryForecast } from "@/services/dashboardApi"
+import { fetchDemandBacktest, fetchDemandChart, fetchInventoryForecast } from "@/services/dashboardApi"
 import { queryKeys } from "@/lib/query/queryKeys"
-import type { FetchInventoryForecastParams } from "@/types/dashboard"
+import type { DemandBacktestParams, FetchInventoryForecastParams } from "@/types/dashboard"
 
 export function useDemandForecast(params: FetchInventoryForecastParams) {
   return useQuery({
@@ -20,6 +20,16 @@ export function useDemandChart(productId: number | null) {
     queryKey: queryKeys.dashboard.demandChart(productId ?? 0),
     queryFn: ({ signal }) => fetchDemandChart(productId!, signal),
     enabled: productId !== null,
+  })
+}
+
+/** One product's backtest with the chosen length and end point, loaded only while the test is shown. */
+export function useDemandBacktest(productId: number, params: DemandBacktestParams, enabled: boolean) {
+  return useQuery({
+    queryKey: queryKeys.dashboard.demandBacktest(productId, params),
+    queryFn: ({ signal }) => fetchDemandBacktest(productId, params, signal),
+    placeholderData: keepPreviousData,
+    enabled,
   })
 }
 

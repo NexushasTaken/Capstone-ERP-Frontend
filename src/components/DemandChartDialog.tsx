@@ -15,8 +15,10 @@ import {
 } from "chart.js"
 import { useEffect, useMemo, useRef, useState } from "react"
 import AppModal, { ModalBody, ModalHeader } from "@/components/AppModal"
+import DemandBacktestSection from "@/components/DemandBacktestSection"
 import Loading from "@/components/Loading"
 import { Button } from "@/components/ui/button"
+import { Toggle } from "@/components/ui/toggle"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatDate } from "@/lib/format"
 import { themeColor } from "@/lib/cssColor"
@@ -63,6 +65,8 @@ function versusForecast(expected: number, sold: number | null) {
 
 export default function DemandChartDialog({ product, onClose }: DemandChartDialogProps) {
   const [yearsChoice, setYearsChoice] = useState(2)
+  // Off every time the dialog opens: the dialog unmounts when it closes
+  const [showTest, setShowTest] = useState(false)
   const chartQuery = useDemandChart(product.productId)
   const method = forecastMethodLabel[product.method]
   const allPastYears = useMemo(() => chartQuery.data?.pastYears ?? [], [chartQuery.data])
@@ -74,7 +78,7 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
   const choices = YEAR_CHOICES.filter((count) => (count === 0 ? allPastYears.length > 3 : count <= allPastYears.length))
 
   return (
-    <AppModal className="xl:max-w-4xl" onClose={onClose} open>
+    <AppModal className="overflow-y-auto xl:max-h-[90vh] xl:max-w-4xl" onClose={onClose} open>
       <ModalHeader
         onClose={onClose}
         subtitle="Weekly demand"
@@ -143,6 +147,14 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
             product.baselineErrorPercent != null &&
             ` Over the last 12 weeks the AI was off by ±${Math.round(product.aiErrorPercent)}% for this product, a simple 4-week average by ±${Math.round(product.baselineErrorPercent)}%.`}
         </p>
+
+        <div>
+          <Toggle onPressedChange={setShowTest} pressed={showTest} size="sm" variant="outline">
+            {showTest ? "Hide test" : "Show test"}
+          </Toggle>
+        </div>
+
+        {showTest && <DemandBacktestSection product={product} />}
       </ModalBody>
     </AppModal>
   )
