@@ -72,6 +72,7 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
   const lineRows = getOrderLineRows(values.orderLines ?? [], products)
   const totalQuantity = getOrderLineQuantityTotal(lineRows)
   const totalAmount = getOrderLineAmountTotal(lineRows)
+  const heldQuantities = Object.fromEntries(order.orders.map((line) => [line.productId, line.quantity]))
   const canSubmit = isValid && isDirty && !disabled && !isSubmitting
 
   const handleSave = handleSubmit(async (values) => {
@@ -174,6 +175,7 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
             products={products}
             productsLoading={productsLoading}
             productsError={productsError}
+            heldQuantities={heldQuantities}
           />
         </FormProvider>
       </div>

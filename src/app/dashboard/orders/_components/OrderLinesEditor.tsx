@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatPeso } from "@/lib/format"
+import { cn } from "@/lib/utils"
 import { formatProductId } from "@/lib/helpers/productHelpers"
 import type { getOrderLineRows } from "@/lib/helpers/orderHelpers"
 import type { ProductListItem } from "@/types/product"
@@ -20,6 +21,8 @@ interface OrderLinesEditorProps {
   products: ProductListItem[]
   productsLoading: boolean
   productsError: unknown
+  /** Quantity per product this order already took from stock (edit only); it counts as available again. */
+  heldQuantities?: Record<number, number>
 }
 
 // The "Order items" table in the create-order modal: pick products and quantities.
@@ -31,6 +34,7 @@ export default function OrderLinesEditor({
   products,
   productsLoading,
   productsError,
+  heldQuantities = {},
 }: OrderLinesEditorProps) {
   const {
     control,
@@ -39,10 +43,18 @@ export default function OrderLinesEditor({
   } = useFormContext<OrderFields>()
   const { fields, append, remove } = useFieldArray({ control, name: "orderLines" })
 
+  // A preview only: stock changes on the server when the order is saved, which re-checks it.
+  const enteredByProduct: Record<number, number> = {}
+  for (const line of lineRows) {
+    if (line.productId) enteredByProduct[line.productId] = (enteredByProduct[line.productId] ?? 0) + line.quantity
+  }
+  const stockLeft = (product: ProductListItem) =>
+    (product.stock ?? 0) + (heldQuantities[product.id] ?? 0) - (enteredByProduct[product.id] ?? 0)
+
   const productOptions = products.map((product) => ({
     id: product.id,
     label: product.name,
-    sublabel: productLabel(product),
+    sublabel: productLabel(product, stockLeft(product)),
   }))
 
   return (
@@ -103,7 +115,14 @@ export default function OrderLinesEditor({
                         )}
                       />
                       {line?.product ? (
-                        <span className="text-xs text-muted-foreground">{productLabel(line.product)}</span>
+                        <span
+                          className={cn(
+                            "text-xs text-muted-foreground",
+                            stockLeft(line.product) < 0 && "text-destructive",
+                          )}
+                        >
+                          {productLabel(line.product, stockLeft(line.product))}
+                        </span>
                       ) : null}
                       {lineErrors?.productId && (
                         <span className="text-xs text-destructive">{lineErrors.productId.message}</span>
@@ -157,7 +176,7 @@ export default function OrderLinesEditor({
   )
 }
 
-// "PR-12 · Stock: 40": stock is the total across warehouses, which is what an order draws from.
-function productLabel(product: ProductListItem) {
-  return `${formatProductId(product.id)} · Stock: ${product.stock ?? 0}`
+// "PR-12 · Stock: 40": stock left across all warehouses (what an order draws from) after this order's quantities.
+function productLabel(product: ProductListItem, stock: number) {
+  return `${formatProductId(product.id)} · Stock: ${stock}`
 }
