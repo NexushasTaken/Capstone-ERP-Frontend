@@ -8,9 +8,11 @@ import {
   fetchOrderStatusCounts,
   fetchOrderStatuses,
   insertOrder,
+  updateOrder as updateOrderApi,
   updateOrderStatus,
 } from "@/services/orderApi"
-import { invalidateOrders } from "@/lib/query/queryInvalidation"
+import { isValidationError } from "@/lib/apiError"
+import { invalidateInventories, invalidateOrders } from "@/lib/query/queryInvalidation"
 import { queryKeys } from "@/lib/query/queryKeys"
 import type { FetchOrdersParams } from "@/types/order"
 
@@ -58,6 +60,20 @@ export function useOrderMutations() {
     },
   })
 
+  // Items move stock, so inventory is refreshed too. A 400 (e.g. not enough stock) is shown in the edit modal instead.
+  const updateOrder = useMutation({
+    mutationFn: updateOrderApi,
+    onSuccess: () => {
+      toast.success("Order updated successfully")
+      invalidateOrders(queryClient)
+      invalidateInventories(queryClient)
+    },
+    onError: (err) => {
+      if (isValidationError(err)) return
+      toast.error(err instanceof Error ? err.message : "Failed to update order")
+    },
+  })
+
   const updateStatus = useMutation({
     mutationFn: updateOrderStatus,
     onSuccess: () => {
@@ -69,5 +85,5 @@ export function useOrderMutations() {
     },
   })
 
-  return { addOrder, updateStatus }
+  return { addOrder, updateOrder, updateStatus }
 }

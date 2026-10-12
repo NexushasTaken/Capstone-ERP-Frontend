@@ -15,10 +15,11 @@ interface OrderRowProps {
   order: OrderGroup
   statusOptions: { id: number; label: string }[]
   onSeeMore: () => void
+  onEdit: () => void
   onChangeStatus: (orderStatusId: number) => void
 }
 
-export default function OrderRow({ order, statusOptions, onSeeMore, onChangeStatus }: OrderRowProps) {
+export default function OrderRow({ order, statusOptions, onSeeMore, onEdit, onChangeStatus }: OrderRowProps) {
   const statusLabel = normalizeOrderText(order.orderStatus)
   const isWalkinOrder = normalizeOrderText(order.orderType).toLowerCase() === "walkin"
   const currentStatus = statusLabel.trim().toLowerCase()
@@ -49,6 +50,12 @@ export default function OrderRow({ order, statusOptions, onSeeMore, onChangeStat
           <Button size="sm" type="button" variant="outline" onClick={onSeeMore}>
             See more
           </Button>
+          {/* Only processing orders can be edited; the backend rejects the rest. */}
+          {currentStatus === "processing" && (
+            <Button size="sm" type="button" variant="outline" onClick={onEdit}>
+              Edit
+            </Button>
+          )}
           {statusLabel.trim().toLowerCase() !== "cancelled" && (
             <StatusAction
               actions={statusActions}

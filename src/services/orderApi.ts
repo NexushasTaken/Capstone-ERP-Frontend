@@ -1,7 +1,13 @@
 import type { StatusCount } from "@/types/statusCount"
 import type { OrderGroup, OrderRider, OrderStatus, OrderType } from "@/types/order"
 import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
-import type { FetchOrdersParams, OrderListContent, InsertOrderPayload, UpdateOrderStatusPayload } from "@/types/order"
+import type {
+  FetchOrdersParams,
+  OrderListContent,
+  InsertOrderPayload,
+  UpdateOrderPayload,
+  UpdateOrderStatusPayload,
+} from "@/types/order"
 import { ApiError } from "@/lib/apiError"
 
 export async function fetchOrders(
@@ -55,6 +61,23 @@ export async function insertOrder(payload: InsertOrderPayload): Promise<ApiEnvel
 
   if (!response.ok || !data.success) {
     throw new ApiError(data.message || "Failed to add order", response.status, data.errors)
+  }
+
+  return data
+}
+
+export async function updateOrder(payload: UpdateOrderPayload): Promise<ApiEnvelopeNoContent> {
+  const response = await fetch("/api/Order/put", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  })
+
+  const data: ApiEnvelopeNoContent = await response.json()
+
+  if (!response.ok || !data.success) {
+    throw new ApiError(data.message || "Failed to update order", response.status, data.errors)
   }
 
   return data

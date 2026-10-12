@@ -1,4 +1,5 @@
 export interface OrderLine {
+  productId: number
   productName: string
   quantity: number
   price: number
@@ -9,6 +10,7 @@ export interface OrderGroup {
   orderId: number
   orderType: string
   orderStatus: string | null
+  deliveryDriverId: number | null
   driverName: string | null
   customerName: string
   pickUpAddress: string | null
@@ -59,6 +61,15 @@ export interface InsertOrderPayload {
   orderTypeId: number
   deliveryRiderId: number
   customerName: string
+  pickUpAddress: string
+  deliveryAddress: string
+  discountPercent: number
+  orderLines: { productId: number; quantity: number }[]
+}
+
+export interface UpdateOrderPayload {
+  orderId: number
+  deliveryRiderId: number
   pickUpAddress: string
   deliveryAddress: string
   discountPercent: number

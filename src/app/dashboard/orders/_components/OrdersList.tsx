@@ -20,6 +20,7 @@ interface OrdersListProps {
   error: unknown
   statusOptions: { id: number; label: string }[]
   onSeeMore: (order: OrderGroup) => void
+  onEdit: (order: OrderGroup) => void
   onChangeStatus: (orderId: number, orderStatusId: number) => void
 }
 
@@ -29,6 +30,7 @@ export default function OrdersList({
   error,
   statusOptions,
   onSeeMore,
+  onEdit,
   onChangeStatus,
 }: OrdersListProps) {
   return (
@@ -49,6 +51,7 @@ export default function OrdersList({
             order={order}
             statusOptions={statusOptions}
             onSeeMore={() => onSeeMore(order)}
+            onEdit={() => onEdit(order)}
             onChangeStatus={(orderStatusId) => onChangeStatus(order.orderId, orderStatusId)}
           />
         )

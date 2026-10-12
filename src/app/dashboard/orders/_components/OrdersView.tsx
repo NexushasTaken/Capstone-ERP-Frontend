@@ -17,6 +17,7 @@ import { formatOrderNumber, normalizeOrderText } from "@/lib/helpers/orderHelper
 import type { InsertOrderPayload, OrderGroup } from "@/types/order"
 import { useOrderMutations, useOrders, useOrderStatuses } from "../_hooks/useOrders"
 import CreateOrderModal from "./CreateOrderModal"
+import EditOrderModal from "./EditOrderModal"
 import OrderDetailsModal from "./OrderDetailsModal"
 import OrdersList from "./OrdersList"
 import OrderStatusFilterSelect from "./OrderStatusFilterSelect"
@@ -27,6 +28,7 @@ export default function OrdersView() {
   const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState("")
   const [selectedOrderStatusFilter, setSelectedOrderStatusFilter] = useState("")
   const [detailsOrder, setDetailsOrder] = useState<OrderGroup | null>(null)
+  const [editOrder, setEditOrder] = useState<OrderGroup | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const debouncedSearch = useDebouncedValue(search.trim())
   const [pageSize, setPageSize] = usePageSize("orders")
@@ -114,6 +116,7 @@ export default function OrdersView() {
           error={error}
           statusOptions={statusOptions}
           onSeeMore={setDetailsOrder}
+          onEdit={setEditOrder}
           onChangeStatus={(orderId, orderStatusId) => mutations.updateStatus.mutate({ orderId, orderStatusId })}
         />
       </div>
@@ -138,6 +141,15 @@ export default function OrdersView() {
       </div>
 
       <OrderDetailsModal order={detailsOrder} onClose={() => setDetailsOrder(null)} />
+
+      {editOrder && (
+        <EditOrderModal
+          order={editOrder}
+          disabled={mutations.updateOrder.isPending}
+          onClose={() => setEditOrder(null)}
+          onSubmit={mutations.updateOrder.mutateAsync}
+        />
+      )}
 
       <CreateOrderModal
         open={isCreateModalOpen}
