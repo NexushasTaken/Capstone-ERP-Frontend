@@ -20,7 +20,7 @@ import {
   normalizeOrderText,
 } from "@/lib/helpers/orderHelpers"
 import type { InsertOrderPayload } from "@/types/order"
-import { useOrderRiders } from "../_hooks/useOrders"
+import { useOrderDrivers } from "../_hooks/useOrders"
 import { emptyOrder, orderSchema, type OrderFields } from "../_lib/orderSchema"
 import ConfirmOrderModal from "./ConfirmOrderModal"
 import OrderLinesEditor from "./OrderLinesEditor"
@@ -41,7 +41,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
 
   const { products, isLoading: productsLoading, error: productsError } = useInventoryProductSearch(open)
   const { data: orderTypes = [], isLoading: orderTypesLoading } = useOrderTypes()
-  const { data: riders = [], isLoading: ridersLoading } = useOrderRiders()
+  const { data: drivers = [], isLoading: driversLoading } = useOrderDrivers()
 
   const orderTypeOptions = orderTypes.map((orderType) => ({
     id: orderType.id,
@@ -55,7 +55,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
     orderTypeOptions.find((type) => type.id === orderTypeId)?.label.toLowerCase() === "walkin"
 
   const form = useForm<OrderFields>({
-    // Walk-in orders skip the rider and address rules, so pick the schema from the values being checked.
+    // Walk-in orders skip the driver and address rules, so pick the schema from the values being checked.
     resolver: (values, context, options) =>
       zodResolver(orderSchema(isWalkinType(values.orderTypeId)))(values, context, options),
     mode: "onTouched",
@@ -72,11 +72,11 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
 
   const selectedOrderTypeLabel = orderTypeOptions.find((type) => type.id === values.orderTypeId)?.label
   const isWalkin = isWalkinType(values.orderTypeId)
-  const riderOptions = riders.map((rider) => ({
-    id: rider.id,
-    label: `${rider.firstName} ${rider.lastName}`,
+  const driverOptions = drivers.map((driver) => ({
+    id: driver.id,
+    label: `${driver.firstName} ${driver.lastName}`,
   }))
-  const selectedRiderLabel = riderOptions.find((rider) => rider.id === values.deliveryRiderId)?.label ?? ""
+  const selectedDriverLabel = driverOptions.find((driver) => driver.id === values.deliveryDriverId)?.label ?? ""
 
   const lineRows = getOrderLineRows(values.orderLines ?? [], products)
   const totalQuantity = getOrderLineQuantityTotal(lineRows)
@@ -86,7 +86,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
   const handleConfirm = handleSubmit((order) => {
     onSubmit({
       orderTypeId: order.orderTypeId,
-      deliveryRiderId: isWalkin ? 0 : order.deliveryRiderId,
+      deliveryDriverId: isWalkin ? 0 : order.deliveryDriverId,
       customerName: order.customerName,
       pickUpAddress: isWalkin ? "" : order.pickUpAddress,
       deliveryAddress: isWalkin ? "" : order.deliveryAddress,
@@ -99,7 +99,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
 
   const reviewDetails = [
     { label: "Order type", value: selectedOrderTypeLabel ?? "-" },
-    ...(isWalkin ? [] : [{ label: "Delivery rider", value: selectedRiderLabel || "-" }]),
+    ...(isWalkin ? [] : [{ label: "Delivery driver", value: selectedDriverLabel || "-" }]),
     { label: "Customer", value: values.customerName || "-" },
     { label: "Quantity", value: totalQuantity },
     { label: "Discount", value: `${Number(values.discountPercent) || 0}%` },
@@ -158,19 +158,19 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
             </FormField>
 
             {!isWalkin && (
-              <FormField label="Delivery rider" error={errors.deliveryRiderId?.message}>
+              <FormField label="Delivery driver" error={errors.deliveryDriverId?.message}>
                 <Controller
                   control={control}
-                  name="deliveryRiderId"
+                  name="deliveryDriverId"
                   render={({ field }) => (
                     <EntityDropdown
-                      emptyLabel="No riders found."
-                      isLoading={ridersLoading}
+                      emptyLabel="No drivers found."
+                      isLoading={driversLoading}
                       onSelect={field.onChange}
-                      options={riderOptions}
-                      placeholder="Select delivery rider"
-                      searchPlaceholder="Search riders..."
-                      value={selectedRiderLabel}
+                      options={driverOptions}
+                      placeholder="Select delivery driver"
+                      searchPlaceholder="Search drivers..."
+                      value={selectedDriverLabel}
                     />
                   )}
                 />

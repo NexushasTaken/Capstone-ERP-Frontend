@@ -35,7 +35,7 @@ export interface OrderStatus {
   status: string
 }
 
-export interface OrderRider {
+export interface OrderDriver {
   id: number
   firstName: string
   lastName: string
@@ -59,7 +59,7 @@ export interface OrderListContent {
 
 export interface InsertOrderPayload {
   orderTypeId: number
-  deliveryRiderId: number
+  deliveryDriverId: number
   customerName: string
   pickUpAddress: string
   deliveryAddress: string
@@ -69,7 +69,7 @@ export interface InsertOrderPayload {
 
 export interface UpdateOrderPayload {
   orderId: number
-  deliveryRiderId: number
+  deliveryDriverId: number
   pickUpAddress: string
   deliveryAddress: string
   discountPercent: number

@@ -8,7 +8,7 @@ export interface OrderLineFields {
 
 export interface OrderFields {
   orderTypeId: number
-  deliveryRiderId: number
+  deliveryDriverId: number
   customerName: string
   pickUpAddress: string
   deliveryAddress: string
@@ -20,7 +20,7 @@ export const emptyOrderLine: OrderLineFields = { productId: 0, quantity: 1 }
 
 export const emptyOrder: OrderFields = {
   orderTypeId: 0,
-  deliveryRiderId: 0,
+  deliveryDriverId: 0,
   customerName: "",
   pickUpAddress: "",
   deliveryAddress: "",
@@ -33,7 +33,7 @@ const orderLineSchema = z.object({
   quantity: positiveInt("Quantity must be at least 1."),
 })
 
-// Walk-in orders have no rider and no addresses.
+// Walk-in orders have no driver and no addresses.
 function orderObject(isWalkin: boolean) {
   return z.object({
     orderTypeId: requiredId("Select an order type."),
@@ -43,9 +43,9 @@ function orderObject(isWalkin: boolean) {
       .max(100, "Discount can't be more than 100%."),
     orderLines: z.array(orderLineSchema).min(1, "Add at least one product."),
     ...(isWalkin
-      ? { deliveryRiderId: z.number(), pickUpAddress: z.string(), deliveryAddress: z.string() }
+      ? { deliveryDriverId: z.number(), pickUpAddress: z.string(), deliveryAddress: z.string() }
       : {
-          deliveryRiderId: requiredId("Select a delivery rider."),
+          deliveryDriverId: requiredId("Select a delivery driver."),
           pickUpAddress: requiredString("Pick up address is required."),
           deliveryAddress: requiredString("Delivery address is required."),
         }),
