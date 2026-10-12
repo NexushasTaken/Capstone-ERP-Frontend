@@ -36,7 +36,7 @@ interface DemandChartDialogProps {
 // The chart shows 13 weeks (3 months) either side of the forecast start
 const SEASON_WEEKS = 13
 
-// How many earlier years to lay over this year; 0 is all of them
+// How many earlier years to lay over this year; 0 is all of them (null, "None", is offered before these)
 const YEAR_CHOICES = [1, 2, 3, 0]
 
 // "Oct 5": the week a point starts on
@@ -64,18 +64,22 @@ function versusForecast(expected: number, sold: number | null) {
 }
 
 export default function DemandChartDialog({ product, onClose }: DemandChartDialogProps) {
-  const [yearsChoice, setYearsChoice] = useState(2)
+  // None (null) every time the dialog opens
+  const [yearsChoice, setYearsChoice] = useState<number | null>(null)
   // Off every time the dialog opens: the dialog unmounts when it closes
   const [showTest, setShowTest] = useState(false)
   const chartQuery = useDemandChart(product.productId)
   const method = forecastMethodLabel[product.method]
   const allPastYears = useMemo(() => chartQuery.data?.pastYears ?? [], [chartQuery.data])
   const pastYears = useMemo(
-    () => (yearsChoice === 0 ? allPastYears : allPastYears.slice(0, yearsChoice)),
+    () => (yearsChoice === null ? [] : yearsChoice === 0 ? allPastYears : allPastYears.slice(0, yearsChoice)),
     [allPastYears, yearsChoice],
   )
-  // Only offer counts the product has; "All" only when it adds more than 3
-  const choices = YEAR_CHOICES.filter((count) => (count === 0 ? allPastYears.length > 3 : count <= allPastYears.length))
+  // "None" first, then only counts the product has; "All" only when it adds more than 3
+  const choices: (number | null)[] = [
+    null,
+    ...YEAR_CHOICES.filter((count) => (count === 0 ? allPastYears.length > 3 : count <= allPastYears.length)),
+  ]
 
   return (
     <AppModal className="overflow-y-auto xl:max-h-[90vh] xl:max-w-4xl" onClose={onClose} open>
@@ -112,13 +116,13 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
             {choices.map((count) => (
               <Button
                 aria-pressed={yearsChoice === count}
-                key={count}
+                key={count ?? "none"}
                 onClick={() => setYearsChoice(count)}
                 size="sm"
                 type="button"
                 variant={yearsChoice === count ? "default" : "outline"}
               >
-                {count === 0 ? "All years" : count === 1 ? "Last year" : `${count} years`}
+                {count === null ? "None" : count === 0 ? "All years" : count === 1 ? "Last year" : `${count} years`}
               </Button>
             ))}
           </div>
@@ -141,8 +145,9 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
         {chartQuery.data && <SameWeeksTable pastYears={pastYears} product={product} />}
 
         <p className="text-xs text-muted-foreground">
-          {method?.hint} The shaded band is the 95% range: a normal month lands inside it. The grey lines are the same
-          weeks in earlier years, lighter the older the year, and the highlighted weeks are the ones being forecast.
+          {method?.hint} The shaded band is the 95% range: a normal month lands inside it, and the highlighted weeks are
+          the ones being forecast.
+          {pastYears.length > 0 && " The grey lines are the same weeks in earlier years, lighter the older the year."}
           {product.ssaErrorPercent != null &&
             product.baselineErrorPercent != null &&
             ` Over the last 12 weeks the SSA forecast was off by ±${Math.round(product.ssaErrorPercent)}% for this product, a simple 4-week average by ±${Math.round(product.baselineErrorPercent)}%.`}
