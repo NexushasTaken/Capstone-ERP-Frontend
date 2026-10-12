@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.5.0] - 2026-10-12
+
+### Added
+
+- _Processing_ orders have an *Edit* button that opens *Edit order*. Add, remove or change the quantity of items, and change the discount, delivery rider and addresses; the order type and customer are shown but locked. A "not enough stock" rejection is shown inside the modal. Needs Backend 6.1.0.
+
 ## [3.4.0] - 2026-10-10
 
 ### Changed

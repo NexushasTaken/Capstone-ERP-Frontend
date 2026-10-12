@@ -34,7 +34,7 @@ const orderLineSchema = z.object({
 })
 
 // Walk-in orders have no rider and no addresses.
-export function orderSchema(isWalkin: boolean): z.ZodType<OrderFields, OrderFields> {
+function orderObject(isWalkin: boolean) {
   return z.object({
     orderTypeId: requiredId("Select an order type."),
     customerName: requiredString("Customer name is required."),
@@ -50,4 +50,13 @@ export function orderSchema(isWalkin: boolean): z.ZodType<OrderFields, OrderFiel
           deliveryAddress: requiredString("Delivery address is required."),
         }),
   })
+}
+
+export function orderSchema(isWalkin: boolean): z.ZodType<OrderFields, OrderFields> {
+  return orderObject(isWalkin)
+}
+
+// Editing can't change the order type or the customer, so they aren't checked.
+export function editOrderSchema(isWalkin: boolean): z.ZodType<OrderFields, OrderFields> {
+  return orderObject(isWalkin).extend({ orderTypeId: z.number(), customerName: z.string() })
 }
