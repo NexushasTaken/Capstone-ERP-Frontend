@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.8.1] - 2026-10-12
+
+### Changed
+
+- In *Create order* and *Edit order*, the _Delivery rider_ field is now called _Delivery driver_, matching the *Drivers* module. Needs Backend 7.0.0 or later.
+
 ## [3.8.0] - 2026-10-12
 
 ### Changed

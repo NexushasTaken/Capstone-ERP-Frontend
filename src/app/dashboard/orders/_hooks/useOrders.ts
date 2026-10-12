@@ -3,7 +3,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
-  fetchOrderRiders,
+  fetchOrderDrivers,
   fetchOrders,
   fetchOrderStatusCounts,
   fetchOrderStatuses,
@@ -39,10 +39,10 @@ export function useOrderStatusCounts() {
   })
 }
 
-export function useOrderRiders() {
+export function useOrderDrivers() {
   return useQuery({
-    queryKey: queryKeys.orders.riders,
-    queryFn: fetchOrderRiders,
+    queryKey: queryKeys.orders.drivers,
+    queryFn: fetchOrderDrivers,
   })
 }
 

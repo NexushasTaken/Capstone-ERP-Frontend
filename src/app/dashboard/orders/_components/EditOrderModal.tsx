@@ -19,7 +19,7 @@ import {
   normalizeOrderText,
 } from "@/lib/helpers/orderHelpers"
 import type { OrderGroup, UpdateOrderPayload } from "@/types/order"
-import { useOrderRiders } from "../_hooks/useOrders"
+import { useOrderDrivers } from "../_hooks/useOrders"
 import { editOrderSchema, type OrderFields } from "../_lib/orderSchema"
 import OrderLinesEditor from "./OrderLinesEditor"
 
@@ -32,21 +32,21 @@ interface EditOrderModalProps {
 }
 
 /**
- * Edits a processing order: items, discount, rider and addresses. Order type and customer stay locked.
+ * Edits a processing order: items, discount, driver and addresses. Order type and customer stay locked.
  * Render only while open so the fields start from the order each time.
  */
 export default function EditOrderModal({ order, disabled, onClose, onSubmit }: EditOrderModalProps) {
   const isWalkin = normalizeOrderText(order.orderType).toLowerCase() === "walkin"
 
   const { products, isLoading: productsLoading, error: productsError } = useInventoryProductSearch(true)
-  const { data: riders = [], isLoading: ridersLoading } = useOrderRiders()
+  const { data: drivers = [], isLoading: driversLoading } = useOrderDrivers()
 
   const form = useForm<OrderFields>({
     resolver: zodResolver(editOrderSchema(isWalkin)),
     mode: "onTouched",
     defaultValues: {
       orderTypeId: 0,
-      deliveryRiderId: order.deliveryDriverId ?? 0,
+      deliveryDriverId: order.deliveryDriverId ?? 0,
       customerName: order.customerName,
       pickUpAddress: order.pickUpAddress ?? "",
       deliveryAddress: order.deliveryAddress ?? "",
@@ -63,11 +63,11 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
   } = form
   const values = useWatch({ control })
 
-  const riderOptions = riders.map((rider) => ({
-    id: rider.id,
-    label: `${rider.firstName} ${rider.lastName}`,
+  const driverOptions = drivers.map((driver) => ({
+    id: driver.id,
+    label: `${driver.firstName} ${driver.lastName}`,
   }))
-  const selectedRiderLabel = riderOptions.find((rider) => rider.id === values.deliveryRiderId)?.label ?? ""
+  const selectedDriverLabel = driverOptions.find((driver) => driver.id === values.deliveryDriverId)?.label ?? ""
 
   const lineRows = getOrderLineRows(values.orderLines ?? [], products)
   const totalQuantity = getOrderLineQuantityTotal(lineRows)
@@ -79,7 +79,7 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
     try {
       await onSubmit({
         orderId: order.orderId,
-        deliveryRiderId: isWalkin ? 0 : values.deliveryRiderId,
+        deliveryDriverId: isWalkin ? 0 : values.deliveryDriverId,
         pickUpAddress: isWalkin ? "" : values.pickUpAddress,
         deliveryAddress: isWalkin ? "" : values.deliveryAddress,
         discountPercent: values.discountPercent,
@@ -114,19 +114,19 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
             </FormField>
 
             {!isWalkin && (
-              <FormField label="Delivery rider" error={errors.deliveryRiderId?.message}>
+              <FormField label="Delivery driver" error={errors.deliveryDriverId?.message}>
                 <Controller
                   control={control}
-                  name="deliveryRiderId"
+                  name="deliveryDriverId"
                   render={({ field }) => (
                     <EntityDropdown
-                      emptyLabel="No riders found."
-                      isLoading={ridersLoading}
+                      emptyLabel="No drivers found."
+                      isLoading={driversLoading}
                       onSelect={field.onChange}
-                      options={riderOptions}
-                      placeholder="Select delivery rider"
-                      searchPlaceholder="Search riders..."
-                      value={selectedRiderLabel}
+                      options={driverOptions}
+                      placeholder="Select delivery driver"
+                      searchPlaceholder="Search drivers..."
+                      value={selectedDriverLabel}
                     />
                   )}
                 />

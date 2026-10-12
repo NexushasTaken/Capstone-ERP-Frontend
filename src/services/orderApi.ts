@@ -1,5 +1,5 @@
 import type { StatusCount } from "@/types/statusCount"
-import type { OrderGroup, OrderRider, OrderStatus, OrderType } from "@/types/order"
+import type { OrderGroup, OrderDriver, OrderStatus, OrderType } from "@/types/order"
 import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
 import type {
   FetchOrdersParams,
@@ -113,16 +113,16 @@ export async function fetchOrderStatuses(): Promise<OrderStatus[]> {
   return data.content
 }
 
-export async function fetchOrderRiders(): Promise<OrderRider[]> {
-  const response = await fetch("/api/Order/riders", {
+export async function fetchOrderDrivers(): Promise<OrderDriver[]> {
+  const response = await fetch("/api/Order/driver/active", {
     method: "GET",
     credentials: "include",
   })
 
-  const data: ApiEnvelope<OrderRider[]> = await response.json()
+  const data: ApiEnvelope<OrderDriver[]> = await response.json()
 
   if (!response.ok || !data.success) {
-    throw new ApiError(data.message || "Failed to fetch delivery riders", response.status, data.errors)
+    throw new ApiError(data.message || "Failed to fetch delivery drivers", response.status, data.errors)
   }
 
   return data.content
