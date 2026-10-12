@@ -16,10 +16,6 @@ export const productSortOptions: ProductSortOption[] = [
   { label: "Price High", value: "price", order: "desc" },
 ]
 
-export function formatProductId(productId: string | number) {
-  return `PR-${productId}`
-}
-
 // The backend's `filter` sort code for GET /api/Product/all.
 export function getProductFilter(sortBy: ProductSortBy, sortOrder: "asc" | "desc") {
   switch (sortBy) {

@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.6.0] - 2026-10-12
+
+### Changed
+
+- In *Create order* and *Edit order*, products in the item dropdown and under a chosen product show their ID as _PR-12_ followed by the current stock across all warehouses (e.g. _PR-12 · Stock: 40_), instead of _ID: 12_. Needs Backend 6.2.0.
+- Creating an order or changing its status refreshes the stock shown in the product picker.
+
 ## [3.5.0] - 2026-10-12
 
 ### Added

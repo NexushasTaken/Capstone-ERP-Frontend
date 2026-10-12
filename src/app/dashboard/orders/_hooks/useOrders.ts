@@ -54,6 +54,7 @@ export function useOrderMutations() {
     onSuccess: () => {
       toast.success("Order added successfully")
       invalidateOrders(queryClient)
+      invalidateInventories(queryClient)
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : "Failed to add order")
@@ -79,6 +80,7 @@ export function useOrderMutations() {
     onSuccess: () => {
       toast.success("Order status updated successfully")
       invalidateOrders(queryClient)
+      invalidateInventories(queryClient)
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : "Failed to update order status")
