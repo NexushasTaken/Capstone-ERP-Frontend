@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatPeso } from "@/lib/format"
+import { formatProductId } from "@/lib/helpers/productHelpers"
 import type { getOrderLineRows } from "@/lib/helpers/orderHelpers"
 import type { ProductListItem } from "@/types/product"
 import { emptyOrderLine, type OrderFields } from "../_lib/orderSchema"
@@ -41,7 +42,7 @@ export default function OrderLinesEditor({
   const productOptions = products.map((product) => ({
     id: product.id,
     label: product.name,
-    sublabel: `ID: ${product.id}`,
+    sublabel: productLabel(product),
   }))
 
   return (
@@ -102,7 +103,7 @@ export default function OrderLinesEditor({
                         )}
                       />
                       {line?.product ? (
-                        <span className="text-xs text-muted-foreground">ID: {line.product.id}</span>
+                        <span className="text-xs text-muted-foreground">{productLabel(line.product)}</span>
                       ) : null}
                       {lineErrors?.productId && (
                         <span className="text-xs text-destructive">{lineErrors.productId.message}</span>
@@ -154,4 +155,9 @@ export default function OrderLinesEditor({
       </div>
     </div>
   )
+}
+
+// "PR-12 · Stock: 40": stock is the total across warehouses, which is what an order draws from.
+function productLabel(product: ProductListItem) {
+  return `${formatProductId(product.id)} · Stock: ${product.stock ?? 0}`
 }

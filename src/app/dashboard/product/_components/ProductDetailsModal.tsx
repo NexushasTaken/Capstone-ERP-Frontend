@@ -4,7 +4,7 @@ import { ModalTitle } from "@/components/AppModal"
 import SeeMoreModal from "@/components/SeeMoreModal"
 import { formatDate, formatPeso } from "@/lib/format"
 import type { ProductListItem } from "@/types/product"
-import { formatProductId } from "../_lib/productHelpers"
+import { formatProductId } from "@/lib/helpers/productHelpers"
 
 interface ProductDetailsModalProps {
   product: ProductListItem | null

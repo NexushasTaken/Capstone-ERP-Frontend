@@ -5,7 +5,7 @@ import { TableCell, TableRow } from "@/components/ui/table"
 import { formatDate, formatPeso } from "@/lib/format"
 import type { ProductListItem } from "@/types/product"
 import type { StatusActionItem } from "@/types/statusAction"
-import { formatProductId } from "../_lib/productHelpers"
+import { formatProductId } from "@/lib/helpers/productHelpers"
 
 const columns: DataTableColumn[] = [
   "Product ID",

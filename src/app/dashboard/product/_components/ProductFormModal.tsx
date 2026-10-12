@@ -11,7 +11,7 @@ import { fetchCategories } from "@/services/categoryApi"
 import { queryKeys } from "@/lib/query/queryKeys"
 import type { ProductListItem } from "@/types/product"
 import type { ProductValues } from "../_hooks/useProducts"
-import { formatProductId } from "../_lib/productHelpers"
+import { formatProductId } from "@/lib/helpers/productHelpers"
 import { productSchema, type ProductFormValues } from "../_lib/productSchema"
 
 const ALL_CATEGORIES = { page: 1, pageSize: 1000 }

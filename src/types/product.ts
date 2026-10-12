@@ -8,6 +8,8 @@ export interface ProductListItem {
   createdByName: string | null
   updated_At: string | null
   updatedByName: string | null
+  /** Total stock across warehouses. Only the inventory/order product picker returns it. */
+  stock?: number | null
 }
 
 export type ProductCategoryFilter = "Categorized" | "Uncategorized"
