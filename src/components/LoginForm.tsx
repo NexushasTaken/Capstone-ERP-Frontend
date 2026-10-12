@@ -71,7 +71,7 @@ export default function LoginForm() {
           <span className="text-foreground text-sm font-light">Please enter your details to sign in.</span>
         </div>
 
-        <form className="flex flex-col mt-8" onSubmit={handleSubmit(login)} noValidate>
+        <form className="flex flex-col mt-8" method="post" onSubmit={handleSubmit(login)} noValidate>
           <div className="flex flex-col gap-2">
             <label htmlFor="email" className="text-sm text-foreground">
               Email address
