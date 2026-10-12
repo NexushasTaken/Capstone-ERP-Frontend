@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.7.0] - 2026-10-12
+
+### Changed
+
+- In *Create order* and *Edit order*, the product's _Stock_ updates as the quantity is typed, showing what would be left after this order (in *Edit order*, the quantity the order already holds counts as available). It turns red below 0. This is only a preview; stock changes when the order is saved.
+
 ## [3.6.0] - 2026-10-12
 
 ### Changed
