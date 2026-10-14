@@ -133,7 +133,7 @@ export default function ProductsView() {
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <ProductsTable
           products={products}
-          isLoading={list.isLoading}
+          isLoading={list.isLoading || list.isPlaceholderData}
           error={list.error}
           actions={productActions}
           onShowDetails={(product) => setModal({ type: "details", product })}

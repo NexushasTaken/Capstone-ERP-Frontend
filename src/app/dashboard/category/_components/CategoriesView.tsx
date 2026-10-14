@@ -43,7 +43,7 @@ export default function CategoriesView() {
     search: filters.search,
     sort: getCategoryFilter(sortBy, sortOrder),
   }
-  const { data: categoriesResponse, isLoading, error } = useCategories(categoriesQuery)
+  const { data: categoriesResponse, isLoading, isPlaceholderData, error } = useCategories(categoriesQuery)
   const mutations = useCategoryMutations(categoriesQuery)
 
   const categories = categoriesResponse?.items ?? []
@@ -96,7 +96,7 @@ export default function CategoriesView() {
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <CategoriesTable
           categories={categories}
-          isLoading={isLoading}
+          isLoading={isLoading || isPlaceholderData}
           error={error}
           actions={categoryActions}
           onEdit={(category) => setModal({ type: "edit", category })}

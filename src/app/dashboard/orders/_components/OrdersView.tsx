@@ -29,7 +29,7 @@ export default function OrdersView() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [pageSize, setPageSize] = usePageSize("orders")
 
-  const { data, isLoading, isFetching, error } = useOrders({
+  const { data, isLoading, isPlaceholderData, isFetching, error } = useOrders({
     page: currentPage,
     pageSize,
     name: filters.search || undefined,
@@ -91,7 +91,7 @@ export default function OrdersView() {
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <OrdersList
           orders={orders}
-          isLoading={isLoading}
+          isLoading={isLoading || isPlaceholderData}
           error={error}
           statusOptions={statusOptions}
           onSeeMore={setDetailsOrder}

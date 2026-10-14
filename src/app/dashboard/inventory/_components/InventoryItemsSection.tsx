@@ -85,7 +85,7 @@ export default function InventoryItemsSection() {
     minQuantity: filters.minQuantity === "" ? undefined : Number(filters.minQuantity),
     maxQuantity: filters.maxQuantity === "" ? undefined : Number(filters.maxQuantity),
   }
-  const { data: inventoriesResponse, isLoading, error } = useInventories(listParams)
+  const { data: inventoriesResponse, isLoading, isPlaceholderData, error } = useInventories(listParams)
   const { data: statusCounts, isError: statusCountsError } = useInventoryStatusCounts()
   const mutations = useInventoryMutations(queryKeys.inventories.all(listParams))
 
@@ -226,7 +226,7 @@ export default function InventoryItemsSection() {
       <div className="mt-5 max-h-[75dvh] min-h-0 overflow-auto scrollbar-x-only">
         <InventoryTable
           items={inventories}
-          isLoading={isLoading}
+          isLoading={isLoading || isPlaceholderData}
           error={error}
           actions={inventoryActions}
           onShowDetails={(item) => setModal({ type: "details", item })}

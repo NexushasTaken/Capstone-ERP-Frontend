@@ -23,7 +23,7 @@ export default function ForecastView() {
   const [chartProduct, setChartProduct] = useState<DemandForecastItem | null>(null)
   const [pageSize, setPageSize] = usePageSize("forecast")
 
-  const { data, isLoading, isFetching, error } = useDemandForecast({
+  const { data, isLoading, isPlaceholderData, isFetching, error } = useDemandForecast({
     page: currentPage,
     pageSize,
     search: filters.search || undefined,
@@ -73,7 +73,7 @@ export default function ForecastView() {
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <ForecastTable
           error={error}
-          isLoading={isLoading || forceForecast.isPending}
+          isLoading={isLoading || isPlaceholderData || forceForecast.isPending}
           items={items}
           onOpenChart={setChartProduct}
         />

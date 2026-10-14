@@ -37,7 +37,7 @@ export default function AccountsView() {
 
   const [pageSize, setPageSize] = usePageSize("accounts")
 
-  const { data, isLoading, error } = useAccounts({
+  const { data, isLoading, isPlaceholderData, error } = useAccounts({
     page: currentPage,
     pageSize,
     name: filters.search || undefined,
@@ -97,7 +97,7 @@ export default function AccountsView() {
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <AccountsTable
           accounts={accounts}
-          isLoading={isLoading}
+          isLoading={isLoading || isPlaceholderData}
           error={error}
           actions={accountActions}
           currentUserId={currentUser?.id}
