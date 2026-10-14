@@ -46,7 +46,7 @@ export default function WarehousesView() {
     search: filters.search,
     sort: getWarehouseFilter(sortBy, sortOrder),
   }
-  const { data: warehousesResponse, isLoading, error } = useWarehouses(warehousesQuery)
+  const { data: warehousesResponse, isLoading, isPlaceholderData, error } = useWarehouses(warehousesQuery)
   const mutations = useWarehouseMutations(warehousesQuery)
 
   const warehouses = warehousesResponse?.items ?? []
@@ -96,7 +96,7 @@ export default function WarehousesView() {
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <WarehousesTable
           warehouses={warehouses}
-          isLoading={isLoading}
+          isLoading={isLoading || isPlaceholderData}
           error={error}
           actions={warehouseActions}
           onEdit={(warehouse) => setModal({ type: "edit", warehouse })}

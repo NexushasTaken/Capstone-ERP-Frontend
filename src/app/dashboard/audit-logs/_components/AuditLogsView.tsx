@@ -31,7 +31,7 @@ export default function AuditLogsView() {
     module: module ?? undefined,
     action: action ?? undefined,
   }
-  const { data, isLoading, isFetching, error } = useAuditLogs(queryParams)
+  const { data, isLoading, isPlaceholderData, isFetching, error } = useAuditLogs(queryParams)
 
   const logs = data?.items ?? []
   const rows = data?.rows ?? 0
@@ -88,7 +88,7 @@ export default function AuditLogsView() {
       />
 
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
-        <AuditLogsTable logs={logs} isLoading={isLoading} error={error} hasFilters={hasFilters} />
+        <AuditLogsTable logs={logs} isLoading={isLoading || isPlaceholderData} error={error} hasFilters={hasFilters} />
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">

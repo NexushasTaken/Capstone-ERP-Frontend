@@ -41,7 +41,7 @@ export default function DriversView() {
   const [modal, setModal] = useState<ModalState>(null)
   const [pageSize, setPageSize] = usePageSize("driver")
 
-  const { data, isLoading, isFetching, error } = useDrivers({
+  const { data, isLoading, isPlaceholderData, isFetching, error } = useDrivers({
     page: currentPage,
     pageSize,
     name: filters.search || undefined,
@@ -96,7 +96,7 @@ export default function DriversView() {
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <DriversTable
           drivers={drivers}
-          isLoading={isLoading}
+          isLoading={isLoading || isPlaceholderData}
           error={error}
           actions={driverActions}
           onUpdate={(driver) => setModal({ type: "update", driver })}

@@ -26,7 +26,7 @@ export default function SalesView() {
   const [detailsSale, setDetailsSale] = useState<Sale | null>(null)
   const [pageSize, setPageSize] = usePageSize("sales")
 
-  const { data, isLoading, isFetching, error } = useSales({
+  const { data, isLoading, isPlaceholderData, isFetching, error } = useSales({
     page: currentPage,
     pageSize,
     name: filters.search || undefined,
@@ -72,7 +72,7 @@ export default function SalesView() {
       </ListSummary>
 
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
-        <SalesTable sales={sales} isLoading={isLoading} error={error} onSeeMore={setDetailsSale} />
+        <SalesTable sales={sales} isLoading={isLoading || isPlaceholderData} error={error} onSeeMore={setDetailsSale} />
       </div>
 
       <div className="mt-4 flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-0">
