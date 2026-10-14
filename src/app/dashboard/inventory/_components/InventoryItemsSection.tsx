@@ -5,6 +5,8 @@ import { AlertTriangle, Plus, X } from "lucide-react"
 import CountFilterSelect from "@/components/CountFilterSelect"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
 import ListHeader from "@/components/ListHeader"
+import ListSummary from "@/components/ListSummary"
+import { formatCount } from "@/lib/format"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
 import PageSizeSelect from "@/components/PageSizeSelect"
@@ -101,7 +103,6 @@ export default function InventoryItemsSection() {
       count: item.count,
     })),
   ]
-  const selectedFilterCount = statusFilters.find((filter) => filter.label === selectedFilter)?.count ?? 0
   // Show the latest copy of the selected item (e.g. after a restock) rather than the one clicked.
   const modalItem = modal ? (inventories.find((item) => item.id === modal.item.id) ?? modal.item) : null
   const closeModal = () => setModal(null)
@@ -143,7 +144,6 @@ export default function InventoryItemsSection() {
       <ListHeader
         as="h2"
         title="Inventory items"
-        count={countsAvailable ? selectedFilterCount.toLocaleString() : "-"}
         actions={
           <>
             {can(role, "inventory:add") && (
@@ -211,6 +211,16 @@ export default function InventoryItemsSection() {
           </>
         }
       />
+
+      <ListSummary>
+        {formatCount(rows, "inventory item")}
+        {countsAvailable && statusCounts.length > 0 && (
+          <>
+            {" "}
+            · overall {statusCounts.map((item) => `${item.count.toLocaleString("en-PH")} ${item.status}`).join(", ")}
+          </>
+        )}
+      </ListSummary>
 
       {/* Capped so a long page scrolls inside the widget, keeping the header and horizontal scrollbar in view. */}
       <div className="mt-5 max-h-[75dvh] min-h-0 overflow-auto scrollbar-x-only">

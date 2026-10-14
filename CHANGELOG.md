@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.15.0] - 2026-10-15
+
+### Added
+
+- *Products*, *Inventory* and *Demand Forecast* show a summary line under the header: products without a category, the stock status breakdown, and how many products need ordering. *Sales* keeps its count and total.
+
+### Removed
+
+- The row-count badge next to each list page title. The count is still shown at the bottom of the table.
+
 ## [3.14.1] - 2026-10-15
 
 ### Fixed

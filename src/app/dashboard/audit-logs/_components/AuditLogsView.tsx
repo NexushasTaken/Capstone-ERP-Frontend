@@ -46,7 +46,6 @@ export default function AuditLogsView() {
     <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Audit logs"
-        count={rows}
         filters={
           <>
             <AuditFilterDropdown

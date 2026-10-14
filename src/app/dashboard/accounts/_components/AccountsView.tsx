@@ -75,7 +75,6 @@ export default function AccountsView() {
     <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Accounts"
-        count={rows}
         actions={
           can(role, "account:create") && (
             <Button onClick={() => setModal({ type: "create" })} type="button">

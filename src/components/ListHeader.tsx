@@ -3,7 +3,6 @@ import PageTitle from "@/components/PageTitle"
 
 interface ListHeaderProps {
   title: string
-  count?: ReactNode
   /** Use 'h2' when the page already has an h1. */
   as?: "h1" | "h2"
   /** Page-level buttons (export, add), shown top right. */
@@ -15,11 +14,11 @@ interface ListHeaderProps {
 }
 
 // Header shared by every list page: title and actions on the first row, search and filters on the second.
-export default function ListHeader({ title, count, as, actions, search, filters }: ListHeaderProps) {
+export default function ListHeader({ title, as, actions, search, filters }: ListHeaderProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <PageTitle title={title} count={count} as={as} />
+        <PageTitle title={title} as={as} />
         {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
       </div>
 
