@@ -52,3 +52,9 @@ export interface SaleListContent {
   /** Sum of every matching sale's total, not just this page. */
   totalAmount: number
 }
+
+/** First and last day with a sale, `yyyy-MM-dd` (Philippine days); null when there are no sales. */
+export interface SaleDateRange {
+  first: string | null
+  last: string | null
+}

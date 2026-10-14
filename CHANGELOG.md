@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.12.0] - 2026-10-15
+
+### Changed
+
+- The *Sales* date filter's calendar only covers the period that has sales: the year and month dropdowns run from the first sale to the latest one, days outside it are greyed out, and it opens on the latest sale's month (needs Backend 8.1.0).
+
 ## [3.11.0] - 2026-10-15
 
 ### Changed

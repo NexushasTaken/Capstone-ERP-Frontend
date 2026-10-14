@@ -1,5 +1,5 @@
 import type { Sale } from "@/types/sale"
-import type { FetchSalesParams, SaleListContent } from "@/types/sale"
+import type { FetchSalesParams, SaleDateRange, SaleListContent } from "@/types/sale"
 import { ApiError } from "@/lib/apiError"
 
 interface SaleEnvelope {
@@ -50,4 +50,32 @@ export async function fetchSales(
     rows: data.salesData.rows,
     totalAmount: data.salesData.totalAmount,
   }
+}
+
+interface SaleDateRangeEnvelope {
+  status: number
+  success: boolean
+  message: string
+  range: SaleDateRange
+}
+
+export async function fetchSaleDateRange(signal?: AbortSignal): Promise<SaleDateRange> {
+  const response = await fetch("/api/Sale/range", {
+    cache: "no-store",
+    signal,
+    method: "GET",
+    credentials: "include",
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch the sales date range: ${response.status}`)
+  }
+
+  const data: SaleDateRangeEnvelope = await response.json()
+
+  if (!data.success) {
+    throw new ApiError(data.message || "Failed to fetch the sales date range", response.status)
+  }
+
+  return data.range
 }
