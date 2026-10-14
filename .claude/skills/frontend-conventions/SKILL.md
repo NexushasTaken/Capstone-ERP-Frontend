@@ -147,7 +147,7 @@ Every form uses a zod schema with `useForm({ resolver: zodResolver(schema), mode
 
 ## 8. Shared building blocks (use them, don't re-copy markup)
 
-`PageTitle` (title + count badge, `as="h2"` inside a page with its own h1), `SearchInput`, `ExportCsvButton` (has its own cooldown), `SortPopover`, `TablePagination`, `StatusAction` (row "…" menu), `EntityDropdown` (searchable picker), `OrderTypeFilterSelect`, `Loading`, `DatePickerSimple`.
+`PageTitle` (title + count badge, `as="h2"` inside a page with its own h1), `SearchInput`, `SortPopover`, `TablePagination`, `StatusAction` (row "…" menu), `EntityDropdown` (searchable picker), `OrderTypeFilterSelect`, `Loading`, `DatePickerSimple`.
 
 Hooks: `useCurrentUser`, `useDebouncedValue`, `useCooldown`, `useOrderTypes`, `useInventoryProductSearch`, `useAuditLogs`.
 

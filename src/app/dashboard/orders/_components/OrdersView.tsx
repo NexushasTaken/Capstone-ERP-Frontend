@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Plus } from "lucide-react"
-import ExportCsvButton from "@/components/ExportCsvButton"
 import ListHeader from "@/components/ListHeader"
 import OrderTypeFilterSelect from "@/components/OrderTypeFilterSelect"
 import SearchInput from "@/components/SearchInput"
@@ -11,9 +10,7 @@ import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useUrlSearch } from "@/hooks/useUrlSearch"
-import { exportToCSV } from "@/lib/exportToCsv"
-import { formatDate } from "@/lib/format"
-import { formatOrderNumber, normalizeOrderText } from "@/lib/helpers/orderHelpers"
+import { normalizeOrderText } from "@/lib/helpers/orderHelpers"
 import type { InsertOrderPayload, OrderGroup } from "@/types/order"
 import { useOrderFilters } from "../_hooks/useOrderFilters"
 import { useOrderMutations, useOrders, useOrderStatuses } from "../_hooks/useOrders"
@@ -66,10 +63,6 @@ export default function OrdersView() {
         count={rows}
         actions={
           <>
-            <ExportCsvButton
-              disabled={isFetching || !!error || orders.length === 0}
-              onExport={() => exportOrders(orders)}
-            />
             <Button onClick={() => setIsCreateModalOpen(true)} type="button">
               <Plus className="h-4 w-4" />
               Add order
@@ -145,42 +138,5 @@ export default function OrdersView() {
         onSubmit={handleCreateOrder}
       />
     </section>
-  )
-}
-
-// One CSV row per product line, with the order's details repeated on each.
-function exportOrders(groups: OrderGroup[]) {
-  exportToCSV(
-    groups.flatMap((group) => group.orders.map((line) => ({ ...group, ...line }))),
-    [
-      {
-        header: "Order ID",
-        value: (order) => formatOrderNumber(order.orderId),
-      },
-      { header: "Product", value: (order) => order.productName },
-      {
-        header: "Order type",
-        value: (order) => normalizeOrderText(order.orderType),
-      },
-      {
-        header: "Status",
-        value: (order) => normalizeOrderText(order.orderStatus),
-      },
-      { header: "Customer", value: (order) => order.customerName },
-      { header: "Driver", value: (order) => order.driverName || "Unassigned" },
-      { header: "Quantity", value: (order) => order.quantity },
-      { header: "Amount", value: (order) => order.totalAmount },
-      { header: "Order discount (%)", value: (order) => order.discountPercent },
-      {
-        header: "Pickup address",
-        value: (order) => order.pickUpAddress ?? "-",
-      },
-      {
-        header: "Delivery address",
-        value: (order) => order.deliveryAddress ?? "-",
-      },
-      { header: "Created at", value: (order) => formatDate(order.created_At) },
-    ],
-    "orders",
   )
 }
