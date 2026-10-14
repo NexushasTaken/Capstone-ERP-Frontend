@@ -34,7 +34,7 @@ export default function OrderRow({ order, statusOptions, onSeeMore, onEdit, onCh
     .map((status) => ({ label: status.label, value: String(status.id) }))
 
   return (
-    <TableRow>
+    <TableRow className="cursor-pointer" onClick={onSeeMore}>
       <TableCell className="px-3 py-4 font-medium">{formatOrderNumber(order.orderId)}</TableCell>
       <TableCell className="max-w-72 truncate px-3 py-4 capitalize">{getOrderGroupProductSummary(order)}</TableCell>
       <TableCell className="px-3 py-4 capitalize">{normalizeOrderText(order.orderType)}</TableCell>
@@ -46,7 +46,8 @@ export default function OrderRow({ order, statusOptions, onSeeMore, onEdit, onCh
       <TableCell className="px-3 py-4">{formatDate(order.created_At)}</TableCell>
       <TableCell className="px-3 py-4 font-medium">{formatPeso(order.total)}</TableCell>
       <TableCell className="px-3 py-4">
-        <div className="flex items-center justify-end gap-2">
+        {/* Stop clicks here (incl. the portaled dropdown) from also opening the row's details. */}
+        <div className="flex items-center justify-end gap-2" onClick={(event) => event.stopPropagation()}>
           <Button size="sm" type="button" variant="outline" onClick={onSeeMore}>
             See more
           </Button>

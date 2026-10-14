@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.16.0] - 2026-10-15
+
+### Changed
+
+- Clicking a row in *Products*, *Sales*, *Orders* and *Inventory* opens its details, the same as *See more*. The buttons and the actions menu in the row still do only their own thing.
+- The *Action* column header in *Products*, *Sales* and *Orders* is now blank.
+
 ## [3.15.0] - 2026-10-15
 
 ### Added

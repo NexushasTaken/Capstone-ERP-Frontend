@@ -11,7 +11,7 @@ const columns: DataTableColumn[] = [
   "Customer",
   "Order Date",
   "Amount",
-  { label: "Action", className: "text-right" },
+  { label: "Action", className: "text-right", srOnly: true },
 ]
 
 interface OrdersListProps {
