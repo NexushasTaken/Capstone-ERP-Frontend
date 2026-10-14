@@ -10,10 +10,10 @@ interface SaleRowProps {
   onSeeMore: () => void
 }
 
-// One sale in the table; "See more" opens its details.
+// One sale in the table; clicking the row or "See more" opens its details.
 export default function SaleRow({ sale, onSeeMore }: SaleRowProps) {
   return (
-    <TableRow>
+    <TableRow className="cursor-pointer" onClick={onSeeMore}>
       <TableCell className="px-3 py-4 font-medium">{formatSaleId(sale.id)}</TableCell>
       <TableCell className="px-3 py-4 font-medium capitalize">{getSaleProductName(sale)}</TableCell>
       <TableCell className="px-3 py-4 capitalize">{normalizeOrderText(sale.orderType)}</TableCell>
@@ -26,7 +26,10 @@ export default function SaleRow({ sale, onSeeMore }: SaleRowProps) {
           size="sm"
           type="button"
           variant="outline"
-          onClick={onSeeMore}
+          onClick={(event) => {
+            event.stopPropagation()
+            onSeeMore()
+          }}
           aria-label={"View " + formatSaleId(sale.id) + " details"}
         >
           See more

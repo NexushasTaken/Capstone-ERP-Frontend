@@ -13,7 +13,7 @@ const columns: DataTableColumn[] = [
   "Product Name",
   "Price",
   "Created At",
-  { label: "Action", className: "text-right" },
+  { label: "Action", className: "text-right", srOnly: true },
 ]
 
 interface ProductsTableProps {
@@ -46,14 +46,15 @@ export default function ProductsTable({
       isLoading={isLoading}
     >
       {products.map((product) => (
-        <TableRow key={product.id}>
+        <TableRow className="cursor-pointer" key={product.id} onClick={() => onShowDetails(product)}>
           <TableCell className="px-3 py-4 font-medium">{formatProductId(product.id)}</TableCell>
           <TableCell className="px-3 py-4 font-medium capitalize">{product.categoryName ?? "Uncategorized"}</TableCell>
           <TableCell className="px-3 py-4 capitalize">{product.name}</TableCell>
           <TableCell className="px-3 py-4 font-medium">{formatPeso(product.price)}</TableCell>
           <TableCell className="px-3 py-4">{formatDate(product.created_At)}</TableCell>
           <TableCell className="px-3 py-4">
-            <div className="flex items-center justify-end gap-2">
+            {/* Stop clicks here (incl. the portaled dropdown) from also opening the row's details. */}
+            <div className="flex items-center justify-end gap-2" onClick={(event) => event.stopPropagation()}>
               <Button onClick={() => onShowDetails(product)} size="sm" type="button" variant="outline">
                 See more
               </Button>

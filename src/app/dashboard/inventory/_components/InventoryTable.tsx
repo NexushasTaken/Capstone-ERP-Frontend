@@ -54,7 +54,7 @@ export default function InventoryTable({
         const statusStyle = getInventoryStatusStyleFromLabel(item.status)
 
         return (
-          <TableRow key={item.id}>
+          <TableRow className="cursor-pointer" key={item.id} onClick={() => onShowDetails(item)}>
             <TableCell className="px-3 py-4 font-medium">{formatInventoryId(String(item.id))}</TableCell>
             <TableCell className="px-3 py-4 font-medium capitalize">{item.name}</TableCell>
             <TableCell className="px-3 py-4 capitalize">{item.categoryName}</TableCell>
@@ -66,7 +66,8 @@ export default function InventoryTable({
               {capitalize(item.status)}
             </TableCell>
             <TableCell className="px-3 py-4">
-              <div className="flex items-center justify-end gap-2">
+              {/* Stop clicks here (incl. the portaled dropdown) from also opening the row's details. */}
+              <div className="flex items-center justify-end gap-2" onClick={(event) => event.stopPropagation()}>
                 <Button onClick={() => onShowDetails(item)} size="sm" type="button" variant="outline">
                   See more
                 </Button>
