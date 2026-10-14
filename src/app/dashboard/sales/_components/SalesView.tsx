@@ -79,7 +79,6 @@ export default function SalesView() {
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
             Showing {sales.length} of {rows} sales
-            {isFetching ? " - Updating..." : ""}
           </span>
           <PageSizeSelect
             value={pageSize}
@@ -88,6 +87,7 @@ export default function SalesView() {
               goToPage(1)
             }}
           />
+          {isFetching && <span className="text-sm text-muted-foreground">Updating...</span>}
         </div>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={goToPage} />

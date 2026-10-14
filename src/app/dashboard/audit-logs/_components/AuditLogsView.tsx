@@ -95,7 +95,6 @@ export default function AuditLogsView() {
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
             Showing {logs.length} of {rows} audit logs
-            {isFetching ? " - Updating..." : ""}
           </span>
           <PageSizeSelect
             value={pageSize}
@@ -104,6 +103,7 @@ export default function AuditLogsView() {
               update({ page: 1 })
             }}
           />
+          {isFetching && <span className="text-sm text-muted-foreground">Updating...</span>}
         </div>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={(page) => update({ page })} />
