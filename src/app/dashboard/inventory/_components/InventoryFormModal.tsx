@@ -70,8 +70,8 @@ export default function InventoryFormModal({ open, item, disabled, onClose, onSu
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open={open}>
       <ModalHeader
-        subtitle={isEdit ? formatInventoryId(String(item.id)) : "New stock entry"}
         title={isEdit ? "Edit inventory" : "Add inventory"}
+        detail={isEdit ? formatInventoryId(String(item.id)) : undefined}
         onClose={onClose}
       />
       <ModalBody>

@@ -65,7 +65,7 @@ export default function CreateAccountModal({ open, disabled, onClose, onSubmit }
 
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open={open}>
-      <ModalHeader subtitle="New account" title="Create account" onClose={onClose} />
+      <ModalHeader title="Create account" onClose={onClose} />
       <ModalBody>
         <FormField label="First Name" error={errors.firstName?.message}>
           <FormInput aria-invalid={!!errors.firstName} {...register("firstName")} />

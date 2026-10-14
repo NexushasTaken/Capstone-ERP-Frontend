@@ -2,8 +2,7 @@
 
 import type { ReactNode } from "react"
 import { Tag, Warehouse as WarehouseIcon } from "lucide-react"
-import CloseButton from "@/components/CloseButton"
-import { ModalTitle } from "@/components/AppModal"
+import { ModalHeader } from "@/components/AppModal"
 import SeeMoreModal from "@/components/SeeMoreModal"
 import { formatDate } from "@/lib/format"
 import {
@@ -27,21 +26,19 @@ export default function InventoryDetailsModal({ item, onClose }: InventoryDetail
 
   return (
     <SeeMoreModal open={item !== null} onClose={onClose} className="flex flex-col h-auto lg:max-h-[70vh]">
-      <div className="flex gap-2 w-full border-b border-border p-4 justify-between items-center">
-        <div className="flex flex-col justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs">{item ? formatInventoryId(String(item.id)) : ""}</span>
-            {statusStyle && (
-              <span className={`text-sm font-medium inline-flex items-center gap-1 ${statusStyle.labelClassName}`}>
-                <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dotClassName}`} />
-                {item ? capitalize(item.status) : ""}
-              </span>
-            )}
-          </div>
-          <ModalTitle className="text-xl font-medium text-foreground capitalize">{item?.name}</ModalTitle>
-        </div>
-        <CloseButton onClick={onClose} />
-      </div>
+      <ModalHeader
+        title={item ? formatInventoryId(String(item.id)) : ""}
+        detail={item ? <span className="capitalize">{item.name}</span> : undefined}
+        extra={
+          statusStyle && (
+            <span className={`text-sm font-medium inline-flex items-center gap-1 ${statusStyle.labelClassName}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dotClassName}`} />
+              {item ? capitalize(item.status) : ""}
+            </span>
+          )
+        }
+        onClose={onClose}
+      />
 
       <div className="flex flex-col w-full h-full overflow-y-auto">
         <div className="flex flex-col w-full h-fit p-4 gap-4">

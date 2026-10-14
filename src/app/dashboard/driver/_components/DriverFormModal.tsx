@@ -33,8 +33,8 @@ export default function DriverFormModal({ driver, disabled, onClose, onSubmit }:
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open>
       <ModalHeader
-        subtitle={isEdit ? formatDriverId(driver.id) : "New driver"}
         title={isEdit ? "Update driver" : "Add driver"}
+        detail={isEdit ? formatDriverId(driver.id) : undefined}
         onClose={onClose}
       />
       <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">

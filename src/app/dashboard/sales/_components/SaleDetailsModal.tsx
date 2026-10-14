@@ -1,5 +1,4 @@
-import { ModalTitle } from "@/components/AppModal"
-import CloseButton from "@/components/CloseButton"
+import { ModalHeader } from "@/components/AppModal"
 import DetailItem from "@/components/DetailItem"
 import SeeMoreModal from "@/components/SeeMoreModal"
 import { formatDate, formatPeso } from "@/lib/format"
@@ -16,15 +15,7 @@ interface SaleDetailsModalProps {
 export default function SaleDetailsModal({ sale, onClose }: SaleDetailsModalProps) {
   return (
     <SeeMoreModal open={sale !== null} onClose={onClose} className="flex h-auto flex-col lg:max-h-[70vh] lg:max-w-3xl">
-      <div className="flex w-full items-center justify-between gap-2 border-b border-border p-4">
-        <div className="flex flex-col justify-between">
-          <span className="text-xs">{sale ? formatSaleId(sale.id) : ""}</span>
-          <ModalTitle className="text-xl font-medium text-foreground capitalize">
-            {sale ? getSaleCustomerName(sale) : ""}
-          </ModalTitle>
-        </div>
-        <CloseButton onClick={onClose} />
-      </div>
+      <ModalHeader title="Sale details" detail={sale ? formatSaleId(sale.id) : undefined} onClose={onClose} />
 
       {sale ? <SaleDetailsBody sale={sale} /> : null}
     </SeeMoreModal>
@@ -35,6 +26,7 @@ function SaleDetailsBody({ sale }: { sale: Sale }) {
   return (
     <div className="flex w-full flex-col overflow-y-auto p-4">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <DetailItem label="Customer" value={<span className="capitalize">{getSaleCustomerName(sale)}</span>} />
         <DetailItem label="Order type" value={normalizeOrderText(sale.orderType)} />
         <DetailItem label="Status" value={getSaleStatusLabel(sale)} />
         <DetailItem label="Sale date" value={formatDate(sale.created_At)} />

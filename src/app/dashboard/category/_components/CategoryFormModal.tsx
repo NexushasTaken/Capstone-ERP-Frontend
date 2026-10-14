@@ -33,8 +33,8 @@ export default function CategoryFormModal({ category, disabled, onClose, onSubmi
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open>
       <ModalHeader
-        subtitle={isEdit ? formatCategoryId(category.id) : "New category item"}
         title={isEdit ? "Edit category" : "Add category"}
+        detail={isEdit ? formatCategoryId(category.id) : undefined}
         onClose={onClose}
       />
       <ModalBody>

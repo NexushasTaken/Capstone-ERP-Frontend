@@ -34,24 +34,34 @@ export default function AppModal({ open, onClose, children, className }: AppModa
   )
 }
 
-// Use for a custom header, so the dialog is labelled by its title.
-export const ModalTitle = DialogTitle
-
-// Small caption (e.g. an ID) above the title, close button on the right.
+// One row: "Edit product · PRD-0003", what the modal is, then which record (if any).
+// `extra` (e.g. a status badge) sits after the title; the close button is on the right.
 export function ModalHeader({
-  subtitle,
   title,
+  detail,
+  extra,
   onClose,
+  className,
 }: {
-  subtitle?: ReactNode
   title: ReactNode
+  detail?: ReactNode
+  extra?: ReactNode
   onClose: () => void
+  className?: string
 }) {
   return (
-    <div className="flex w-full items-center justify-between gap-2 border-b border-border p-4">
-      <div className="flex flex-col">
-        <span className="text-xs text-muted-foreground">{subtitle}</span>
-        <DialogTitle className="text-xl font-medium text-foreground">{title}</DialogTitle>
+    <div className={cn("flex w-full items-center justify-between gap-2 border-b border-border p-4", className)}>
+      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+        <DialogTitle className="text-xl font-medium text-foreground">
+          {title}
+          {detail ? (
+            <>
+              <span className="mx-1 text-muted-foreground"> · </span>
+              {detail}
+            </>
+          ) : null}
+        </DialogTitle>
+        {extra}
       </div>
       <CloseButton onClick={onClose} />
     </div>

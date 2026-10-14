@@ -6,6 +6,7 @@ import { Plus } from "lucide-react"
 import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
 import { FormField, FormInput } from "@/components/FormField"
 import type { InsertWarehousePayload, WarehouseListItem } from "@/types/warehouse"
+import { formatWarehouseId } from "../_lib/warehouseHelpers"
 import { warehouseSchema, type WarehouseFormValues } from "../_lib/warehouseSchema"
 
 interface WarehouseFormModalProps {
@@ -31,7 +32,11 @@ export default function WarehouseFormModal({ warehouse, disabled, onClose, onSub
 
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open>
-      <ModalHeader subtitle="Warehouse" title={isEdit ? "Edit warehouse" : "Add warehouse"} onClose={onClose} />
+      <ModalHeader
+        title={isEdit ? "Edit warehouse" : "Add warehouse"}
+        detail={isEdit ? formatWarehouseId(warehouse.id) : undefined}
+        onClose={onClose}
+      />
       <ModalBody>
         <FormField label="Warehouse name" error={errors.name?.message}>
           <FormInput aria-invalid={!!errors.name} className="capitalize" {...register("name")} />
