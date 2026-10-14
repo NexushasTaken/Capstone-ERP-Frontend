@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.21.0] - 2026-10-15
+
+### Changed
+
+- The "Updating..." note on the orders, sales, drivers, audit logs and forecast lists sits after the Rows dropdown instead of at the end of the "Showing ..." count.
+
 ## [3.20.1] - 2026-10-15
 
 ### Fixed

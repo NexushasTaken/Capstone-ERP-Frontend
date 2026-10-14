@@ -83,7 +83,6 @@ export default function ForecastView() {
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
             Showing {items.length} of {rows} products, those running out first on top
-            {isFetching ? " - Updating..." : ""}
           </span>
           <PageSizeSelect
             value={pageSize}
@@ -92,6 +91,7 @@ export default function ForecastView() {
               update({ page: 1 })
             }}
           />
+          {isFetching && <span className="text-sm text-muted-foreground">Updating...</span>}
         </div>
         <div className="flex">
           <TablePagination

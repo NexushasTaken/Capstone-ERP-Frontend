@@ -108,7 +108,6 @@ export default function DriversView() {
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
             Showing {drivers.length} of {rows} drivers
-            {isFetching ? " - Updating..." : ""}
           </span>
           <PageSizeSelect
             value={pageSize}
@@ -117,6 +116,7 @@ export default function DriversView() {
               update({ page: 1 })
             }}
           />
+          {isFetching && <span className="text-sm text-muted-foreground">Updating...</span>}
         </div>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={(page) => update({ page })} />

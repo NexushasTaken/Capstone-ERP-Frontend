@@ -104,7 +104,6 @@ export default function OrdersView() {
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
             Showing {orders.length} orders of {rows}
-            {isFetching ? " - Updating..." : ""}
           </span>
           <PageSizeSelect
             value={pageSize}
@@ -113,6 +112,7 @@ export default function OrdersView() {
               goToPage(1)
             }}
           />
+          {isFetching && <span className="text-sm text-muted-foreground">Updating...</span>}
         </div>
         <div className="flex">
           <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={goToPage} />
