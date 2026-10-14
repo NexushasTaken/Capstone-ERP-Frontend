@@ -11,10 +11,11 @@ import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { useUrlSearch } from "@/hooks/useUrlSearch"
 import { allowedActions, can } from "@/lib/permissions"
-import type { AccountListItem, AccountSortBy } from "@/types/account"
+import type { AccountListItem } from "@/types/account"
 import { useAccountMutations, useAccounts } from "../_hooks/useAccounts"
+import { useAccountFilters } from "../_hooks/useAccountFilters"
 import { accountActionOptions, accountSortOptions, formatAccountId, getAccountFilter } from "../_lib/accountHelpers"
 import AccountsTable from "./AccountsTable"
 import CreateAccountModal, { type NewAccount } from "./CreateAccountModal"
@@ -29,19 +30,17 @@ export default function AccountsView() {
   const role = currentUser?.role
   const accountActions = allowedActions(role, "account", accountActionOptions)
 
-  const [search, setSearch] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<AccountSortBy>("id")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  const { values: filters, update } = useAccountFilters()
+  const { sortBy, sortOrder, page: currentPage } = filters
+  const [search, setSearch] = useUrlSearch(filters.search, (value) => update({ search: value }))
   const [modal, setModal] = useState<ModalState>(null)
 
-  const debouncedSearch = useDebouncedValue(search.trim())
   const [pageSize, setPageSize] = usePageSize("accounts")
 
   const { data, isLoading, error } = useAccounts({
     page: currentPage,
     pageSize,
-    name: debouncedSearch || undefined,
+    name: filters.search || undefined,
     filter: getAccountFilter(sortBy, sortOrder),
   })
   const mutations = useAccountMutations()
@@ -55,7 +54,7 @@ export default function AccountsView() {
   async function handleCreateAccount(account: NewAccount) {
     await mutations.createAccount.mutateAsync(account)
     closeModal()
-    setCurrentPage(1)
+    update({ page: 1 })
   }
 
   function handleUpdateRole(newRole: AccountListItem["role"]) {
@@ -68,7 +67,7 @@ export default function AccountsView() {
     if (modal?.type !== "delete") return
     mutations.deleteAccount.mutate(modal.account.id)
     // Deleting the last row on a page would leave it empty, so step back one.
-    if (accounts.length === 1 && currentPage > 1) setCurrentPage(currentPage - 1)
+    if (accounts.length === 1 && currentPage > 1) update({ page: currentPage - 1 })
     closeModal()
   }
 
@@ -85,26 +84,13 @@ export default function AccountsView() {
             </Button>
           )
         }
-        search={
-          <SearchInput
-            value={search}
-            onChange={(value) => {
-              setSearch(value)
-              setCurrentPage(1)
-            }}
-            placeholder="Search by name, email, role or ID"
-          />
-        }
+        search={<SearchInput value={search} onChange={setSearch} placeholder="Search by name, email, role or ID" />}
         filters={
           <SortPopover
             value={sortBy}
             order={sortOrder}
             options={accountSortOptions}
-            onChange={(value, order) => {
-              setSortBy(value)
-              setSortOrder(order)
-              setCurrentPage(1)
-            }}
+            onChange={(value, order) => update({ sortBy: value, sortOrder: order })}
           />
         }
       />
@@ -130,12 +116,12 @@ export default function AccountsView() {
             value={pageSize}
             onChange={(size) => {
               setPageSize(size)
-              setCurrentPage(1)
+              update({ page: 1 })
             }}
           />
         </div>
         <div className="flex">
-          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
+          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={(page) => update({ page })} />
         </div>
       </div>
 

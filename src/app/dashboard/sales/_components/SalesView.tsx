@@ -8,7 +8,7 @@ import SearchInput from "@/components/SearchInput"
 import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { usePageSize } from "@/hooks/usePageSize"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { useUrlSearch } from "@/hooks/useUrlSearch"
 import { exportToCSV } from "@/lib/exportToCsv"
 import { formatDate } from "@/lib/format"
 import { normalizeOrderText } from "@/lib/helpers/orderHelpers"
@@ -20,22 +20,22 @@ import {
   getSaleStatusLabel,
 } from "@/lib/helpers/saleHelpers"
 import type { Sale } from "@/types/sale"
+import { useSaleFilters } from "../_hooks/useSaleFilters"
 import { useSales } from "../_hooks/useSales"
 import SaleDetailsModal from "./SaleDetailsModal"
 import SalesTable from "./SalesTable"
 
 export default function SalesView() {
-  const [search, setSearch] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState("")
+  const { values: filters, update } = useSaleFilters()
+  const { orderType: selectedOrderTypeFilter, page: currentPage } = filters
+  const [search, setSearch] = useUrlSearch(filters.search, (value) => update({ search: value }))
   const [detailsSale, setDetailsSale] = useState<Sale | null>(null)
-  const debouncedSearch = useDebouncedValue(search.trim())
   const [pageSize, setPageSize] = usePageSize("sales")
 
   const { data, isLoading, isFetching, error } = useSales({
     page: currentPage,
     pageSize,
-    name: debouncedSearch || undefined,
+    name: filters.search || undefined,
     orderTypeId: selectedOrderTypeFilter ? Number(selectedOrderTypeFilter) : 0,
   })
 
@@ -44,7 +44,7 @@ export default function SalesView() {
   const pageCount = Math.max(1, data?.pageCount ?? 1)
 
   function goToPage(page: number) {
-    setCurrentPage(page)
+    update({ page })
   }
 
   return (
@@ -56,23 +56,10 @@ export default function SalesView() {
           <ExportCsvButton disabled={isFetching || !!error || sales.length === 0} onExport={() => exportSales(sales)} />
         }
         search={
-          <SearchInput
-            value={search}
-            onChange={(value) => {
-              setSearch(value)
-              goToPage(1)
-            }}
-            placeholder="Search by product, customer, type or ID"
-          />
+          <SearchInput value={search} onChange={setSearch} placeholder="Search by product, customer, type or ID" />
         }
         filters={
-          <OrderTypeFilterSelect
-            value={selectedOrderTypeFilter}
-            onChange={(orderTypeId) => {
-              setSelectedOrderTypeFilter(orderTypeId)
-              setCurrentPage(1)
-            }}
-          />
+          <OrderTypeFilterSelect value={selectedOrderTypeFilter} onChange={(orderType) => update({ orderType })} />
         }
       />
 
