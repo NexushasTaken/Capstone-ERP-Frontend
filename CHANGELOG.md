@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.11.0] - 2026-10-15
+
+### Changed
+
+- The *Sales* date filter's calendar has month and year dropdowns, so a far-off month (e.g. January 2024) is two clicks away instead of many arrow clicks.
+
 ## [3.10.1] - 2026-10-15
 
 ### Fixed
