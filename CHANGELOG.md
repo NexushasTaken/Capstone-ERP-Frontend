@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.14.1] - 2026-10-15
+
+### Fixed
+
+- The table page buttons highlight on hover the same way the sidebar items do, in light and dark mode, and page numbers keep an even width.
+
 ## [3.14.0] - 2026-10-15
 
 ### Removed

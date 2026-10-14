@@ -9,6 +9,10 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 
+// Same hover as the dashboard sidebar nav items (see getNavItemClasses).
+// The dark: variant is needed to beat the ghost/outline button dark hover styles.
+const itemClasses = "rounded-lg transition-all duration-300 hover:bg-accent dark:hover:bg-accent"
+
 interface TablePaginationProps {
   currentPage: number
   totalPages: number
@@ -22,7 +26,7 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
         <PaginationItem>
           <PaginationPrevious
             href="#"
-            className="rounded-lg"
+            className={itemClasses}
             onClick={(e) => {
               e.preventDefault()
 
@@ -47,7 +51,8 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
               <PaginationLink
                 href="#"
                 isActive={currentPage === page}
-                className="rounded-lg"
+                size="default"
+                className={`${itemClasses} min-w-8 px-2 tabular-nums`}
                 onClick={(e) => {
                   e.preventDefault()
                   onPageChange(page)
@@ -62,7 +67,7 @@ export function TablePagination({ currentPage, totalPages, onPageChange }: Table
         <PaginationItem>
           <PaginationNext
             href="#"
-            className="rounded-lg"
+            className={itemClasses}
             onClick={(e) => {
               e.preventDefault()
 
