@@ -1,7 +1,18 @@
 "use client"
 
 import { useState } from "react"
-import { endOfMonth, endOfWeek, format, isSameYear, parseISO, startOfMonth, startOfWeek, subDays } from "date-fns"
+import {
+  addYears,
+  endOfMonth,
+  endOfWeek,
+  endOfYear,
+  format,
+  isSameYear,
+  parseISO,
+  startOfMonth,
+  startOfWeek,
+  subDays,
+} from "date-fns"
 import { CalendarIcon, Check } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 
@@ -17,6 +28,8 @@ interface SaleDateFilterProps {
 }
 
 const ISO_DAY = "yyyy-MM-dd"
+// First month in the calendar's year dropdown; safely before any sales data.
+const FIRST_MONTH = new Date(2000, 0)
 
 // Quick ranges, worked out from today. Weeks run Monday to Sunday.
 function getPresets(today = new Date()) {
@@ -101,7 +114,15 @@ export default function SaleDateFilter({ from, to, onChange }: SaleDateFilterPro
           </div>
 
           <div className="flex flex-col">
-            <Calendar mode="range" selected={draft} onSelect={setDraft} defaultMonth={draft?.from} />
+            <Calendar
+              mode="range"
+              captionLayout="dropdown"
+              startMonth={FIRST_MONTH}
+              endMonth={endOfYear(addYears(new Date(), 1))}
+              selected={draft}
+              onSelect={setDraft}
+              defaultMonth={draft?.from}
+            />
             <div className="flex items-center justify-between gap-2 border-t px-3 py-2">
               <span className="text-xs text-muted-foreground">
                 {draft?.from
