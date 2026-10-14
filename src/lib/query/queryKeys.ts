@@ -45,6 +45,7 @@ export const queryKeys = {
   },
   sales: {
     all: (params: FetchSalesParams = {}) => ["sales", params] as const,
+    range: ["sales", "range"] as const,
   },
   warehouses: {
     all: (params: FetchWarehousesParams = {}) => ["warehouses", params] as const,

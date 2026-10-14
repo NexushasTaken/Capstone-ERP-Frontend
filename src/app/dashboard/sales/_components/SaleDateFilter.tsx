@@ -1,24 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import {
-  addYears,
-  endOfMonth,
-  endOfWeek,
-  endOfYear,
-  format,
-  isSameYear,
-  parseISO,
-  startOfMonth,
-  startOfWeek,
-  subDays,
-} from "date-fns"
+import { endOfMonth, endOfWeek, format, isSameYear, parseISO, startOfMonth, startOfWeek, subDays } from "date-fns"
 import { CalendarIcon, Check } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useSaleDateRange } from "../_hooks/useSaleDateRange"
 
 interface SaleDateFilterProps {
   /** First and last day, `yyyy-MM-dd`; "" = no bound. */
@@ -28,8 +18,6 @@ interface SaleDateFilterProps {
 }
 
 const ISO_DAY = "yyyy-MM-dd"
-// First month in the calendar's year dropdown; safely before any sales data.
-const FIRST_MONTH = new Date(2000, 0)
 
 // Quick ranges, worked out from today. Weeks run Monday to Sunday.
 function getPresets(today = new Date()) {
@@ -64,6 +52,10 @@ export default function SaleDateFilter({ from, to, onChange }: SaleDateFilterPro
   // The calendar's selection, applied only on "Apply" so the list doesn't reload on the first click.
   const [draft, setDraft] = useState<DateRange | undefined>()
   const presets = getPresets()
+  // The calendar only offers the days between the first and the last sale.
+  const { data: range, isPending: rangePending } = useSaleDateRange()
+  const firstDay = range?.first ? parseISO(range.first) : undefined
+  const lastDay = range?.last ? parseISO(range.last) : undefined
 
   function handleOpenChange(next: boolean) {
     setOpen(next)
@@ -116,18 +108,23 @@ export default function SaleDateFilter({ from, to, onChange }: SaleDateFilterPro
           <div className="flex flex-col">
             <Calendar
               mode="range"
-              captionLayout="dropdown"
-              startMonth={FIRST_MONTH}
-              endMonth={endOfYear(addYears(new Date(), 1))}
+              captionLayout={firstDay && lastDay ? "dropdown" : "label"}
+              startMonth={firstDay}
+              endMonth={lastDay}
+              disabled={firstDay && lastDay ? [{ before: firstDay }, { after: lastDay }] : true}
               selected={draft}
               onSelect={setDraft}
-              defaultMonth={draft?.from}
+              defaultMonth={draft?.from ?? lastDay}
             />
             <div className="flex items-center justify-between gap-2 border-t px-3 py-2">
               <span className="text-xs text-muted-foreground">
                 {draft?.from
                   ? rangeLabel(format(draft.from, ISO_DAY), format(draft.to ?? draft.from, ISO_DAY))
-                  : "Pick a day or a range"}
+                  : firstDay
+                    ? "Pick a day or a range"
+                    : rangePending
+                      ? "Loading…"
+                      : "No sales yet"}
               </span>
               <Button type="button" size="sm" disabled={!draft?.from} onClick={applyDraft}>
                 Apply
