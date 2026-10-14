@@ -17,6 +17,9 @@ export type UrlSchema<V> = { [K in keyof V]: UrlField<V[K]> }
 export const text = (raw: string | null, fallback: string) => raw ?? fallback
 /** A non-negative whole number kept as a string ("" = not set), e.g. an id or a quantity bound. */
 export const digits = (raw: string | null, fallback: string) => (raw !== null && /^\d+$/.test(raw) ? raw : fallback)
+/** A calendar day as `yyyy-MM-dd` ("" = not set). */
+export const isoDate = (raw: string | null, fallback: string) =>
+  raw !== null && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : fallback
 export const positiveInt = (raw: string | null, fallback: number) => {
   const value = Number(raw)
   return raw !== null && Number.isSafeInteger(value) && value > 0 ? value : fallback

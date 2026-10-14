@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.10.0] - 2026-10-15
+
+### Added
+
+- *Sales* has a date filter: All time, Today, This week (Monday to Sunday), This month, Last 30 days, or any day or range picked on a calendar. The range is kept in the address bar.
+- *Sales* can be sorted by date (newest or oldest first), total (high or low first) or customer (A to Z or Z to A).
+- *Sales* shows how many sales match the search and filters and how much they total, across all pages.
+
+### Changed
+
+- A sale's date on *Sales* is when the order was completed (needs Backend 8.0.0).
+
+### Fixed
+
+- Searching *Sales* by product shows each matching sale with all of its products and its full total, not just the searched product.
+
 ## [3.9.0] - 2026-10-15
 
 ### Added
