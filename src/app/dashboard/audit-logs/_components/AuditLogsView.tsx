@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
 import { X } from "lucide-react"
 
+import { useAuditLogFilters } from "../_hooks/useAuditLogFilters"
 import AuditFilterDropdown from "./AuditFilterDropdown"
 import AuditLogsTable from "./AuditLogsTable"
 import ListHeader from "@/components/ListHeader"
@@ -19,11 +19,8 @@ import {
 } from "@/lib/helpers/auditLogHelpers"
 
 export default function AuditLogsView() {
-  const [currentPage, setCurrentPage] = useState(1)
-  const [userId, setUserId] = useState<number | null>(null)
-  const [role, setRole] = useState<string | null>(null)
-  const [module, setModule] = useState<number | null>(null)
-  const [action, setAction] = useState<number | null>(null)
+  const { values: filters, update } = useAuditLogFilters()
+  const { userId, role, module, action, page: currentPage } = filters
   const { data: users = [] } = useUsers()
   const [pageSize, setPageSize] = usePageSize("audit-logs")
   const queryParams = {
@@ -41,20 +38,8 @@ export default function AuditLogsView() {
   const pageCount = Math.max(1, data?.pageCount ?? 1)
   const hasFilters = userId !== null || role !== null || module !== null || action !== null
 
-  // Every filter change starts again from the first page.
-  function withPageReset<T>(setter: (value: T) => void) {
-    return (value: T) => {
-      setter(value)
-      setCurrentPage(1)
-    }
-  }
-
   function clearFilters() {
-    setUserId(null)
-    setRole(null)
-    setModule(null)
-    setAction(null)
-    setCurrentPage(1)
+    update({ userId: null, role: null, module: null, action: null })
   }
 
   return (
@@ -69,7 +54,7 @@ export default function AuditLogsView() {
               allLabel="All users"
               options={toUserFilterOptions(users)}
               value={userId}
-              onChange={withPageReset(setUserId)}
+              onChange={(userId) => update({ userId })}
               searchPlaceholder="Search users"
             />
             <AuditFilterDropdown
@@ -77,21 +62,21 @@ export default function AuditLogsView() {
               allLabel="All roles"
               options={auditRoleFilterOptions}
               value={role}
-              onChange={withPageReset(setRole)}
+              onChange={(role) => update({ role })}
             />
             <AuditFilterDropdown
               label="Module"
               allLabel="All modules"
               options={auditModuleFilterOptions}
               value={module}
-              onChange={withPageReset(setModule)}
+              onChange={(module) => update({ module })}
             />
             <AuditFilterDropdown
               label="Action"
               allLabel="All actions"
               options={auditActionFilterOptions}
               value={action}
-              onChange={withPageReset(setAction)}
+              onChange={(action) => update({ action })}
             />
             {hasFilters && (
               <Button className="text-muted-foreground" onClick={clearFilters} type="button" variant="ghost">
@@ -117,12 +102,12 @@ export default function AuditLogsView() {
             value={pageSize}
             onChange={(size) => {
               setPageSize(size)
-              setCurrentPage(1)
+              update({ page: 1 })
             }}
           />
         </div>
         <div className="flex">
-          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
+          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={(page) => update({ page })} />
         </div>
       </div>
     </section>

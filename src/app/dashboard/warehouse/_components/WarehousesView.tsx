@@ -11,11 +11,12 @@ import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { useUrlSearch } from "@/hooks/useUrlSearch"
 import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
 import { allowedActions, can } from "@/lib/permissions"
-import type { InsertWarehousePayload, WarehouseListItem, WarehouseSortBy } from "@/types/warehouse"
+import type { InsertWarehousePayload, WarehouseListItem } from "@/types/warehouse"
 import { useWarehouseMutations, useWarehouses } from "../_hooks/useWarehouses"
+import { useWarehouseFilters } from "../_hooks/useWarehouseFilters"
 import { formatWarehouseId, getWarehouseFilter, warehouseSortOptions } from "../_lib/warehouseHelpers"
 import WarehousesTable from "./WarehousesTable"
 import WarehouseFormModal from "./WarehouseFormModal"
@@ -32,19 +33,17 @@ export default function WarehousesView() {
   const role = currentUser?.role
   const warehouseActions = allowedActions(role, "warehouse", editDeleteActions)
 
-  const [search, setSearch] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<WarehouseSortBy>("createdAt")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const { values: filters, update } = useWarehouseFilters()
+  const { sortBy, sortOrder, page: currentPage } = filters
+  const [search, setSearch] = useUrlSearch(filters.search, (value) => update({ search: value }))
   const [modal, setModal] = useState<ModalState>(null)
 
-  const debouncedSearch = useDebouncedValue(search.trim())
   const [pageSize, setPageSize] = usePageSize("warehouse")
 
   const warehousesQuery = {
     page: currentPage,
     pageSize,
-    search: debouncedSearch,
+    search: filters.search,
     sort: getWarehouseFilter(sortBy, sortOrder),
   }
   const { data: warehousesResponse, isLoading, error } = useWarehouses(warehousesQuery)
@@ -59,7 +58,7 @@ export default function WarehousesView() {
     if (modal?.type === "edit") {
       mutations.updateWarehouse.mutate({ id: modal.warehouse.id, ...values })
     } else {
-      setCurrentPage(1)
+      update({ page: 1 })
       mutations.addWarehouse.mutate({ ...values, optimisticId: -Date.now() })
     }
     closeModal()
@@ -84,26 +83,13 @@ export default function WarehousesView() {
             </Button>
           )
         }
-        search={
-          <SearchInput
-            value={search}
-            onChange={(value) => {
-              setSearch(value)
-              setCurrentPage(1)
-            }}
-            placeholder="Search by name, address or ID"
-          />
-        }
+        search={<SearchInput value={search} onChange={setSearch} placeholder="Search by name, address or ID" />}
         filters={
           <SortPopover
             value={sortBy}
             order={sortOrder}
             options={warehouseSortOptions}
-            onChange={(value, order) => {
-              setSortBy(value)
-              setSortOrder(order)
-              setCurrentPage(1)
-            }}
+            onChange={(value, order) => update({ sortBy: value, sortOrder: order })}
           />
         }
       />
@@ -128,12 +114,12 @@ export default function WarehousesView() {
             value={pageSize}
             onChange={(size) => {
               setPageSize(size)
-              setCurrentPage(1)
+              update({ page: 1 })
             }}
           />
         </div>
         <div className="flex">
-          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
+          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={(page) => update({ page })} />
         </div>
       </div>
 

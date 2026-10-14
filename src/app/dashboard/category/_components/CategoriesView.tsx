@@ -11,11 +11,12 @@ import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { useUrlSearch } from "@/hooks/useUrlSearch"
 import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
 import { allowedActions, can } from "@/lib/permissions"
-import type { CategoryListItem, CategorySortBy } from "@/types/category"
+import type { CategoryListItem } from "@/types/category"
 import { useCategories, useCategoryMutations } from "../_hooks/useCategories"
+import { useCategoryFilters } from "../_hooks/useCategoryFilters"
 import { categorySortOptions, formatCategoryId, getCategoryFilter } from "../_lib/categoryHelpers"
 import CategoriesTable from "./CategoriesTable"
 import CategoryFormModal from "./CategoryFormModal"
@@ -29,19 +30,17 @@ export default function CategoriesView() {
   const role = currentUser?.role
   const categoryActions = allowedActions(role, "category", editDeleteActions)
 
-  const [search, setSearch] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<CategorySortBy>("createdAt")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const { values: filters, update } = useCategoryFilters()
+  const { sortBy, sortOrder, page: currentPage } = filters
+  const [search, setSearch] = useUrlSearch(filters.search, (value) => update({ search: value }))
   const [modal, setModal] = useState<ModalState>(null)
 
-  const debouncedSearch = useDebouncedValue(search.trim())
   const [pageSize, setPageSize] = usePageSize("category")
 
   const categoriesQuery = {
     page: currentPage,
     pageSize,
-    search: debouncedSearch,
+    search: filters.search,
     sort: getCategoryFilter(sortBy, sortOrder),
   }
   const { data: categoriesResponse, isLoading, error } = useCategories(categoriesQuery)
@@ -59,7 +58,7 @@ export default function CategoriesView() {
         type: categoryName,
       })
     } else {
-      setCurrentPage(1)
+      update({ page: 1 })
       mutations.addCategory.mutate({ categoryName, optimisticId: -Date.now() })
     }
     closeModal()
@@ -84,26 +83,13 @@ export default function CategoriesView() {
             </Button>
           )
         }
-        search={
-          <SearchInput
-            value={search}
-            onChange={(value) => {
-              setSearch(value)
-              setCurrentPage(1)
-            }}
-            placeholder="Search by type or ID"
-          />
-        }
+        search={<SearchInput value={search} onChange={setSearch} placeholder="Search by type or ID" />}
         filters={
           <SortPopover
             value={sortBy}
             order={sortOrder}
             options={categorySortOptions}
-            onChange={(value, order) => {
-              setSortBy(value)
-              setSortOrder(order)
-              setCurrentPage(1)
-            }}
+            onChange={(value, order) => update({ sortBy: value, sortOrder: order })}
           />
         }
       />
@@ -128,12 +114,12 @@ export default function CategoriesView() {
             value={pageSize}
             onChange={(size) => {
               setPageSize(size)
-              setCurrentPage(1)
+              update({ page: 1 })
             }}
           />
         </div>
         <div className="flex">
-          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
+          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={(page) => update({ page })} />
         </div>
       </div>
 

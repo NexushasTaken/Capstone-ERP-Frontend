@@ -13,12 +13,13 @@ import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { useUrlSearch } from "@/hooks/useUrlSearch"
 import { exportToCSV } from "@/lib/exportToCsv"
 import { formatDate } from "@/lib/format"
 import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
 import { allowedActions, can } from "@/lib/permissions"
-import type { ProductCategoryFilter, ProductListItem, ProductSortBy } from "@/types/product"
+import type { ProductCategoryFilter, ProductListItem } from "@/types/product"
+import { useProductFilters } from "../_hooks/useProductFilters"
 import { useProductMutations, useProducts, type ProductValues } from "../_hooks/useProducts"
 import { formatProductId } from "@/lib/helpers/productHelpers"
 import { getProductFilter, productFilters, productSortOptions } from "../_lib/productHelpers"
@@ -39,18 +40,15 @@ export default function ProductsView() {
   const role = currentUser?.role
   const productActions = allowedActions(role, "product", editDeleteActions)
 
-  const [search, setSearch] = useState("")
-  const [selectedFilter, setSelectedFilter] = useState<ProductCategoryFilter>("Categorized")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<ProductSortBy>("createdAt")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const { values: filters, update } = useProductFilters()
+  const { filter: selectedFilter, sortBy, sortOrder, page: currentPage } = filters
+  const [search, setSearch] = useUrlSearch(filters.search, (value) => update({ search: value }))
   const [modal, setModal] = useState<ModalState>(null)
-  const debouncedSearch = useDebouncedValue(search)
   const [pageSize, setPageSize] = usePageSize("product")
 
   const { list, listQueryKey, countByFilter } = useProducts({
     filter: selectedFilter,
-    search: debouncedSearch,
+    search: filters.search,
     page: currentPage,
     pageSize,
     sort: getProductFilter(sortBy, sortOrder),
@@ -66,7 +64,7 @@ export default function ProductsView() {
     if (modal?.type === "edit") {
       mutations.updateProduct.mutate({ id: modal.product.id, ...values })
     } else {
-      setCurrentPage(1)
+      update({ page: 1 })
       mutations.addProduct.mutate({ ...values, optimisticId: -Date.now() })
     }
     closeModal()
@@ -97,14 +95,7 @@ export default function ProductsView() {
         // Search only applies to categorized products.
         search={
           selectedFilter !== "Uncategorized" ? (
-            <SearchInput
-              value={search}
-              onChange={(value) => {
-                setSearch(value)
-                setCurrentPage(1)
-              }}
-              placeholder="Search by name, category or ID"
-            />
+            <SearchInput value={search} onChange={setSearch} placeholder="Search by name, category or ID" />
           ) : null
         }
         filters={
@@ -117,21 +108,19 @@ export default function ProductsView() {
                 count: countByFilter[filter],
               }))}
               value={selectedFilter}
-              onChange={(filter) => {
-                setSelectedFilter(filter as ProductCategoryFilter)
-                setCurrentPage(1)
-                if (filter === "Uncategorized") setSearch("")
-              }}
+              onChange={(filter) =>
+                update(
+                  filter === "Uncategorized"
+                    ? { filter: filter as ProductCategoryFilter, search: "" }
+                    : { filter: filter as ProductCategoryFilter },
+                )
+              }
             />
             <SortPopover
               value={sortBy}
               order={sortOrder}
               options={productSortOptions}
-              onChange={(value, order) => {
-                setSortBy(value)
-                setSortOrder(order)
-                setCurrentPage(1)
-              }}
+              onChange={(value, order) => update({ sortBy: value, sortOrder: order })}
             />
           </>
         }
@@ -158,12 +147,12 @@ export default function ProductsView() {
             value={pageSize}
             onChange={(size) => {
               setPageSize(size)
-              setCurrentPage(1)
+              update({ page: 1 })
             }}
           />
         </div>
         <div className="flex">
-          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
+          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={(page) => update({ page })} />
         </div>
       </div>
 

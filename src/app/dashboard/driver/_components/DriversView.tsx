@@ -11,10 +11,11 @@ import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { useUrlSearch } from "@/hooks/useUrlSearch"
 import { allowedActions, can } from "@/lib/permissions"
-import type { DriverListItem, DriverSortBy } from "@/types/driver"
+import type { DriverListItem } from "@/types/driver"
 import { useDriverMutations, useDrivers } from "../_hooks/useDrivers"
+import { useDriverFilters } from "../_hooks/useDriverFilters"
 import {
   driverActionOptions,
   driverSortOptions,
@@ -34,18 +35,16 @@ export default function DriversView() {
   const role = currentUser?.role
   const driverActions = allowedActions(role, "driver", driverActionOptions)
 
-  const [search, setSearch] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<DriverSortBy>("createdAt")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const { values: filters, update } = useDriverFilters()
+  const { sortBy, sortOrder, page: currentPage } = filters
+  const [search, setSearch] = useUrlSearch(filters.search, (value) => update({ search: value }))
   const [modal, setModal] = useState<ModalState>(null)
-  const debouncedSearch = useDebouncedValue(search.trim())
   const [pageSize, setPageSize] = usePageSize("driver")
 
   const { data, isLoading, isFetching, error } = useDrivers({
     page: currentPage,
     pageSize,
-    name: debouncedSearch || undefined,
+    name: filters.search || undefined,
     filter: getDriverFilter({ value: sortBy, order: sortOrder, label: "" }),
   })
   const mutations = useDriverMutations()
@@ -60,7 +59,7 @@ export default function DriversView() {
       mutations.updateDriver.mutate({ id: modal.driver.id, ...values })
     } else {
       mutations.addDriver.mutate(values)
-      setCurrentPage(1)
+      update({ page: 1 })
     }
     closeModal()
   }
@@ -84,26 +83,13 @@ export default function DriversView() {
             </Button>
           )
         }
-        search={
-          <SearchInput
-            value={search}
-            onChange={(value) => {
-              setSearch(value)
-              setCurrentPage(1)
-            }}
-            placeholder="Search by name or ID"
-          />
-        }
+        search={<SearchInput value={search} onChange={setSearch} placeholder="Search by name or ID" />}
         filters={
           <SortPopover
             value={sortBy}
             order={sortOrder}
             options={driverSortOptions}
-            onChange={(value, order) => {
-              setSortBy(value)
-              setSortOrder(order)
-              setCurrentPage(1)
-            }}
+            onChange={(value, order) => update({ sortBy: value, sortOrder: order })}
           />
         }
       />
@@ -129,12 +115,12 @@ export default function DriversView() {
             value={pageSize}
             onChange={(size) => {
               setPageSize(size)
-              setCurrentPage(1)
+              update({ page: 1 })
             }}
           />
         </div>
         <div className="flex">
-          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={setCurrentPage} />
+          <TablePagination currentPage={currentPage} totalPages={pageCount} onPageChange={(page) => update({ page })} />
         </div>
       </div>
 

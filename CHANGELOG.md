@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.9.0] - 2026-10-15
+
+### Added
+
+- *Products*, *Categories*, *Accounts*, *Drivers*, *Warehouses*, *Orders*, *Sales*, *Demand Forecast* and *Audit logs* keep their search, filters, sort and page in the address bar, like *Inventory* already did. A refresh keeps the list where it was, Back/Forward step through earlier views, and the link can be bookmarked or shared. Rows per page is still remembered per browser.
+
+### Fixed
+
+- In the *Inventory* search box, a trailing space or text typed while the list was updating is no longer wiped out once the search is applied.
+- The *Inventory* search no longer waits longer than it should when the page refreshes its data while you type.
+- Changing an *Inventory* filter, sort or page no longer drops other parameters from the address bar.
+
 ## [3.8.2] - 2026-10-13
 
 ### Security

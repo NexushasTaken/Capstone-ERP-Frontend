@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { AlertTriangle, Plus, X } from "lucide-react"
 import CountFilterSelect from "@/components/CountFilterSelect"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
@@ -13,6 +13,7 @@ import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { usePageSize } from "@/hooks/usePageSize"
+import { useUrlSearch } from "@/hooks/useUrlSearch"
 import { exportToCSV } from "@/lib/exportToCsv"
 import { formatInventoryId, getInventoryFilter, inventorySortOptions, titleCase } from "@/lib/helpers/inventoryHelpers"
 import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
@@ -64,23 +65,12 @@ export default function InventoryItemsSection() {
   const { filters, update, hasFilters, clearFilters } = useInventoryFilters()
   const { search: urlSearch, status: selectedFilter, page: currentPage, sortBy, sortOrder } = filters
   // The box updates per keystroke; the URL (and so the request) follows once typing pauses.
-  const [search, setSearch] = useState(urlSearch)
-  const [syncedUrlSearch, setSyncedUrlSearch] = useState(urlSearch)
-  if (syncedUrlSearch !== urlSearch) {
-    setSyncedUrlSearch(urlSearch)
-    setSearch(urlSearch)
-  }
+  const [search, setSearch] = useUrlSearch(urlSearch, (value) => update({ search: value }))
   const [pageSize, setPageSize] = usePageSize("inventory")
   const [modal, setModal] = useState<ModalState>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   // Bumped after a successful add to clear the add form.
   const [addFormKey, setAddFormKey] = useState(0)
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (search.trim() !== urlSearch) update({ search: search.trim() })
-    }, 400)
-    return () => clearTimeout(timeout)
-  }, [search, urlSearch, update])
   const warehouses = useSelectableWarehouses(true).warehouses
   const categories = useSelectableCategories()
 

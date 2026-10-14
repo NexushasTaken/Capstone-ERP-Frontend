@@ -8,13 +8,14 @@ import PageSizeSelect from "@/components/PageSizeSelect"
 import SearchInput from "@/components/SearchInput"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { useDemandForecast, useForceForecast } from "@/hooks/useDemandForecast"
 import { usePageSize } from "@/hooks/usePageSize"
+import { useUrlSearch } from "@/hooks/useUrlSearch"
 import { exportToCSV } from "@/lib/exportToCsv"
 import { forecastMethodLabel } from "@/lib/forecastFormat"
 import { formatDate } from "@/lib/format"
 import type { DemandForecastItem } from "@/types/dashboard"
+import { useForecastFilters } from "../_hooks/useForecastFilters"
 import ForecastTable from "./ForecastTable"
 import NeedOrderFilterSelect from "./NeedOrderFilterSelect"
 
@@ -39,20 +40,19 @@ function exportForecast(items: DemandForecastItem[]) {
 }
 
 export default function ForecastView() {
-  const [search, setSearch] = useState("")
-  const [needOrderOnly, setNeedOrderOnly] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
+  const { values: filters, update } = useForecastFilters()
+  const { needOrderOnly, page: currentPage } = filters
+  const [search, setSearch] = useUrlSearch(filters.search, (value) => update({ search: value }))
   const [chartProduct, setChartProduct] = useState<DemandForecastItem | null>(null)
-  const debouncedSearch = useDebouncedValue(search.trim())
   const [pageSize, setPageSize] = usePageSize("forecast")
 
   const { data, isLoading, isFetching, error } = useDemandForecast({
     page: currentPage,
     pageSize,
-    search: debouncedSearch || undefined,
+    search: filters.search || undefined,
     needOrderOnly,
   })
-  const forceForecast = useForceForecast(() => setCurrentPage(1))
+  const forceForecast = useForceForecast(() => update({ page: 1 }))
 
   const items = data?.items ?? []
   const rows = data?.rows ?? 0
@@ -78,24 +78,9 @@ export default function ForecastView() {
             </Button>
           </>
         }
-        search={
-          <SearchInput
-            value={search}
-            onChange={(value) => {
-              setSearch(value)
-              setCurrentPage(1)
-            }}
-            placeholder="Search by product"
-          />
-        }
+        search={<SearchInput value={search} onChange={setSearch} placeholder="Search by product" />}
         filters={
-          <NeedOrderFilterSelect
-            needOrderOnly={needOrderOnly}
-            onChange={(value) => {
-              setNeedOrderOnly(value)
-              setCurrentPage(1)
-            }}
-          />
+          <NeedOrderFilterSelect needOrderOnly={needOrderOnly} onChange={(value) => update({ needOrderOnly: value })} />
         }
       />
 
@@ -128,14 +113,14 @@ export default function ForecastView() {
             value={pageSize}
             onChange={(size) => {
               setPageSize(size)
-              setCurrentPage(1)
+              update({ page: 1 })
             }}
           />
         </div>
         <div className="flex">
           <TablePagination
             currentPage={Math.min(currentPage, pageCount)}
-            onPageChange={setCurrentPage}
+            onPageChange={(page) => update({ page })}
             totalPages={pageCount}
           />
         </div>

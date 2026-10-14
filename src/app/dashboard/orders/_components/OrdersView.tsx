@@ -10,11 +10,12 @@ import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { Button } from "@/components/ui/button"
 import { usePageSize } from "@/hooks/usePageSize"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { useUrlSearch } from "@/hooks/useUrlSearch"
 import { exportToCSV } from "@/lib/exportToCsv"
 import { formatDate } from "@/lib/format"
 import { formatOrderNumber, normalizeOrderText } from "@/lib/helpers/orderHelpers"
 import type { InsertOrderPayload, OrderGroup } from "@/types/order"
+import { useOrderFilters } from "../_hooks/useOrderFilters"
 import { useOrderMutations, useOrders, useOrderStatuses } from "../_hooks/useOrders"
 import CreateOrderModal from "./CreateOrderModal"
 import EditOrderModal from "./EditOrderModal"
@@ -23,20 +24,18 @@ import OrdersList from "./OrdersList"
 import OrderStatusFilterSelect from "./OrderStatusFilterSelect"
 
 export default function OrdersView() {
-  const [search, setSearch] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedOrderTypeFilter, setSelectedOrderTypeFilter] = useState("")
-  const [selectedOrderStatusFilter, setSelectedOrderStatusFilter] = useState("")
+  const { values: filters, update } = useOrderFilters()
+  const { orderType: selectedOrderTypeFilter, status: selectedOrderStatusFilter, page: currentPage } = filters
+  const [search, setSearch] = useUrlSearch(filters.search, (value) => update({ search: value }))
   const [detailsOrder, setDetailsOrder] = useState<OrderGroup | null>(null)
   const [editOrder, setEditOrder] = useState<OrderGroup | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const debouncedSearch = useDebouncedValue(search.trim())
   const [pageSize, setPageSize] = usePageSize("orders")
 
   const { data, isLoading, isFetching, error } = useOrders({
     page: currentPage,
     pageSize,
-    name: debouncedSearch || undefined,
+    name: filters.search || undefined,
     orderTypeId: selectedOrderTypeFilter ? Number(selectedOrderTypeFilter) : 0,
     statusId: selectedOrderStatusFilter ? Number(selectedOrderStatusFilter) : 0,
   })
@@ -52,7 +51,7 @@ export default function OrdersView() {
   }))
 
   function goToPage(page: number) {
-    setCurrentPage(page)
+    update({ page })
   }
 
   function handleCreateOrder(payload: InsertOrderPayload) {
@@ -80,30 +79,18 @@ export default function OrdersView() {
         search={
           <SearchInput
             value={search}
-            onChange={(value) => {
-              setSearch(value)
-              setCurrentPage(1)
-            }}
+            onChange={setSearch}
             placeholder="Search by product, customer, type, status or ID"
           />
         }
         filters={
           <>
-            <OrderTypeFilterSelect
-              value={selectedOrderTypeFilter}
-              onChange={(orderTypeId) => {
-                setSelectedOrderTypeFilter(orderTypeId)
-                setCurrentPage(1)
-              }}
-            />
+            <OrderTypeFilterSelect value={selectedOrderTypeFilter} onChange={(orderType) => update({ orderType })} />
             <OrderStatusFilterSelect
               value={selectedOrderStatusFilter}
               statusOptions={statusOptions}
               disabled={orderStatusesLoading}
-              onChange={(statusId) => {
-                setSelectedOrderStatusFilter(statusId)
-                goToPage(1)
-              }}
+              onChange={(status) => update({ status })}
             />
           </>
         }
