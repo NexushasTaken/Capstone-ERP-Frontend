@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.18.0] - 2026-10-15
+
+### Changed
+
+- The demand chart's year buttons are labelled "Compare with earlier years:" and name the real years ("2025", "2025 + 2024", "All (2025–2021)"), and sit right above the chart they change.
+- The table under the demand chart is titled "Next 4 weeks vs the same weeks in earlier years", shows each row's dates, says whether a total is expected or sold, puts the likely range on its own line, and reads "Forecast is 12% higher".
+
 ## [3.17.0] - 2026-10-15
 
 ### Changed
