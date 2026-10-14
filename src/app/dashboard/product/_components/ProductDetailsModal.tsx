@@ -1,6 +1,5 @@
 import { Layers, Tag } from "lucide-react"
-import CloseButton from "@/components/CloseButton"
-import { ModalTitle } from "@/components/AppModal"
+import { ModalHeader } from "@/components/AppModal"
 import SeeMoreModal from "@/components/SeeMoreModal"
 import { formatDate, formatPeso } from "@/lib/format"
 import type { ProductListItem } from "@/types/product"
@@ -15,15 +14,11 @@ interface ProductDetailsModalProps {
 export default function ProductDetailsModal({ product, onClose }: ProductDetailsModalProps) {
   return (
     <SeeMoreModal onClose={onClose} open={product !== null} className="flex h-auto flex-col lg:max-h-[70vh]">
-      <div className="flex w-full items-center justify-between gap-2 border-b border-border p-4">
-        <div className="flex flex-col justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs">{product ? formatProductId(product.id) : ""}</span>
-          </div>
-          <ModalTitle className="text-xl font-medium text-foreground capitalize">{product?.name}</ModalTitle>
-        </div>
-        <CloseButton onClick={onClose} />
-      </div>
+      <ModalHeader
+        title={product ? formatProductId(product.id) : ""}
+        detail={product ? <span className="capitalize">{product.name}</span> : undefined}
+        onClose={onClose}
+      />
 
       <div className="flex h-full w-full flex-col overflow-y-auto p-4">
         <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">

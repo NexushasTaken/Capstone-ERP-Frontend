@@ -30,7 +30,7 @@ export default function EditAccountRoleModal({ account, disabled, onClose, onSub
 
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open>
-      <ModalHeader subtitle={formatAccountId(account.id)} title="Edit account" onClose={onClose} />
+      <ModalHeader title="Edit account" detail={formatAccountId(account.id)} onClose={onClose} />
       <ModalBody>
         <div className="flex flex-col">
           <span className="font-medium text-foreground capitalize">{`${account.lastName}, ${account.firstName}`}</span>

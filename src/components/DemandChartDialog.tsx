@@ -106,8 +106,8 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
     <AppModal className="overflow-y-auto xl:max-h-[90vh] xl:max-w-4xl" onClose={onClose} open>
       <ModalHeader
         onClose={onClose}
-        subtitle="Sales forecast"
-        title={<span className="capitalize">{product.name}</span>}
+        title="Sales forecast"
+        detail={<span className="capitalize">{product.name}</span>}
       />
       <ModalBody>
         <dl className="grid grid-cols-2 gap-3 text-sm lg:grid-cols-4">

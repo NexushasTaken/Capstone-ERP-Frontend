@@ -1,5 +1,4 @@
-import { ModalTitle } from "@/components/AppModal"
-import CloseButton from "@/components/CloseButton"
+import { ModalHeader } from "@/components/AppModal"
 import DetailItem from "@/components/DetailItem"
 import SeeMoreModal from "@/components/SeeMoreModal"
 import { formatDate, formatPeso } from "@/lib/format"
@@ -20,13 +19,11 @@ interface OrderDetailsModalProps {
 export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
   return (
     <SeeMoreModal open={order !== null} onClose={onClose} className="flex h-auto flex-col lg:max-h-[70vh] lg:max-w-3xl">
-      <div className="flex w-full items-center justify-between gap-2 border-b border-border p-4">
-        <div className="flex flex-col justify-between">
-          <span className="text-xs">{order ? formatOrderNumber(order.orderId) : ""}</span>
-          <ModalTitle className="text-xl font-medium text-foreground capitalize">{order?.customerName}</ModalTitle>
-        </div>
-        <CloseButton onClick={onClose} />
-      </div>
+      <ModalHeader
+        title="Order details"
+        detail={order ? formatOrderNumber(order.orderId) : undefined}
+        onClose={onClose}
+      />
 
       {order ? <OrderDetailsBody order={order} /> : null}
     </SeeMoreModal>
@@ -58,6 +55,7 @@ function OrderDetailsBody({ order }: { order: OrderGroup }) {
   return (
     <div className="flex w-full flex-col overflow-y-auto p-4">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <DetailItem label="Customer" value={<span className="capitalize">{order.customerName}</span>} />
         <DetailItem label="Order type" value={normalizeOrderText(order.orderType)} />
         <DetailItem
           label="Status"

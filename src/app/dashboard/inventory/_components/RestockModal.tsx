@@ -42,7 +42,7 @@ export default function RestockModal({ item, isPending, onClose, onSubmit }: Res
 
   return (
     <AppModal open onClose={close} className="flex max-h-fit flex-col lg:max-w-lg">
-      <ModalHeader subtitle={formatInventoryId(String(item.id))} title="Restock inventory" onClose={close} />
+      <ModalHeader title="Restock inventory" detail={formatInventoryId(String(item.id))} onClose={close} />
       <form
         onSubmit={handleSubmit((values) => {
           if (!isPending) onSubmit({ id: item.id, ...values })

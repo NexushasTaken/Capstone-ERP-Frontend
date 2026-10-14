@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.20.0] - 2026-10-15
+
+### Changed
+
+- Modal headers put the title and the record on one row at the same size, e.g. "Sales forecast · Coke 1.5L" or "Edit product · PRD-0003", instead of a small caption above the title. Captions that only repeated the title ("New product item") are gone.
+- The order and sale details headers show "Order details · ORD-0012" / "Sale details · SAL-0007"; the customer name moved into the details as "Customer".
+- Edit warehouse shows the warehouse's ID in its header, like the other edit forms.
+- The create, review and edit order modals use the same header size as every other modal.
+
 ## [3.19.0] - 2026-10-15
 
 ### Changed

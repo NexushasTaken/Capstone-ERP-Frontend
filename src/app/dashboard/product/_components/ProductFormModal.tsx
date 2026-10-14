@@ -62,8 +62,8 @@ export default function ProductFormModal({ product, disabled, onClose, onSubmit 
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open>
       <ModalHeader
-        subtitle={isEdit ? formatProductId(product.id) : "New product item"}
         title={isEdit ? "Edit product" : "Add product"}
+        detail={isEdit ? formatProductId(product.id) : undefined}
         onClose={onClose}
       />
       <ModalBody>

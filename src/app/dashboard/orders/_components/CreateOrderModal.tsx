@@ -4,8 +4,7 @@ import { useState } from "react"
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
-import AppModal, { ModalTitle } from "@/components/AppModal"
-import CloseButton from "@/components/CloseButton"
+import AppModal, { ModalHeader } from "@/components/AppModal"
 import EntityDropdown from "@/components/EntityDropdown"
 import { FormField, FormInput } from "@/components/FormField"
 import { Button } from "@/components/ui/button"
@@ -117,13 +116,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
       onClose={onClose}
       open={open}
     >
-      <div className="flex w-full items-center justify-between gap-4 border-b border-border p-5">
-        <div className="flex min-w-0 flex-col">
-          <span className="text-xs text-muted-foreground">New order</span>
-          <ModalTitle className="text-2xl font-medium tracking-tight text-foreground">Create order</ModalTitle>
-        </div>
-        <CloseButton onClick={onClose} />
-      </div>
+      <ModalHeader className="p-5" title="Create order" onClose={onClose} />
 
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
         <div className="flex flex-col bg-background">

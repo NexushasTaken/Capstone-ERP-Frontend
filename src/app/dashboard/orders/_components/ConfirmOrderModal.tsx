@@ -1,5 +1,4 @@
-import AppModal, { ModalTitle } from "@/components/AppModal"
-import CloseButton from "@/components/CloseButton"
+import AppModal, { ModalHeader } from "@/components/AppModal"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatPeso } from "@/lib/format"
@@ -36,13 +35,7 @@ export default function ConfirmOrderModal({
       onClose={onBack}
       open={open}
     >
-      <div className="flex w-full items-center justify-between gap-4 border-b border-border p-5">
-        <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">Confirm order</span>
-          <ModalTitle className="text-2xl font-medium tracking-tight text-foreground">Review order details</ModalTitle>
-        </div>
-        <CloseButton onClick={onBack} />
-      </div>
+      <ModalHeader className="p-5" title="Review order details" onClose={onBack} />
 
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
         <div className="grid grid-cols-1 gap-4 rounded-xl border border-border p-4 md:grid-cols-2 xl:grid-cols-3">

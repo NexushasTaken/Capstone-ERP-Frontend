@@ -43,7 +43,7 @@ export default function MarkDamageModal({ item, isPending, onClose, onSubmit }: 
 
   return (
     <AppModal open onClose={close} className="flex max-h-fit flex-col lg:max-w-lg">
-      <ModalHeader subtitle={formatInventoryId(String(item.id))} title="Mark as damage" onClose={close} />
+      <ModalHeader title="Mark as damage" detail={formatInventoryId(String(item.id))} onClose={close} />
       <form
         onSubmit={handleSubmit((values) => {
           if (isPending) return

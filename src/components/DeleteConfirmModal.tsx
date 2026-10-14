@@ -7,7 +7,7 @@ interface DeleteConfirmModalProps {
   onConfirm: () => void
   /** What is being deleted, e.g. "category" -> "Delete category". */
   entityName: string
-  /** Shown above the title, usually the formatted ID. */
+  /** Shown after the title ("Delete product · PRD-0003"), usually the formatted ID. */
   subtitle?: ReactNode
   /** Shown under the question, usually the item's name. */
   itemLabel?: ReactNode
@@ -25,7 +25,7 @@ export default function DeleteConfirmModal({
 }: DeleteConfirmModalProps) {
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open={open}>
-      <ModalHeader subtitle={subtitle} title={`Delete ${entityName}`} onClose={onClose} />
+      <ModalHeader title={`Delete ${entityName}`} detail={subtitle} onClose={onClose} />
       <ModalBody className="gap-2">
         <span className="text-sm text-foreground">Are you sure you want to delete this {entityName}?</span>
         <span className="text-sm font-medium text-foreground capitalize">{itemLabel}</span>
