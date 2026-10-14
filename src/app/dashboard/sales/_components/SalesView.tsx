@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import ListHeader from "@/components/ListHeader"
+import ListSummary from "@/components/ListSummary"
 import OrderTypeFilterSelect from "@/components/OrderTypeFilterSelect"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
@@ -9,7 +10,7 @@ import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useUrlSearch } from "@/hooks/useUrlSearch"
-import { formatPeso } from "@/lib/format"
+import { formatCount, formatPeso } from "@/lib/format"
 import type { Sale } from "@/types/sale"
 import { useSaleFilters } from "../_hooks/useSaleFilters"
 import { useSales } from "../_hooks/useSales"
@@ -48,7 +49,6 @@ export default function SalesView() {
     <section className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-background">
       <ListHeader
         title="Sales"
-        count={rows}
         search={
           <SearchInput value={search} onChange={setSearch} placeholder="Search by product, customer, type or ID" />
         }
@@ -66,10 +66,10 @@ export default function SalesView() {
         }
       />
 
-      <p className="mt-3 text-sm text-muted-foreground">
-        {rows.toLocaleString("en-PH")} {rows === 1 ? "sale" : "sales"} totalling{" "}
+      <ListSummary>
+        {formatCount(rows, "sale")} totalling{" "}
         <span className="font-medium text-foreground">{formatPeso(totalAmount)}</span>
-      </p>
+      </ListSummary>
 
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <SalesTable sales={sales} isLoading={isLoading} error={error} onSeeMore={setDetailsSale} />

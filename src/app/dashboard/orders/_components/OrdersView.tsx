@@ -60,7 +60,6 @@ export default function OrdersView() {
     <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Orders"
-        count={rows}
         actions={
           <>
             <Button onClick={() => setIsCreateModalOpen(true)} type="button">

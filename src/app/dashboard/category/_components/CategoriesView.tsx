@@ -74,7 +74,6 @@ export default function CategoriesView() {
     <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Categories"
-        count={rows}
         actions={
           can(role, "category:add") && (
             <Button onClick={() => setModal({ type: "add" })} type="button">

@@ -74,7 +74,6 @@ export default function DriversView() {
     <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Drivers"
-        count={rows}
         actions={
           can(role, "driver:add") && (
             <Button onClick={() => setModal({ type: "add" })} type="button">

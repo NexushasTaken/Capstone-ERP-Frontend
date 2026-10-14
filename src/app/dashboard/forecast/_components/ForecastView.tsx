@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { useDemandForecast, useForceForecast } from "@/hooks/useDemandForecast"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useUrlSearch } from "@/hooks/useUrlSearch"
-import { formatDate } from "@/lib/format"
+import { formatCount, formatDate } from "@/lib/format"
 import type { DemandForecastItem } from "@/types/dashboard"
 import { useForecastFilters } from "../_hooks/useForecastFilters"
 import ForecastTable from "./ForecastTable"
@@ -40,7 +40,6 @@ export default function ForecastView() {
     <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Demand Forecast"
-        count={rows}
         actions={
           <>
             {data?.generatedAt && (
@@ -58,6 +57,10 @@ export default function ForecastView() {
       />
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground lg:text-sm">
+        <span>
+          {formatCount(rows, "product")}
+          {data && data.needOrderCount > 0 && <>, {data.needOrderCount.toLocaleString("en-PH")} need ordering</>}
+        </span>
         <span>Expected sales for the next 4 weeks, with a 95% range, and how much to order to cover a busy month.</span>
         {accuracy && accuracy.productsTested > 0 && (
           <span>

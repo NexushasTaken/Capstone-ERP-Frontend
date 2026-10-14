@@ -5,6 +5,8 @@ import { Plus } from "lucide-react"
 import CountFilterSelect from "@/components/CountFilterSelect"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
 import ListHeader from "@/components/ListHeader"
+import ListSummary from "@/components/ListSummary"
+import { formatCount } from "@/lib/format"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
 import PageSizeSelect from "@/components/PageSizeSelect"
@@ -77,7 +79,6 @@ export default function ProductsView() {
     <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Products"
-        count={rows}
         actions={
           <>
             {can(role, "product:add") && (
@@ -121,6 +122,13 @@ export default function ProductsView() {
           </>
         }
       />
+
+      <ListSummary>
+        {formatCount(rows, "product")}
+        {selectedFilter === "Categorized" && countByFilter.Uncategorized > 0 && (
+          <>, plus {countByFilter.Uncategorized.toLocaleString("en-PH")} without a category</>
+        )}
+      </ListSummary>
 
       <div className="mt-5 min-h-0 flex-1 overflow-auto scrollbar-x-only">
         <ProductsTable

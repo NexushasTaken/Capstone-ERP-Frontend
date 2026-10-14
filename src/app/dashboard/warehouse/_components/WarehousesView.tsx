@@ -74,7 +74,6 @@ export default function WarehousesView() {
     <section className="flex h-dvh w-full flex-col overflow-hidden rounded-2xl bg-background p-4 lg:p-5">
       <ListHeader
         title="Warehouses"
-        count={rows}
         actions={
           can(role, "warehouse:add") && (
             <Button onClick={() => setModal({ type: "add" })} type="button">

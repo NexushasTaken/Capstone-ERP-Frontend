@@ -16,3 +16,8 @@ export function formatDate(dateString: string | null) {
     day: "numeric",
   })
 }
+
+/** "1 sale", "1,204 sales". Pass `plural` when it isn't just singular + "s". */
+export function formatCount(count: number, singular: string, plural = `${singular}s`) {
+  return `${count.toLocaleString("en-PH")} ${count === 1 ? singular : plural}`
+}
