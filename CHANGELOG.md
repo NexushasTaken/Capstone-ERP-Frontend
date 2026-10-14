@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.17.0] - 2026-10-15
+
+### Changed
+
+- The demand chart dialog explains itself: a "Weekly sales and forecast" heading with the dates and number of weeks shown, and a one-line guide to the lines and the shaded band.
+- The chart's weeks are labelled by week of the month ("Oct W2"), the first week shows its year, and the tooltip shows the week's dates ("Week of Oct 12 – Oct 18").
+- A "This week" line marks where the forecast starts, and a year line marks where a new year starts. With *Compare with: None* the chart ends at the last forecast week instead of showing empty weeks.
+- "Units" is now "Sold" in the chart axes and the same-weeks table, and the demand line is called *Sold*.
+- *Next 4 weeks* is now *Expected to sell (next 4 weeks)*, with the likely range on its own line.
+- The forecast test chart uses the same week labels and axis wording.
+
+### Fixed
+
+- The chart note no longer says "a normal month" for a weekly range.
+
 ## [3.16.0] - 2026-10-15
 
 ### Changed

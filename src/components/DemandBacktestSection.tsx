@@ -6,7 +6,8 @@ import Loading from "@/components/Loading"
 import { Button } from "@/components/ui/button"
 import { formatDate } from "@/lib/format"
 import { themeColor } from "@/lib/cssColor"
-import { formatUnits } from "@/lib/forecastFormat"
+import { drawMarker, yearStartIndex } from "@/lib/chartMarker"
+import { formatUnits, weekOfMonthLabel, weekRangeLabel } from "@/lib/forecastFormat"
 import { useDemandBacktest } from "@/hooks/useDemandForecast"
 import { ForecastMethod, type DemandBacktest, type DemandForecastItem } from "@/types/dashboard"
 
@@ -31,9 +32,8 @@ const MIN_TRAIN_WEEKS = 104
 // Tests longer than this look much further ahead than the app's own 4-week forecast
 const LONG_TEST_WEEKS = 26
 
-// "Oct 5": the week a point starts on
-function weekLabel(weekStart: string) {
-  return new Date(`${weekStart}T00:00:00`).toLocaleDateString("en-PH", { month: "short", day: "numeric" })
+function weekStartDate(weekStart: string) {
+  return new Date(`${weekStart}T00:00:00`)
 }
 
 /**
@@ -161,7 +161,9 @@ function BacktestLineChart({ test }: { test: DemandBacktest }) {
 
     const before = test.before
     const weeks = test.weeks
-    const labels = [...before, ...weeks].map((point) => weekLabel(point.weekStart))
+    const mondays = [...before, ...weeks].map((point) => weekStartDate(point.weekStart))
+    const labels = mondays.map(weekOfMonthLabel)
+    const newYear = yearStartIndex(mondays)
     const beforeGap = Array<number | null>(before.length).fill(null)
     // SSA's lines only cover the hidden weeks
     const hiddenOnly = (values: number[]) => [...beforeGap, ...values]
@@ -172,16 +174,18 @@ function BacktestLineChart({ test }: { test: DemandBacktest }) {
     const labelColor = themeColor("--muted-foreground")
     const hiddenWeeksColor = themeColor("--chart-3", 0.08)
 
-    // Highlights the hidden weeks behind every line
+    // Highlights the hidden weeks behind every line and marks where a new year starts
     const hiddenWeeksBand: Plugin<"line"> = {
       id: "hiddenWeeks",
-      beforeDatasetsDraw: ({ ctx, chartArea, scales }) => {
+      beforeDatasetsDraw: (instance) => {
+        const { ctx, chartArea, scales } = instance
         const left = scales.x.getPixelForValue(before.length - 0.5)
         const right = scales.x.getPixelForValue(before.length + weeks.length - 0.5)
         ctx.save()
         ctx.fillStyle = hiddenWeeksColor
         ctx.fillRect(left, chartArea.top, right - left, chartArea.bottom - chartArea.top)
         ctx.restore()
+        if (newYear > 0) drawMarker(instance, newYear, String(mondays[newYear].getFullYear()), labelColor)
       },
     }
 
@@ -254,6 +258,7 @@ function BacktestLineChart({ test }: { test: DemandBacktest }) {
           tooltip: {
             filter: (item) => item.dataset.label !== "Low" && item.raw !== null,
             callbacks: {
+              title: (items) => (items.length > 0 ? `Week of ${weekRangeLabel(mondays[items[0].dataIndex])}` : ""),
               label: (context) => {
                 if (context.dataset.label === "95% range") {
                   const low = weeks[context.dataIndex - before.length]?.low ?? 0
@@ -268,14 +273,21 @@ function BacktestLineChart({ test }: { test: DemandBacktest }) {
           x: {
             border: { display: false },
             grid: { display: false },
-            ticks: { color: labelColor, maxRotation: 0, autoSkipPadding: 12 },
+            ticks: {
+              color: labelColor,
+              maxRotation: 0,
+              autoSkipPadding: 12,
+              // The first week also shows its year; the marker shows where a new year starts
+              callback: (_value, index) =>
+                index === 0 ? [labels[0], String(mondays[0].getFullYear())] : labels[index],
+            },
           },
           y: {
             beginAtZero: true,
             border: { display: false },
             grid: { color: themeColor("--border") },
             ticks: { color: labelColor },
-            title: { display: true, text: "Units per week", color: labelColor },
+            title: { display: true, text: "Sold per week", color: labelColor },
           },
         },
       },

@@ -28,3 +28,26 @@ export function formatDemandRange(expected: number, low: number, busy: number) {
   const main = formatUnits(expected)
   return Math.round(low) === Math.round(busy) ? main : `${main} (${formatUnits(low)}–${formatUnits(busy)})`
 }
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date)
+  next.setDate(next.getDate() + days)
+  return next
+}
+
+/** "Oct W1": the month a week's Monday falls in, and which week of that month it is (W1 to W5). */
+export function weekOfMonthLabel(monday: Date) {
+  return `${monday.toLocaleDateString("en-PH", { month: "short" })} W${Math.ceil(monday.getDate() / 7)}`
+}
+
+/** "Oct 5 – Oct 11": a week from its Monday to its Sunday. */
+export function weekRangeLabel(monday: Date) {
+  const short = (date: Date) => date.toLocaleDateString("en-PH", { month: "short", day: "numeric" })
+  return `${short(monday)} – ${short(addDays(monday, 6))}`
+}
+
+/** "Jul 13, 2026 – Feb 1, 2027 · 17 weeks": what a weekly chart covers, Monday of the first week to Sunday of the last. */
+export function chartRangeLabel(firstMonday: Date, weeks: number) {
+  const long = (date: Date) => date.toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })
+  return `${long(firstMonday)} – ${long(addDays(firstMonday, 7 * weeks - 1))} · ${weeks} weeks`
+}
