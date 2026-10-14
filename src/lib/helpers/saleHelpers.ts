@@ -22,13 +22,3 @@ export function getSaleQuantity(sale: Sale): number {
 export function getSaleStatusLabel(sale: Sale): string {
   return sale.orderStatus
 }
-
-const statusDotColors: Record<string, string> = {
-  Processing: "bg-amber-500",
-  Completed: "bg-green-600",
-  Cancelled: "bg-destructive",
-}
-
-export function saleStatusDotClass(statusLabel: string) {
-  return statusDotColors[statusLabel] ?? "bg-muted-foreground"
-}

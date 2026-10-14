@@ -2,17 +2,7 @@ import DataTable from "@/components/DataTable"
 import SaleRow from "./SaleRow"
 import type { Sale } from "@/types/sale"
 
-const columns = [
-  "Sale ID",
-  "Product",
-  "Order type",
-  "Customer",
-  "Quantity",
-  "Total amount",
-  "Sale date",
-  "Status",
-  "Actions",
-]
+const columns = ["Sale ID", "Product", "Order type", "Customer", "Quantity", "Total amount", "Sale date", "Actions"]
 
 interface SalesTableProps {
   sales: Sale[]

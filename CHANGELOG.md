@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.13.0] - 2026-10-15
+
+### Removed
+
+- The *Sales* table no longer has a *Status* column: every sale is a completed order, so it always said the same thing. The sale's details still show it.
+
 ## [3.12.0] - 2026-10-15
 
 ### Changed
