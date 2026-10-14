@@ -24,7 +24,15 @@ import { formatDate } from "@/lib/format"
 import { themeColor } from "@/lib/cssColor"
 import type { DemandChart, DemandForecastItem, DemandPastYear } from "@/types/dashboard"
 import { useDemandChart } from "@/hooks/useDemandForecast"
-import { forecastMethodLabel, formatDemandRange, formatUnits } from "@/lib/forecastFormat"
+import { drawMarker, yearStartIndex } from "@/lib/chartMarker"
+import {
+  chartRangeLabel,
+  forecastMethodLabel,
+  formatDemandRange,
+  formatUnits,
+  weekOfMonthLabel,
+  weekRangeLabel,
+} from "@/lib/forecastFormat"
 
 Chart.register(CategoryScale, Filler, Legend, LinearScale, LineController, LineElement, PointElement, Tooltip)
 
@@ -33,15 +41,15 @@ interface DemandChartDialogProps {
   onClose: () => void
 }
 
-// The chart shows 13 weeks (3 months) either side of the forecast start
+// The chart shows 13 weeks (3 months) before the forecast start, then the forecast weeks; comparing with
+// earlier years widens it to 13 weeks after the start, since those years have sales there
 const SEASON_WEEKS = 13
 
 // How many earlier years to lay over this year; 0 is all of them (null, "None", is offered before these)
 const YEAR_CHOICES = [1, 2, 3, 0]
 
-// "Oct 5": the week a point starts on
-function weekLabel(date: Date) {
-  return date.toLocaleDateString("en-PH", { month: "short", day: "numeric" })
+function weekStartDate(weekStart: string) {
+  return new Date(`${weekStart}T00:00:00`)
 }
 
 function addWeeks(date: Date, weeks: number) {
@@ -80,21 +88,27 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
     null,
     ...YEAR_CHOICES.filter((count) => (count === 0 ? allPastYears.length > 3 : count <= allPastYears.length)),
   ]
+  const forecast = chartQuery.data?.forecast ?? []
+  const totalWeeks = pastYears.length > 0 ? 2 * SEASON_WEEKS : SEASON_WEEKS + forecast.length
+  const hasRange = Math.round(product.lowDemand) !== Math.round(product.busyDemand)
 
   return (
     <AppModal className="overflow-y-auto xl:max-h-[90vh] xl:max-w-4xl" onClose={onClose} open>
       <ModalHeader
         onClose={onClose}
-        subtitle="Weekly demand"
+        subtitle="Sales forecast"
         title={<span className="capitalize">{product.name}</span>}
       />
       <ModalBody>
         <dl className="grid grid-cols-2 gap-3 text-sm lg:grid-cols-4">
           <div>
-            <dt className="text-muted-foreground">Next 4 weeks</dt>
-            <dd className="font-medium">
-              {formatDemandRange(product.expectedDemand, product.lowDemand, product.busyDemand)}
-            </dd>
+            <dt className="text-muted-foreground">Expected to sell (next 4 weeks)</dt>
+            <dd className="font-medium">{formatUnits(product.expectedDemand)}</dd>
+            {hasRange && (
+              <dd className="text-xs text-muted-foreground">
+                likely {formatUnits(product.lowDemand)}–{formatUnits(product.busyDemand)}
+              </dd>
+            )}
           </div>
           <div>
             <dt className="text-muted-foreground">In stock</dt>
@@ -128,6 +142,19 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
           </div>
         )}
 
+        <div>
+          <h3 className="text-base font-medium">Weekly sales and forecast</h3>
+          {forecast.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              {chartRangeLabel(addWeeks(weekStartDate(forecast[0].weekStart), -SEASON_WEEKS), totalWeeks)}
+            </p>
+          )}
+          <p className="mt-1 text-sm text-muted-foreground">
+            Each point is one week&apos;s sales, Monday to Sunday. Solid line: what sold. Dashed line: the forecast for
+            the next 4 weeks, starting this week.{hasRange && " Shaded band: the likely range."}
+          </p>
+        </div>
+
         <div className="h-80 w-full">
           {chartQuery.isLoading ? (
             <div className="flex h-full items-center justify-center">
@@ -138,15 +165,15 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
               {chartQuery.error instanceof Error ? chartQuery.error.message : "Failed to load the chart"}
             </p>
           ) : chartQuery.data ? (
-            <DemandLineChart chart={chartQuery.data} pastYears={pastYears} />
+            <DemandLineChart chart={chartQuery.data} pastYears={pastYears} totalWeeks={totalWeeks} />
           ) : null}
         </div>
 
         {chartQuery.data && <SameWeeksTable pastYears={pastYears} product={product} />}
 
         <p className="text-xs text-muted-foreground">
-          {method?.hint} The shaded band is the 95% range: a normal month lands inside it, and the highlighted weeks are
-          the ones being forecast.
+          {method?.hint}
+          {hasRange && " The likely range is a 95% range: most weeks land inside it."}
           {pastYears.length > 0 && " The grey lines are the same weeks in earlier years, lighter the older the year."}
           {product.ssaErrorPercent != null &&
             product.baselineErrorPercent != null &&
@@ -172,13 +199,13 @@ function SameWeeksTable({ product, pastYears }: { product: DemandForecastItem; p
       <TableHeader>
         <TableRow>
           <TableHead>Same 4 weeks</TableHead>
-          <TableHead className="text-right">Units</TableHead>
+          <TableHead className="text-right">Sold</TableHead>
           <TableHead className="text-right">Forecast is</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         <TableRow>
-          <TableCell className="font-medium">Forecast</TableCell>
+          <TableCell className="font-medium">Forecast (expected)</TableCell>
           <TableCell className="text-right font-medium">
             {formatDemandRange(product.expectedDemand, product.lowDemand, product.busyDemand)}
           </TableCell>
@@ -200,7 +227,15 @@ function SameWeeksTable({ product, pastYears }: { product: DemandForecastItem; p
   )
 }
 
-function DemandLineChart({ chart, pastYears }: { chart: DemandChart; pastYears: DemandPastYear[] }) {
+function DemandLineChart({
+  chart,
+  pastYears,
+  totalWeeks,
+}: {
+  chart: DemandChart
+  pastYears: DemandPastYear[]
+  totalWeeks: number
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -210,13 +245,13 @@ function DemandLineChart({ chart, pastYears }: { chart: DemandChart; pastYears: 
     const forecast = chart.forecast
     if (forecast.length === 0) return
 
-    // 26 weeks: 13 before the forecast start (index SEASON_WEEKS) and 13 from it
-    const forecastStart = new Date(`${forecast[0].weekStart}T00:00:00`)
-    const labels = Array.from({ length: 2 * SEASON_WEEKS }, (_, i) =>
-      weekLabel(addWeeks(forecastStart, i - SEASON_WEEKS)),
-    )
+    // 13 weeks before the forecast start (index SEASON_WEEKS), then totalWeeks - 13 from it
+    const forecastStart = weekStartDate(forecast[0].weekStart)
+    const mondays = Array.from({ length: totalWeeks }, (_, i) => addWeeks(forecastStart, i - SEASON_WEEKS))
+    const labels = mondays.map(weekOfMonthLabel)
+    const newYear = yearStartIndex(mondays)
     const gap = (count: number) => Array<number | null>(count).fill(null)
-    const afterForecast = gap(SEASON_WEEKS - forecast.length)
+    const afterForecast = gap(totalWeeks - SEASON_WEEKS - forecast.length)
 
     // A newer product has fewer than 13 weeks before the forecast
     const actual = [...gap(SEASON_WEEKS - history.length), ...history.map((point) => point.demand)]
@@ -230,16 +265,27 @@ function DemandLineChart({ chart, pastYears }: { chart: DemandChart; pastYears: 
     const labelColor = themeColor("--muted-foreground")
     const forecastWeeksColor = themeColor("--chart-3", 0.08)
 
-    // Highlights the forecast weeks behind every line
+    // Highlights the forecast weeks behind every line, marks where they start and where a new year starts
     const forecastWeeks: Plugin<"line"> = {
       id: "forecastWeeks",
-      beforeDatasetsDraw: ({ ctx, chartArea, scales }) => {
+      beforeDatasetsDraw: (instance) => {
+        const { ctx, chartArea, scales } = instance
         const left = scales.x.getPixelForValue(SEASON_WEEKS - 0.5)
         const right = scales.x.getPixelForValue(SEASON_WEEKS + forecast.length - 0.5)
         ctx.save()
         ctx.fillStyle = forecastWeeksColor
         ctx.fillRect(left, chartArea.top, right - left, chartArea.bottom - chartArea.top)
         ctx.restore()
+        drawMarker(instance, SEASON_WEEKS, "This week", labelColor)
+        if (newYear > 0) {
+          drawMarker(
+            instance,
+            newYear,
+            String(mondays[newYear].getFullYear()),
+            labelColor,
+            newYear === SEASON_WEEKS ? 1 : 0,
+          )
+        }
       },
     }
 
@@ -249,8 +295,8 @@ function DemandLineChart({ chart, pastYears }: { chart: DemandChart; pastYears: 
         labels,
         datasets: [
           {
-            label: "Actual demand",
-            data: [...actual, ...gap(SEASON_WEEKS)],
+            label: "Sold",
+            data: [...actual, ...gap(totalWeeks - SEASON_WEEKS)],
             borderColor: actualColor,
             backgroundColor: actualColor,
             borderWidth: 2,
@@ -265,7 +311,7 @@ function DemandLineChart({ chart, pastYears }: { chart: DemandChart; pastYears: 
             tension: 0.3,
           },
           {
-            label: "95% range",
+            label: "Likely range (95%)",
             data: joined(forecast.map((point) => point.busyCase)),
             borderWidth: 0,
             pointRadius: 0,
@@ -288,7 +334,7 @@ function DemandLineChart({ chart, pastYears }: { chart: DemandChart; pastYears: 
             const color = themeColor("--muted-foreground", pastYearAlpha(i, pastYears.length))
             return {
               label: String(pastYear.year),
-              data: pastYear.weeks,
+              data: pastYear.weeks.slice(0, totalWeeks),
               borderColor: color,
               backgroundColor: color,
               borderWidth: 1.5,
@@ -321,10 +367,11 @@ function DemandLineChart({ chart, pastYears }: { chart: DemandChart; pastYears: 
               item.raw !== null &&
               !(item.datasetIndex >= 1 && item.datasetIndex <= 3 && item.dataIndex === SEASON_WEEKS - 1),
             callbacks: {
+              title: (items) => (items.length > 0 ? `Week of ${weekRangeLabel(mondays[items[0].dataIndex])}` : ""),
               label: (context) => {
-                if (context.dataset.label === "95% range") {
+                if (context.dataset.label === "Likely range (95%)") {
                   const low = context.chart.data.datasets[1].data[context.dataIndex] as number
-                  return `95% range: ${formatUnits(low)}–${formatUnits(context.parsed.y ?? 0)}`
+                  return `Likely range: ${formatUnits(low)}–${formatUnits(context.parsed.y ?? 0)}`
                 }
                 return `${context.dataset.label}: ${formatUnits(context.parsed.y ?? 0)}`
               },
@@ -335,14 +382,22 @@ function DemandLineChart({ chart, pastYears }: { chart: DemandChart; pastYears: 
           x: {
             border: { display: false },
             grid: { display: false },
-            ticks: { color: labelColor, maxRotation: 0, autoSkipPadding: 12 },
+            offset: true,
+            ticks: {
+              color: labelColor,
+              maxRotation: 0,
+              autoSkipPadding: 12,
+              // The first week also shows its year; the marker shows where a new year starts
+              callback: (_value, index) =>
+                index === 0 ? [labels[0], String(mondays[0].getFullYear())] : labels[index],
+            },
           },
           y: {
             beginAtZero: true,
             border: { display: false },
             grid: { color: themeColor("--border") },
             ticks: { color: labelColor },
-            title: { display: true, text: "Units per week", color: labelColor },
+            title: { display: true, text: "Sold per week", color: labelColor },
           },
         },
       },
@@ -350,7 +405,7 @@ function DemandLineChart({ chart, pastYears }: { chart: DemandChart; pastYears: 
 
     const instance = new Chart(canvasRef.current, { ...config, plugins: [forecastWeeks] })
     return () => instance.destroy()
-  }, [chart, pastYears])
+  }, [chart, pastYears, totalWeeks])
 
-  return <canvas aria-label="Weekly demand and forecast chart" ref={canvasRef} />
+  return <canvas aria-label="Weekly sales and forecast chart" ref={canvasRef} />
 }
