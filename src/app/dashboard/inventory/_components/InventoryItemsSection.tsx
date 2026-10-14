@@ -4,7 +4,6 @@ import { useState } from "react"
 import { AlertTriangle, Plus, X } from "lucide-react"
 import CountFilterSelect from "@/components/CountFilterSelect"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
-import ExportCsvButton from "@/components/ExportCsvButton"
 import ListHeader from "@/components/ListHeader"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
@@ -14,7 +13,6 @@ import { Button } from "@/components/ui/button"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useUrlSearch } from "@/hooks/useUrlSearch"
-import { exportToCSV } from "@/lib/exportToCsv"
 import { formatInventoryId, getInventoryFilter, inventorySortOptions, titleCase } from "@/lib/helpers/inventoryHelpers"
 import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
 import { allowedActions, can } from "@/lib/permissions"
@@ -148,7 +146,6 @@ export default function InventoryItemsSection() {
         count={countsAvailable ? selectedFilterCount.toLocaleString() : "-"}
         actions={
           <>
-            <ExportCsvButton onExport={() => exportInventory(inventories)} />
             {can(role, "inventory:add") && (
               <Button onClick={() => setIsAddModalOpen(true)} type="button">
                 <Plus className="h-4 w-4" />
@@ -301,24 +298,5 @@ export default function InventoryItemsSection() {
 
       <InventoryDetailsModal item={modal?.type === "details" ? modalItem : null} onClose={closeModal} />
     </section>
-  )
-}
-
-function exportInventory(items: InventoryListItem[]) {
-  exportToCSV(
-    items,
-    [
-      {
-        header: "Inventory ID",
-        value: (item) => formatInventoryId(String(item.id)),
-      },
-      { header: "Product", value: (item) => item.name },
-      { header: "Available", value: (item) => item.quantity },
-      { header: "Reorder point", value: (item) => item.reorderPoint },
-      { header: "Category", value: (item) => item.categoryName },
-      { header: "Warehouse", value: (item) => item.warehouseName },
-      { header: "Status", value: (item) => item.status },
-    ],
-    "inventory",
   )
 }

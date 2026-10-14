@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import ExportCsvButton from "@/components/ExportCsvButton"
 import ListHeader from "@/components/ListHeader"
 import OrderTypeFilterSelect from "@/components/OrderTypeFilterSelect"
 import SearchInput from "@/components/SearchInput"
@@ -10,16 +9,7 @@ import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useUrlSearch } from "@/hooks/useUrlSearch"
-import { exportToCSV } from "@/lib/exportToCsv"
-import { formatDate, formatPeso } from "@/lib/format"
-import { normalizeOrderText } from "@/lib/helpers/orderHelpers"
-import {
-  formatSaleId,
-  getSaleCustomerName,
-  getSaleProductName,
-  getSaleQuantity,
-  getSaleStatusLabel,
-} from "@/lib/helpers/saleHelpers"
+import { formatPeso } from "@/lib/format"
 import type { Sale } from "@/types/sale"
 import { useSaleFilters } from "../_hooks/useSaleFilters"
 import { useSales } from "../_hooks/useSales"
@@ -59,9 +49,6 @@ export default function SalesView() {
       <ListHeader
         title="Sales"
         count={rows}
-        actions={
-          <ExportCsvButton disabled={isFetching || !!error || sales.length === 0} onExport={() => exportSales(sales)} />
-        }
         search={
           <SearchInput value={search} onChange={setSearch} placeholder="Search by product, customer, type or ID" />
         }
@@ -109,26 +96,5 @@ export default function SalesView() {
 
       <SaleDetailsModal sale={detailsSale} onClose={() => setDetailsSale(null)} />
     </section>
-  )
-}
-
-function exportSales(sales: Sale[]) {
-  exportToCSV(
-    sales,
-    [
-      { header: "Sale ID", value: (sale) => formatSaleId(sale.id) },
-      { header: "Product", value: (sale) => getSaleProductName(sale) },
-      {
-        header: "Order type",
-        value: (sale) => normalizeOrderText(sale.orderType),
-      },
-      { header: "Customer", value: (sale) => getSaleCustomerName(sale) },
-      { header: "Quantity", value: (sale) => getSaleQuantity(sale) },
-      { header: "Discount (%)", value: (sale) => sale.discountPercent },
-      { header: "Total amount", value: (sale) => sale.total },
-      { header: "Sale date", value: (sale) => formatDate(sale.created_At) },
-      { header: "Status", value: (sale) => getSaleStatusLabel(sale) },
-    ],
-    "sales",
   )
 }

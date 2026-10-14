@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import DemandChartDialog from "@/components/DemandChartDialog"
-import ExportCsvButton from "@/components/ExportCsvButton"
 import ListHeader from "@/components/ListHeader"
 import PageSizeSelect from "@/components/PageSizeSelect"
 import SearchInput from "@/components/SearchInput"
@@ -11,33 +10,11 @@ import { Button } from "@/components/ui/button"
 import { useDemandForecast, useForceForecast } from "@/hooks/useDemandForecast"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useUrlSearch } from "@/hooks/useUrlSearch"
-import { exportToCSV } from "@/lib/exportToCsv"
-import { forecastMethodLabel } from "@/lib/forecastFormat"
 import { formatDate } from "@/lib/format"
 import type { DemandForecastItem } from "@/types/dashboard"
 import { useForecastFilters } from "../_hooks/useForecastFilters"
 import ForecastTable from "./ForecastTable"
 import NeedOrderFilterSelect from "./NeedOrderFilterSelect"
-
-function exportForecast(items: DemandForecastItem[]) {
-  exportToCSV(
-    items,
-    [
-      { header: "Product", value: (item) => item.name },
-      { header: "Forecasted demand (next 4 weeks)", value: (item) => Math.round(item.expectedDemand) },
-      { header: "Low", value: (item) => Math.round(item.lowDemand) },
-      { header: "Busy case", value: (item) => Math.round(item.busyDemand) },
-      { header: "In stock", value: (item) => Math.round(item.stockOnHand) },
-      {
-        header: "Runs out around",
-        value: (item) => (item.runsOutAround ? formatDate(item.runsOutAround) : "Not soon"),
-      },
-      { header: "Suggested order", value: (item) => Math.round(item.suggestedOrder) },
-      { header: "Method", value: (item) => forecastMethodLabel[item.method]?.label },
-    ],
-    "demand-forecast",
-  )
-}
 
 export default function ForecastView() {
   const { values: filters, update } = useForecastFilters()
@@ -69,10 +46,6 @@ export default function ForecastView() {
             {data?.generatedAt && (
               <span className="text-xs text-muted-foreground">Updated {formatDate(data.generatedAt)}</span>
             )}
-            <ExportCsvButton
-              disabled={isFetching || !!error || items.length === 0}
-              onExport={() => exportForecast(items)}
-            />
             <Button disabled={forceForecast.isPending} onClick={() => forceForecast.mutate()} type="button">
               {forceForecast.isPending ? "Forecasting..." : "Force Forecast"}
             </Button>

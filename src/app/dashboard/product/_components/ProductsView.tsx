@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Plus } from "lucide-react"
 import CountFilterSelect from "@/components/CountFilterSelect"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
-import ExportCsvButton from "@/components/ExportCsvButton"
 import ListHeader from "@/components/ListHeader"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
@@ -14,8 +13,6 @@ import { Button } from "@/components/ui/button"
 import { usePageSize } from "@/hooks/usePageSize"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { useUrlSearch } from "@/hooks/useUrlSearch"
-import { exportToCSV } from "@/lib/exportToCsv"
-import { formatDate } from "@/lib/format"
 import { editDeleteActions } from "@/lib/helpers/statusActionHelpers"
 import { allowedActions, can } from "@/lib/permissions"
 import type { ProductCategoryFilter, ProductListItem } from "@/types/product"
@@ -83,7 +80,6 @@ export default function ProductsView() {
         count={rows}
         actions={
           <>
-            <ExportCsvButton onExport={() => exportProducts(products)} />
             {can(role, "product:add") && (
               <Button onClick={() => setModal({ type: "add" })} type="button">
                 <Plus className="h-4 w-4" />
@@ -177,25 +173,5 @@ export default function ProductsView() {
         disabled={mutations.isSubmitting}
       />
     </section>
-  )
-}
-
-function exportProducts(products: ProductListItem[]) {
-  exportToCSV(
-    products,
-    [
-      { header: "Product ID", value: (product) => formatProductId(product.id) },
-      {
-        header: "Category",
-        value: (product) => product.categoryName ?? "Uncategorized",
-      },
-      { header: "Product name", value: (product) => product.name },
-      { header: "Price", value: (product) => product.price },
-      {
-        header: "Created at",
-        value: (product) => formatDate(product.created_At),
-      },
-    ],
-    "products",
   )
 }
