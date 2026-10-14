@@ -426,11 +426,20 @@ function DemandLineChart({
             offset: true,
             ticks: {
               color: labelColor,
-              maxRotation: 0,
-              autoSkipPadding: 12,
-              // The first week also shows its year; the marker shows where a new year starts
-              callback: (_value, index) =>
-                index === 0 ? [labels[0], String(mondays[0].getFullYear())] : labels[index],
+              // Every week gets a label; on narrow screens they turn sideways instead of being skipped
+              autoSkip: false,
+              maxRotation: 90,
+              font: { size: 11 },
+              // "W2" under every week, with the month under the first week shown of each month
+              // (and the year on the first week and in January)
+              callback: (_value, index) => {
+                const monday = mondays[index]
+                const week = `W${Math.ceil(monday.getDate() / 7)}`
+                if (index > 0 && monday.getMonth() === mondays[index - 1].getMonth()) return [week, ""]
+                const month = monday.toLocaleDateString("en-PH", { month: "short" })
+                const withYear = index === 0 || index === newYear
+                return [week, withYear ? `${month} ${monday.getFullYear()}` : month]
+              },
             },
           },
           y: {

@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.19.0] - 2026-10-15
+
+### Changed
+
+- Every week on the demand chart has its own label ("W2"), with the month (and the year on the first week and in January) under the first week of each month. On narrow screens the labels turn sideways instead of being skipped.
+
 ## [3.18.0] - 2026-10-15
 
 ### Changed
