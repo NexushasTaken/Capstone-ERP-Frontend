@@ -16,7 +16,7 @@ export function getDefaultCurrentYearDashboardRange(referenceDate = new Date()):
 
   return {
     from: new Date(year, startMonth, 1),
-    to: new Date(year, currentMonth, 1),
+    to: new Date(year, currentMonth, referenceDate.getDate()),
   }
 }
 
@@ -50,16 +50,9 @@ export function formatDashboardDateParam(date: Date) {
   return `${month}-${day}-${year}`
 }
 
-export function getDateRangeMonthLabels(range: DateRange | undefined, itemCount: number) {
-  const currentYear = new Date().getFullYear()
-  const startMonth = range?.from?.getMonth() ?? 0
-
-  return Array.from({ length: itemCount }, (_, index) => {
-    const month = (startMonth + index) % 12
-    return new Date(currentYear, month, 1).toLocaleString("en-US", {
-      month: "short",
-    })
-  })
+// "September 2026" from the API -> "Sep" (the chart only shows the current year).
+export function shortMonthLabel(month: string) {
+  return month.split(" ")[0].slice(0, 3)
 }
 
 export function formatDashboardPeso(amount: number) {

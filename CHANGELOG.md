@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.10.1] - 2026-10-15
+
+### Fixed
+
+- The *Dashboard* sales chart shows the current month: its default range now runs to today instead of the 1st of this month (needs Backend 8.0.1, which includes the end day).
+- The *Dashboard* sales chart labels each point with its own month. Before, a month without sales shifted every later label by one.
+
 ## [3.10.0] - 2026-10-15
 
 ### Added

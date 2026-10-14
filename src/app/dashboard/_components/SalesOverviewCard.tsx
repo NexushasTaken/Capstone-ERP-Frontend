@@ -18,7 +18,7 @@ import {
   formatDashboardPeso,
   getCurrentYearDateRange,
   getDefaultCurrentYearDashboardRange,
-  getDateRangeMonthLabels,
+  shortMonthLabel,
 } from "@/app/dashboard/_lib/dashboardHelpers"
 
 const salesChartOptions: { label: string; value: SalesChartType }[] = [
@@ -48,7 +48,7 @@ export default function SalesOverviewCard() {
     placeholderData: keepPreviousData,
   })
   const salesChartValues = salesOverview?.data.map((item) => item.data) ?? []
-  const salesChartLabels = getDateRangeMonthLabels(salesDateRange, salesChartValues.length)
+  const salesChartLabels = salesOverview?.data.map((item) => shortMonthLabel(item.month)) ?? []
   const totalSales = salesOverview?.totalSales ?? 0
   const growthPercentage = salesOverview?.growthPercentage ?? 0
   const growthErrorMessage = salesOverview?.growthErrorMessage?.trim()

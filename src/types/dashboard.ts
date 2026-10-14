@@ -1,4 +1,6 @@
 export interface SalesOverviewPoint {
+  /** Month name and year, e.g. "September 2026". Only months with sales are listed. */
+  month: string
   data: number
 }
 
