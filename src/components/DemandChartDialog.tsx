@@ -28,7 +28,6 @@ import { drawMarker, yearStartIndex } from "@/lib/chartMarker"
 import {
   chartRangeLabel,
   forecastMethodLabel,
-  formatDemandRange,
   formatUnits,
   weekOfMonthLabel,
   weekRangeLabel,
@@ -63,12 +62,23 @@ function pastYearAlpha(index: number, count: number) {
   return count === 1 ? 0.8 : 0.8 - (index * 0.5) / (count - 1)
 }
 
-// "12% higher" / "8% lower" / "About the same": the forecast against what sold in those weeks that year
+// "2025", "2025 + 2024", "2025–2023", "All (2025–2021)": the years a choice lays over this year (newest first)
+function compareLabel(count: number | null, allPastYears: DemandPastYear[]) {
+  if (count === null) return "None"
+  const years = count === 0 ? allPastYears : allPastYears.slice(0, count)
+  const newest = years[0].year
+  const oldest = years[years.length - 1].year
+  if (count === 0) return `All (${newest}–${oldest})`
+  if (years.length === 1) return String(newest)
+  return years.length === 2 ? `${newest} + ${oldest}` : `${newest}–${oldest}`
+}
+
+// "Forecast is 12% higher" / "8% lower" / "about the same": the forecast against what sold in those weeks that year
 function versusForecast(expected: number, sold: number | null) {
   if (sold === null || sold <= 0) return "—"
   const percent = Math.round(((expected - sold) / sold) * 100)
-  if (percent === 0) return "About the same"
-  return `${Math.abs(percent)}% ${percent > 0 ? "higher" : "lower"}`
+  if (percent === 0) return "Forecast is about the same"
+  return `Forecast is ${Math.abs(percent)}% ${percent > 0 ? "higher" : "lower"}`
 }
 
 export default function DemandChartDialog({ product, onClose }: DemandChartDialogProps) {
@@ -124,24 +134,6 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
           </div>
         </dl>
 
-        {choices.length > 1 && (
-          <div aria-label="Earlier years to compare" className="flex flex-wrap items-center gap-2" role="group">
-            <span className="text-sm text-muted-foreground">Compare with</span>
-            {choices.map((count) => (
-              <Button
-                aria-pressed={yearsChoice === count}
-                key={count ?? "none"}
-                onClick={() => setYearsChoice(count)}
-                size="sm"
-                type="button"
-                variant={yearsChoice === count ? "default" : "outline"}
-              >
-                {count === null ? "None" : count === 0 ? "All years" : count === 1 ? "Last year" : `${count} years`}
-              </Button>
-            ))}
-          </div>
-        )}
-
         <div>
           <h3 className="text-base font-medium">Weekly sales and forecast</h3>
           {forecast.length > 0 && (
@@ -154,6 +146,24 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
             the next 4 weeks, starting this week.{hasRange && " Shaded band: the likely range."}
           </p>
         </div>
+
+        {choices.length > 1 && (
+          <div aria-label="Earlier years to compare" className="flex flex-wrap items-center gap-2" role="group">
+            <span className="text-sm text-muted-foreground">Compare with earlier years:</span>
+            {choices.map((count) => (
+              <Button
+                aria-pressed={yearsChoice === count}
+                key={count ?? "none"}
+                onClick={() => setYearsChoice(count)}
+                size="sm"
+                type="button"
+                variant={yearsChoice === count ? "default" : "outline"}
+              >
+                {compareLabel(count, allPastYears)}
+              </Button>
+            ))}
+          </div>
+        )}
 
         <div className="h-80 w-full">
           {chartQuery.isLoading ? (
@@ -169,7 +179,15 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
           ) : null}
         </div>
 
-        {chartQuery.data && <SameWeeksTable pastYears={pastYears} product={product} />}
+        {forecast.length > 0 && (
+          <SameWeeksTable
+            forecastStart={weekStartDate(forecast[0].weekStart)}
+            hasRange={hasRange}
+            pastYears={pastYears}
+            product={product}
+            weeks={forecast.length}
+          />
+        )}
 
         <p className="text-xs text-muted-foreground">
           {method?.hint}
@@ -192,38 +210,61 @@ export default function DemandChartDialog({ product, onClose }: DemandChartDialo
   )
 }
 
-// The forecast's 4 weeks next to what sold in the same 4 weeks of each earlier year
-function SameWeeksTable({ product, pastYears }: { product: DemandForecastItem; pastYears: DemandPastYear[] }) {
+// The forecast weeks next to what sold in the same weeks of each earlier year (the backend steps back 52 weeks a year)
+function SameWeeksTable({
+  product,
+  pastYears,
+  forecastStart,
+  weeks,
+  hasRange,
+}: {
+  product: DemandForecastItem
+  pastYears: DemandPastYear[]
+  forecastStart: Date
+  weeks: number
+  hasRange: boolean
+}) {
   return (
-    <Table className="text-sm">
-      <TableHeader>
-        <TableRow>
-          <TableHead>Same 4 weeks</TableHead>
-          <TableHead className="text-right">Sold</TableHead>
-          <TableHead className="text-right">Forecast is</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <TableRow>
-          <TableCell className="font-medium">Forecast (expected)</TableCell>
-          <TableCell className="text-right font-medium">
-            {formatDemandRange(product.expectedDemand, product.lowDemand, product.busyDemand)}
-          </TableCell>
-          <TableCell />
-        </TableRow>
-        {pastYears.map((pastYear) => (
-          <TableRow key={pastYear.year}>
-            <TableCell>{pastYear.year}</TableCell>
-            <TableCell className="text-right">
-              {pastYear.sameWeeksTotal === null ? "—" : formatUnits(pastYear.sameWeeksTotal)}
-            </TableCell>
-            <TableCell className="text-right text-muted-foreground">
-              {versusForecast(product.expectedDemand, pastYear.sameWeeksTotal)}
-            </TableCell>
+    <div>
+      <h3 className="text-base font-medium">Next {weeks} weeks vs the same weeks in earlier years</h3>
+      <Table className="text-sm">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Weeks</TableHead>
+            <TableHead className="text-right">Total</TableHead>
+            <TableHead className="text-right">Difference</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell className="font-medium">This year · {weekRangeLabel(forecastStart, weeks)}</TableCell>
+            <TableCell className="text-right">
+              <div className="font-medium">{formatUnits(product.expectedDemand)} expected</div>
+              {hasRange && (
+                <div className="text-xs text-muted-foreground">
+                  likely {formatUnits(product.lowDemand)}–{formatUnits(product.busyDemand)}
+                </div>
+              )}
+            </TableCell>
+            <TableCell />
+          </TableRow>
+          {/* pastYears is the newest first, so row i is i + 1 years back */}
+          {pastYears.map((pastYear, i) => (
+            <TableRow key={pastYear.year}>
+              <TableCell>
+                {pastYear.year} · {weekRangeLabel(addWeeks(forecastStart, -52 * (i + 1)), weeks)}
+              </TableCell>
+              <TableCell className="text-right">
+                {pastYear.sameWeeksTotal === null ? "—" : `${formatUnits(pastYear.sameWeeksTotal)} sold`}
+              </TableCell>
+              <TableCell className="text-right text-muted-foreground">
+                {versusForecast(product.expectedDemand, pastYear.sameWeeksTotal)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }
 

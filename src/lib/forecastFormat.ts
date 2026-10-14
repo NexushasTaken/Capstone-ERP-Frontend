@@ -40,10 +40,10 @@ export function weekOfMonthLabel(monday: Date) {
   return `${monday.toLocaleDateString("en-PH", { month: "short" })} W${Math.ceil(monday.getDate() / 7)}`
 }
 
-/** "Oct 5 – Oct 11": a week from its Monday to its Sunday. */
-export function weekRangeLabel(monday: Date) {
+/** "Oct 5 – Oct 11": a week from its Monday to its Sunday, or `weeks` weeks from that Monday. */
+export function weekRangeLabel(monday: Date, weeks = 1) {
   const short = (date: Date) => date.toLocaleDateString("en-PH", { month: "short", day: "numeric" })
-  return `${short(monday)} – ${short(addDays(monday, 6))}`
+  return `${short(monday)} – ${short(addDays(monday, 7 * weeks - 1))}`
 }
 
 /** "Jul 13, 2026 – Feb 1, 2027 · 17 weeks": what a weekly chart covers, Monday of the first week to Sunday of the last. */
