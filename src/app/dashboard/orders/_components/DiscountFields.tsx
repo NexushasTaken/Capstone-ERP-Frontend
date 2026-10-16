@@ -14,7 +14,7 @@ interface DiscountFieldsProps {
   ownerCustomDiscount?: boolean
 }
 
-// Discount type, percent and ID number for the order forms. Presets fill in their legal rate;
+// Discount type and percent for the order forms. Presets fill in their legal rate;
 // only the owner may type a custom one. Must be rendered inside the order form's <FormProvider>.
 export default function DiscountFields({ ownerCustomDiscount = false }: DiscountFieldsProps) {
   const {
@@ -37,11 +37,10 @@ export default function DiscountFields({ ownerCustomDiscount = false }: Discount
   const handleTypeChange = (type: DiscountType) => {
     const percent = type === "custom" ? 0 : (DISCOUNT_PRESET_RATES[type] ?? 0)
     setValue("discountPercent", percent, { shouldDirty: true, shouldValidate: true })
-    setValue("discountIdNumber", "", { shouldDirty: true, shouldValidate: true })
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       <FormField label="Discount" error={errors.discountType?.message}>
         <Controller
           control={control}
@@ -90,16 +89,6 @@ export default function DiscountFields({ ownerCustomDiscount = false }: Discount
           {isPresetDiscount(discountType) ? "Fixed by law" : "Taken off the total of the items below"}
         </span>
       </FormField>
-
-      {isPresetDiscount(discountType) && (
-        <FormField label="ID number (optional)" error={errors.discountIdNumber?.message}>
-          <FormInput
-            aria-invalid={!!errors.discountIdNumber}
-            placeholder="Senior, PWD or solo parent ID"
-            {...register("discountIdNumber")}
-          />
-        </FormField>
-      )}
     </div>
   )
 }

@@ -23,8 +23,6 @@ export interface OrderGroup {
   subtotal: number
   discountPercent: number
   discountType: DiscountType
-  /** ID card number, kept for the preset discounts only. */
-  discountIdNumber: string | null
   discountAmount: number
   /** Net of the discount. */
   total: number
@@ -69,7 +67,6 @@ export interface InsertOrderPayload {
   deliveryAddress: string
   discountPercent: number
   discountType: DiscountType
-  discountIdNumber: string
   orderLines: { productId: number; quantity: number }[]
 }
 
@@ -79,7 +76,6 @@ export interface UpdateOrderPayload {
   deliveryAddress: string
   discountPercent: number
   discountType: DiscountType
-  discountIdNumber: string
   orderLines: { productId: number; quantity: number }[]
 }
 

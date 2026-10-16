@@ -15,7 +15,6 @@ export interface OrderFields {
   deliveryAddress: string
   discountPercent: number
   discountType: DiscountType
-  discountIdNumber: string
   orderLines: OrderLineFields[]
 }
 
@@ -28,7 +27,6 @@ export const emptyOrder: OrderFields = {
   deliveryAddress: "",
   discountPercent: 0,
   discountType: "none",
-  discountIdNumber: "",
   orderLines: [emptyOrderLine],
 }
 
@@ -46,7 +44,6 @@ function orderObject(isWalkin: boolean) {
       .min(0, "Discount can't be negative.")
       .max(100, "Discount can't be more than 100%."),
     discountType: z.enum(["none", "senior", "pwd", "solo_parent", "custom"]),
-    discountIdNumber: z.string().trim().max(50, "ID number can't be longer than 50 characters."),
     orderLines: z.array(orderLineSchema).min(1, "Add at least one product."),
     ...(isWalkin
       ? { deliveryDriverId: z.number(), deliveryAddress: z.string() }
@@ -58,10 +55,7 @@ function orderObject(isWalkin: boolean) {
 }
 
 // Matches the backend's OrderDiscountValidator. Who may pick "custom" is a role rule, handled in DiscountFields.
-function checkDiscount(
-  order: Pick<OrderFields, "discountType" | "discountPercent" | "discountIdNumber">,
-  ctx: z.RefinementCtx,
-) {
+function checkDiscount(order: Pick<OrderFields, "discountType" | "discountPercent">, ctx: z.RefinementCtx) {
   const presetRate = DISCOUNT_PRESET_RATES[order.discountType]
 
   if (order.discountType === "none" && order.discountPercent !== 0) {

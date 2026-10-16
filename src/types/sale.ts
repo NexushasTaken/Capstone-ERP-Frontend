@@ -24,7 +24,6 @@ export interface Sale {
   subtotal: number
   discountPercent: number
   discountType: DiscountType
-  discountIdNumber: string | null
   discountAmount: number
   /** Net of the discount. */
   total: number
