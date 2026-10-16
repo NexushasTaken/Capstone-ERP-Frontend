@@ -1,4 +1,5 @@
 import {
+  Boxes,
   ChartNoAxesCombined,
   History,
   LucideIcon,
@@ -8,7 +9,6 @@ import {
   Truck,
   UserCog,
   Users,
-  Warehouse,
 } from "lucide-react"
 
 export interface NavItem {
@@ -33,7 +33,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         name: "Inventory",
-        icon: Warehouse,
+        icon: Boxes,
         link: "/dashboard/inventory",
       },
       {
@@ -55,11 +55,6 @@ export const navGroups: NavGroup[] = [
         name: "Category",
         icon: PackageOpen,
         link: "/dashboard/category",
-      },
-      {
-        name: "Warehouse",
-        icon: Warehouse,
-        link: "/dashboard/warehouse",
       },
       {
         name: "Driver",

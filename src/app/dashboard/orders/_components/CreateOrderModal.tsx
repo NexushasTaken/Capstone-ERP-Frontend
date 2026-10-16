@@ -95,7 +95,6 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
       orderTypeId: order.orderTypeId,
       deliveryDriverId: isWalkin ? 0 : order.deliveryDriverId,
       customerName: order.customerName,
-      pickUpAddress: isWalkin ? "" : order.pickUpAddress,
       deliveryAddress: isWalkin ? "" : order.deliveryAddress,
       discountPercent: order.discountPercent,
       orderLines: order.orderLines,
@@ -110,12 +109,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
     { label: "Customer", value: values.customerName || "-" },
     { label: "Quantity", value: totalQuantity },
     { label: "Discount", value: `${Number(values.discountPercent) || 0}%` },
-    ...(isWalkin
-      ? []
-      : [
-          { label: "Pickup address", value: values.pickUpAddress || "-" },
-          { label: "Delivery address", value: values.deliveryAddress || "-" },
-        ]),
+    ...(isWalkin ? [] : [{ label: "Delivery address", value: values.deliveryAddress || "-" }]),
   ]
 
   return (
@@ -201,10 +195,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
           </div>
 
           {!isWalkin && (
-            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <FormField label="Pick up address" error={errors.pickUpAddress?.message}>
-                <FormInput aria-invalid={!!errors.pickUpAddress} {...register("pickUpAddress")} />
-              </FormField>
+            <div className="mt-4">
               <FormField label="Delivery address" error={errors.deliveryAddress?.message}>
                 <FormInput aria-invalid={!!errors.deliveryAddress} {...register("deliveryAddress")} />
               </FormField>

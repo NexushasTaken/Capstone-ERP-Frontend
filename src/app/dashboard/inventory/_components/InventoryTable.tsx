@@ -17,7 +17,6 @@ const columns: DataTableColumn[] = [
   "Category",
   "Quantity",
   "Reorder point",
-  "Warehouse",
   "Status",
   { label: "Inventory actions", srOnly: true },
 ]
@@ -60,7 +59,6 @@ export default function InventoryTable({
             <TableCell className="px-3 py-4 capitalize">{item.categoryName}</TableCell>
             <TableCell className="px-3 py-4">{formatNumber(item.quantity)}</TableCell>
             <TableCell className="px-3 py-4">{formatNumber(item.reorderPoint)}</TableCell>
-            <TableCell className="px-3 py-4 font-medium capitalize">{item.warehouseName}</TableCell>
             <TableCell className={`px-3 py-4 font-medium ${statusStyle.labelClassName}`}>
               <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${statusStyle.dotClassName}`} />
               {capitalize(item.status)}

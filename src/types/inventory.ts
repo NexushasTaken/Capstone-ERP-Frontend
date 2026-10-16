@@ -1,19 +1,17 @@
 export interface InventoryListItem {
   id: number
   productId: number
-  /** The product's name; an item is one product stocked in one warehouse. */
+  /** The product's name; an item is one product's stock in the store. */
   name: string
   quantity: number
   reorderPoint: number
-  warehouseId: number
-  warehouseName: string
   status: string
   categoryName: string
 }
 
 export type InventoryFilter = "All" | string
 
-export type InventorySortBy = "latest" | "name" | "quantity" | "reorderPoint" | "warehouseId"
+export type InventorySortBy = "latest" | "name" | "quantity" | "reorderPoint"
 
 export interface InventoryMovementItem {
   quantity: number
@@ -29,7 +27,6 @@ export interface InventoryDamageItem {
 export interface InventoryVelocityItem {
   inventoryId: number
   name: string
-  warehouse: string
   classification: string
   velocityMetric: number
 }
@@ -60,8 +57,6 @@ export interface FetchInventoriesParams {
   pageSize?: number
   name?: string
   filter?: number
-  /** 0 or undefined: any warehouse. */
-  warehouseId?: number
   /** 0 or undefined: any category. */
   categoryId?: number
   minQuantity?: number
@@ -71,11 +66,10 @@ export interface FetchInventoriesParams {
 export interface InsertInventoryPayload {
   quantity: number
   productId: number
-  warehouseId: number
   reorderPoint: number
 }
 
-// Only the reorder point can change; product and warehouse are fixed.
+// Only the reorder point can change; the product is fixed.
 export interface UpdateInventoryPayload {
   id: number
   reorderPoint: number

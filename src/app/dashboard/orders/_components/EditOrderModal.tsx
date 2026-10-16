@@ -48,7 +48,6 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
       orderTypeId: 0,
       deliveryDriverId: order.deliveryDriverId ?? 0,
       customerName: order.customerName,
-      pickUpAddress: order.pickUpAddress ?? "",
       deliveryAddress: order.deliveryAddress ?? "",
       discountPercent: order.discountPercent,
       orderLines: order.orders.map((line) => ({ productId: line.productId, quantity: line.quantity })),
@@ -80,7 +79,6 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
       await onSubmit({
         orderId: order.orderId,
         deliveryDriverId: isWalkin ? 0 : values.deliveryDriverId,
-        pickUpAddress: isWalkin ? "" : values.pickUpAddress,
         deliveryAddress: isWalkin ? "" : values.deliveryAddress,
         discountPercent: values.discountPercent,
         orderLines: values.orderLines,
@@ -150,10 +148,7 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
           </div>
 
           {!isWalkin && (
-            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <FormField label="Pick up address" error={errors.pickUpAddress?.message}>
-                <FormInput aria-invalid={!!errors.pickUpAddress} {...register("pickUpAddress")} />
-              </FormField>
+            <div className="mt-4">
               <FormField label="Delivery address" error={errors.deliveryAddress?.message}>
                 <FormInput aria-invalid={!!errors.deliveryAddress} {...register("deliveryAddress")} />
               </FormField>

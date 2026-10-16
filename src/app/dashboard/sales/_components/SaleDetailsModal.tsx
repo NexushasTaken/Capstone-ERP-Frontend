@@ -38,7 +38,6 @@ function SaleDetailsBody({ sale }: { sale: Sale }) {
         />
         <DetailItem label="Total amount" value={formatPeso(sale.total)} />
         <DetailItem label="Driver" value={sale.driverName || "Unassigned"} />
-        <DetailItem label="Pickup address" value={sale.pickUpAddress || "-"} />
         <DetailItem label="Delivery address" value={sale.deliveryAddress || "-"} />
       </div>
 

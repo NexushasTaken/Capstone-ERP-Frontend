@@ -11,7 +11,6 @@ export interface Sale {
   orderStatus: string
   driverName: string
   customerName: string
-  pickUpAddress: string
   deliveryAddress: string
   orders: SaleLine[]
   subtotal: number

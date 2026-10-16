@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2026-10-16
+
+### Changed
+
+- **BREAKING:** Needs Backend 9.0.0. An inventory item is one product's stock in the store: "Add inventory" asks only for the product, quantity and reorder point, and "Edit inventory" shows only the product.
+- The inventory list, its details, Movement Velocity and the dashboard's inventory overview no longer show a warehouse; the dashboard list shows the category instead. The Inventory sidebar icon is now a box icon.
+- The inventory list's search no longer matches warehouse names.
+
+### Removed
+
+- **BREAKING:** The Warehouse page, its sidebar entry and permissions, the inventory warehouse filter, the "Warehouse ID" sort and the Warehouse audit log module filter.
+- **BREAKING:** The "Pick up address" field on delivery orders (create, edit, order details and sale details).
+
 ## [3.23.0] - 2026-10-16
 
 ### Changed

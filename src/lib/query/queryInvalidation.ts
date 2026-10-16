@@ -14,10 +14,6 @@ export function invalidateDrivers(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: ["drivers"] })
 }
 
-export function invalidateWarehouses(queryClient: QueryClient) {
-  return queryClient.invalidateQueries({ queryKey: ["warehouses"] })
-}
-
 export function invalidateAuditLogs(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: ["auditLogs"] })
 }

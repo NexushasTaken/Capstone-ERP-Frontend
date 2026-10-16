@@ -15,7 +15,6 @@ import {
 } from "@/services/inventoryApi"
 import { fetchInventoryForecast } from "@/services/dashboardApi"
 import { fetchCategories } from "@/services/categoryApi"
-import { fetchWarehouses } from "@/services/warehouseApi"
 import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
 import { invalidateInventories } from "@/lib/query/queryInvalidation"
 import { queryKeys } from "@/lib/query/queryKeys"
@@ -55,21 +54,6 @@ export function useNeedOrderCount() {
   return data?.needOrderCount ?? 0
 }
 
-const ALL_WAREHOUSES = { page: 1, pageSize: 1000 }
-
-/** Warehouses an inventory item can be assigned to. */
-export function useSelectableWarehouses(enabled: boolean) {
-  const query = useQuery({
-    queryKey: queryKeys.warehouses.all(ALL_WAREHOUSES),
-    queryFn: () => fetchWarehouses(ALL_WAREHOUSES),
-    enabled,
-  })
-  return {
-    warehouses: query.data?.items ?? [],
-    isLoading: query.isLoading,
-  }
-}
-
 const ALL_CATEGORIES = { page: 1, pageSize: 1000 }
 
 /** Categories the list can be filtered by. Shares its cache entry with the product form. */
@@ -97,8 +81,8 @@ export function useInventoryHistory(inventoryId: number | null, enabled: boolean
   return { movements, damageRecords, shouldLoad }
 }
 
-// The optimistic row needs the product and warehouse names, which the API payload doesn't carry.
-type WithNames<T> = T & { productName: string; warehouseName: string | null }
+// The optimistic row needs the product name, which the API payload doesn't carry.
+type WithName<T> = T & { productName: string }
 
 export function useInventoryMutations(listQueryKey: QueryKey) {
   const queryClient = useQueryClient()
@@ -109,14 +93,9 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
   }
 
   const addInventory = useMutation({
-    mutationFn: ({
-      quantity,
-      productId,
-      warehouseId,
-      reorderPoint,
-    }: WithNames<InsertInventoryPayload> & { optimisticId: number }) =>
-      insertInventory({ quantity, productId, warehouseId, reorderPoint }),
-    ...optimisticUpdate<InventoriesResponse, WithNames<InsertInventoryPayload> & { optimisticId: number }>({
+    mutationFn: ({ quantity, productId, reorderPoint }: WithName<InsertInventoryPayload> & { optimisticId: number }) =>
+      insertInventory({ quantity, productId, reorderPoint }),
+    ...optimisticUpdate<InventoriesResponse, WithName<InsertInventoryPayload> & { optimisticId: number }>({
       ...shared,
       update: (current, payload) => {
         const optimisticItem: InventoryListItem = {
@@ -125,8 +104,6 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
           name: payload.productName,
           quantity: payload.quantity,
           reorderPoint: payload.reorderPoint,
-          warehouseId: payload.warehouseId,
-          warehouseName: payload.warehouseName ?? "Pending...",
           status: "pending",
           categoryName: "Pending...",
         }

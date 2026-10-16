@@ -10,15 +10,12 @@ import { useInventoryProductSearch } from "@/hooks/useInventoryProductSearch"
 import { formatPeso } from "@/lib/format"
 import { formatInventoryId } from "@/lib/helpers/inventoryHelpers"
 import type { InventoryListItem } from "@/types/inventory"
-import { useSelectableWarehouses } from "../_hooks/useInventory"
 import { inventorySchema, type InventoryFields } from "../_lib/inventorySchema"
 
 export interface InventoryFormValues {
   productId: number
   /** For the optimistic row; the API names the item after its product. */
   productName: string
-  warehouseId: number
-  warehouseName: string | null
   reorderPoint: number
   /** Only set when adding. */
   quantity: number
@@ -45,23 +42,18 @@ export default function InventoryFormModal({ open, item, disabled, onClose, onSu
     mode: "onTouched",
     defaultValues: {
       productId: item?.productId,
-      warehouseId: item?.warehouseId,
       reorderPoint: item?.reorderPoint,
       quantity: item?.quantity,
     },
   })
   const { products, isLoading: productsLoading, error: productsError } = useInventoryProductSearch(open && !isEdit)
-  const { warehouses, isLoading: warehousesLoading } = useSelectableWarehouses(open && !isEdit)
 
   const productName = (id?: number) => products.find((product) => product.id === id)?.name ?? ""
-  const warehouseName = (id?: number) => warehouses.find((warehouse) => warehouse.id === id)?.name ?? null
 
   const submit = handleSubmit((values) =>
     onSubmit({
       productId: values.productId,
       productName: productName(values.productId),
-      warehouseId: values.warehouseId,
-      warehouseName: warehouseName(values.warehouseId),
       reorderPoint: values.reorderPoint,
       quantity: values.quantity ?? 0,
     }),
@@ -76,14 +68,9 @@ export default function InventoryFormModal({ open, item, disabled, onClose, onSu
       />
       <ModalBody>
         {isEdit ? (
-          <>
-            <FormField label="Product">
-              <FormInput className="capitalize" disabled value={item.name} />
-            </FormField>
-            <FormField label="Warehouse">
-              <FormInput className="capitalize" disabled value={item.warehouseName} />
-            </FormField>
-          </>
+          <FormField label="Product">
+            <FormInput className="capitalize" disabled value={item.name} />
+          </FormField>
         ) : (
           <>
             <FormField label="Product" error={errors.productId?.message}>
@@ -104,29 +91,6 @@ export default function InventoryFormModal({ open, item, disabled, onClose, onSu
                     addLabel="Add product"
                     isLoading={productsLoading}
                     searchPlaceholder="Search products..."
-                    onSelect={field.onChange}
-                  />
-                )}
-              />
-            </FormField>
-
-            <FormField label="Warehouse" error={errors.warehouseId?.message}>
-              <Controller
-                control={control}
-                name="warehouseId"
-                render={({ field }) => (
-                  <EntityDropdown
-                    options={warehouses.map((warehouse) => ({
-                      id: warehouse.id,
-                      label: warehouse.name,
-                      sublabel: warehouse.address,
-                    }))}
-                    value={warehouseName(field.value) ?? ""}
-                    placeholder="Select a warehouse"
-                    emptyLabel="No warehouses found."
-                    addHref="/dashboard/warehouse"
-                    addLabel="Add warehouse"
-                    isLoading={warehousesLoading}
                     onSelect={field.onChange}
                   />
                 )}
