@@ -1,11 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import { FileDown } from "lucide-react"
 import ListHeader from "@/components/ListHeader"
 import ListSummary from "@/components/ListSummary"
 import OrderTypeFilterSelect from "@/components/OrderTypeFilterSelect"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
+import { Button } from "@/components/ui/button"
 import PageSizeSelect from "@/components/PageSizeSelect"
 import { TablePagination } from "@/components/TablePagination"
 import { usePageSize } from "@/hooks/usePageSize"
@@ -17,6 +19,7 @@ import { useSales } from "../_hooks/useSales"
 import { getSaleFilter, saleSortOptions } from "../_lib/saleSort"
 import SaleDateFilter from "./SaleDateFilter"
 import SaleDetailsModal from "./SaleDetailsModal"
+import SalesReportModal from "./SalesReportModal"
 import SalesTable from "./SalesTable"
 
 export default function SalesView() {
@@ -24,6 +27,7 @@ export default function SalesView() {
   const { orderType: selectedOrderTypeFilter, sortBy, sortOrder, page: currentPage } = filters
   const [search, setSearch] = useUrlSearch(filters.search, (value) => update({ search: value }))
   const [detailsSale, setDetailsSale] = useState<Sale | null>(null)
+  const [reportOpen, setReportOpen] = useState(false)
   const [pageSize, setPageSize] = usePageSize("sales")
 
   const { data, isLoading, isPlaceholderData, isFetching, error } = useSales({
@@ -62,6 +66,10 @@ export default function SalesView() {
               options={saleSortOptions}
               onChange={(value, order) => update({ sortBy: value, sortOrder: order })}
             />
+            <Button type="button" variant="outline" className="h-10" onClick={() => setReportOpen(true)}>
+              <FileDown />
+              Export PDF
+            </Button>
           </>
         }
       />
@@ -95,6 +103,7 @@ export default function SalesView() {
       </div>
 
       <SaleDetailsModal sale={detailsSale} onClose={() => setDetailsSale(null)} />
+      {reportOpen && <SalesReportModal open onClose={() => setReportOpen(false)} />}
     </section>
   )
 }

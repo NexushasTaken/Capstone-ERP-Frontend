@@ -30,6 +30,9 @@ export interface SaleSortOption {
   order: "asc" | "desc"
 }
 
+/** Daily = one day, weekly = its Monday-to-Sunday week, monthly = its calendar month. */
+export type SalesReportPeriod = "daily" | "weekly" | "monthly"
+
 // API request/response shapes
 
 export interface FetchSalesParams {

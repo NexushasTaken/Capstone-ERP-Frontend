@@ -46,12 +46,16 @@ export async function proxyToBackend(request: NextRequest, path: string, search 
     const responseHeaders = new Headers({
       "Content-Type": upstream.headers.get("content-type") ?? "application/json",
     })
+    // File downloads (the sales report PDF) carry their file name here.
+    const disposition = upstream.headers.get("content-disposition")
+    if (disposition) responseHeaders.set("Content-Disposition", disposition)
     // Login and Logout set or clear the AccessToken cookie.
     for (const cookie of upstream.headers.getSetCookie()) {
       responseHeaders.append("Set-Cookie", cookie)
     }
 
-    return new Response(await upstream.text(), {
+    // Raw bytes, so binary bodies like PDFs pass through unchanged.
+    return new Response(await upstream.arrayBuffer(), {
       status: upstream.status,
       headers: responseHeaders,
     })

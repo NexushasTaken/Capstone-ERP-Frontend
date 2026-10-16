@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.0] - 2026-10-16
+
+### Added
+
+- Needs Backend 9.1.0. Sales has an "Export PDF" button: pick Daily, Weekly (Monday to Sunday) or Monthly and a day, and the sales report for that period downloads as a PDF.
+
+### Fixed
+
+- The backend proxy passes response bodies through as raw bytes and forwards `Content-Disposition`, so file downloads such as PDFs arrive intact with their file name.
+
 ## [4.0.0] - 2026-10-16
 
 ### Changed
