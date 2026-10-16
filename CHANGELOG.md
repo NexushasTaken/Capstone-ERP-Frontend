@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.4.0] - 2026-10-16
+
+### Changed
+
+- The order discount choices and their rates come from the backend's Discounts table instead of being built into the app. The choices read like "Senior citizen (20%)", and they look and behave the same as before.
+
 ## [5.3.0] - 2026-10-16
 
 ### Removed

@@ -23,6 +23,7 @@ export interface Sale {
   orders: SaleLine[]
   subtotal: number
   discountPercent: number
+  discountId: number
   discountType: DiscountType
   discountAmount: number
   /** Net of the discount. */

@@ -1,7 +1,6 @@
 import { z } from "zod"
-import { DISCOUNT_PRESET_RATES, DISCOUNT_TYPE_LABELS } from "@/lib/helpers/orderHelpers"
+import { CUSTOM_DISCOUNT_ID } from "@/lib/helpers/orderHelpers"
 import { positiveInt, requiredId, requiredNumber, requiredString } from "@/lib/validation"
-import type { DiscountType } from "@/types/order"
 
 export interface OrderLineFields {
   productId: number
@@ -14,7 +13,7 @@ export interface OrderFields {
   customerName: string
   deliveryAddress: string
   discountPercent: number
-  discountType: DiscountType
+  discountId: number
   orderLines: OrderLineFields[]
 }
 
@@ -26,7 +25,7 @@ export const emptyOrder: OrderFields = {
   customerName: "",
   deliveryAddress: "",
   discountPercent: 0,
-  discountType: "none",
+  discountId: 1,
   orderLines: [emptyOrderLine],
 }
 
@@ -43,7 +42,7 @@ function orderObject(isWalkin: boolean) {
     discountPercent: requiredNumber("Discount must be a number.")
       .min(0, "Discount can't be negative.")
       .max(100, "Discount can't be more than 100%."),
-    discountType: z.enum(["none", "senior", "pwd", "solo_parent", "custom"]),
+    discountId: requiredId("Select a discount."),
     orderLines: z.array(orderLineSchema).min(1, "Add at least one product."),
     ...(isWalkin
       ? { deliveryDriverId: z.number(), deliveryAddress: z.string() }
@@ -54,21 +53,10 @@ function orderObject(isWalkin: boolean) {
   })
 }
 
-// Matches the backend's OrderDiscountValidator. Who may pick "custom" is a role rule, handled in DiscountFields.
-function checkDiscount(order: Pick<OrderFields, "discountType" | "discountPercent">, ctx: z.RefinementCtx) {
-  const presetRate = DISCOUNT_PRESET_RATES[order.discountType]
-
-  if (order.discountType === "none" && order.discountPercent !== 0) {
-    ctx.addIssue({ code: "custom", path: ["discountPercent"], message: "Discount must be 0 when there is none." })
-  }
-  if (presetRate !== undefined && order.discountPercent !== presetRate) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["discountPercent"],
-      message: `The ${DISCOUNT_TYPE_LABELS[order.discountType].toLowerCase()} discount is fixed at ${presetRate}%.`,
-    })
-  }
-  if (order.discountType === "custom" && order.discountPercent <= 0) {
+// Preset rates are filled in from the Discounts table (and copied again by the backend), so only a typed
+// custom rate needs checking. Who may pick custom is a role rule, handled in DiscountFields.
+function checkDiscount(order: Pick<OrderFields, "discountId" | "discountPercent">, ctx: z.RefinementCtx) {
+  if (order.discountId === CUSTOM_DISCOUNT_ID && order.discountPercent <= 0) {
     ctx.addIssue({ code: "custom", path: ["discountPercent"], message: "Custom discount must be more than 0." })
   }
 }

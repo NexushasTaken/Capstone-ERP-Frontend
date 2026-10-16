@@ -19,7 +19,7 @@ import {
   normalizeOrderText,
 } from "@/lib/helpers/orderHelpers"
 import type { OrderGroup, UpdateOrderPayload } from "@/types/order"
-import { useOrderDrivers } from "../_hooks/useOrders"
+import { useDiscounts, useOrderDrivers } from "../_hooks/useOrders"
 import { editOrderSchema, type OrderFields } from "../_lib/orderSchema"
 import DiscountFields from "./DiscountFields"
 import OrderLinesEditor from "./OrderLinesEditor"
@@ -41,6 +41,7 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
 
   const { products, isLoading: productsLoading, error: productsError } = useInventoryProductSearch(true)
   const { data: drivers = [], isLoading: driversLoading } = useOrderDrivers()
+  const { data: discounts = [] } = useDiscounts()
 
   const form = useForm<OrderFields>({
     resolver: zodResolver(editOrderSchema(isWalkin)),
@@ -51,7 +52,7 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
       customerName: order.customerName,
       deliveryAddress: order.deliveryAddress ?? "",
       discountPercent: order.discountPercent,
-      discountType: order.discountType,
+      discountId: order.discountId,
       orderLines: order.orders.map((line) => ({ productId: line.productId, quantity: line.quantity })),
     },
   })
@@ -70,6 +71,7 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
   }))
   const selectedDriverLabel = driverOptions.find((driver) => driver.id === values.deliveryDriverId)?.label ?? ""
 
+  const discountType = discounts.find((discount) => discount.id === values.discountId)?.type
   const lineRows = getOrderLineRows(values.orderLines ?? [], products)
   const totalQuantity = getOrderLineQuantityTotal(lineRows)
   const totalAmount = getOrderLineAmountTotal(lineRows)
@@ -83,7 +85,7 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
         deliveryDriverId: isWalkin ? 0 : values.deliveryDriverId,
         deliveryAddress: isWalkin ? "" : values.deliveryAddress,
         discountPercent: values.discountPercent,
-        discountType: values.discountType,
+        discountId: values.discountId,
         orderLines: values.orderLines,
       })
       onClose()
@@ -161,7 +163,7 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
             lineRows={lineRows}
             totalAmount={totalAmount}
             discountPercent={values.discountPercent}
-            discountType={values.discountType}
+            discountType={discountType}
             products={products}
             productsLoading={productsLoading}
             productsError={productsError}

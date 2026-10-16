@@ -21,7 +21,7 @@ import {
   normalizeOrderText,
 } from "@/lib/helpers/orderHelpers"
 import type { InsertOrderPayload } from "@/types/order"
-import { useOrderDrivers } from "../_hooks/useOrders"
+import { useDiscounts, useOrderDrivers } from "../_hooks/useOrders"
 import { emptyOrder, orderSchema, type OrderFields } from "../_lib/orderSchema"
 import ConfirmOrderModal from "./ConfirmOrderModal"
 import DiscountFields from "./DiscountFields"
@@ -44,6 +44,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
   const { products, isLoading: productsLoading, error: productsError } = useInventoryProductSearch(open)
   const { data: orderTypes = [], isLoading: orderTypesLoading } = useOrderTypes()
   const { data: drivers = [], isLoading: driversLoading } = useOrderDrivers()
+  const { data: discounts = [] } = useDiscounts()
 
   const orderTypeOptions = orderTypes.map((orderType) => ({
     id: orderType.id,
@@ -87,6 +88,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
   }))
   const selectedDriverLabel = driverOptions.find((driver) => driver.id === values.deliveryDriverId)?.label ?? ""
 
+  const discountType = discounts.find((discount) => discount.id === values.discountId)?.type
   const lineRows = getOrderLineRows(values.orderLines ?? [], products)
   const totalQuantity = getOrderLineQuantityTotal(lineRows)
   const totalAmount = getOrderLineAmountTotal(lineRows)
@@ -99,7 +101,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
       customerName: order.customerName,
       deliveryAddress: isWalkin ? "" : order.deliveryAddress,
       discountPercent: order.discountPercent,
-      discountType: order.discountType,
+      discountId: order.discountId,
       orderLines: order.orderLines,
     })
     setIsReviewing(false)
@@ -111,7 +113,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
     ...(isWalkin ? [] : [{ label: "Delivery driver", value: selectedDriverLabel || "-" }]),
     { label: "Customer", value: values.customerName || "-" },
     { label: "Quantity", value: totalQuantity },
-    { label: "Discount", value: formatDiscount(values.discountType, values.discountPercent) },
+    { label: "Discount", value: formatDiscount(discountType, values.discountPercent) },
     ...(isWalkin ? [] : [{ label: "Delivery address", value: values.deliveryAddress || "-" }]),
   ]
 
@@ -203,7 +205,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
             lineRows={lineRows}
             totalAmount={totalAmount}
             discountPercent={values.discountPercent}
-            discountType={values.discountType}
+            discountType={discountType}
             products={products}
             productsLoading={productsLoading}
             productsError={productsError}
@@ -228,7 +230,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
         lineRows={lineRows}
         totalAmount={totalAmount}
         discountPercent={values.discountPercent}
-        discountType={values.discountType}
+        discountType={discountType}
         disabled={!canSubmit}
         onBack={() => setIsReviewing(false)}
         onConfirm={handleConfirm}

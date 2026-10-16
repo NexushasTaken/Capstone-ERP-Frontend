@@ -4,9 +4,9 @@ import { Controller, useFormContext, useWatch } from "react-hook-form"
 import { FormField, FormInput } from "@/components/FormField"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
-import { DISCOUNT_PRESET_RATES, DISCOUNT_TYPE_LABELS, isPresetDiscount } from "@/lib/helpers/orderHelpers"
+import { formatDiscountOption, isPresetDiscount } from "@/lib/helpers/orderHelpers"
 import { can } from "@/lib/permissions"
-import type { DiscountType } from "@/types/order"
+import { useDiscounts } from "../_hooks/useOrders"
 import type { OrderFields } from "../_lib/orderSchema"
 
 interface DiscountFieldsProps {
@@ -14,7 +14,7 @@ interface DiscountFieldsProps {
   ownerCustomDiscount?: boolean
 }
 
-// Discount type and percent for the order forms. Presets fill in their legal rate;
+// Discount and percent for the order forms, from the Discounts table. Presets fill in their legal rate;
 // only the owner may type a custom one. Must be rendered inside the order form's <FormProvider>.
 export default function DiscountFields({ ownerCustomDiscount = false }: DiscountFieldsProps) {
   const {
@@ -23,48 +23,43 @@ export default function DiscountFields({ ownerCustomDiscount = false }: Discount
     setValue,
     formState: { errors },
   } = useFormContext<OrderFields>()
-  const discountType = useWatch({ control, name: "discountType" })
+  const discountId = useWatch({ control, name: "discountId" })
+  const { data: discounts = [], isLoading } = useDiscounts()
 
   const role = useCurrentUser().data?.role
   const canSetCustom = can(role, "order:custom-discount")
   const isLocked = ownerCustomDiscount && !canSetCustom
 
-  const typeOptions = (Object.keys(DISCOUNT_TYPE_LABELS) as DiscountType[]).filter(
-    (type) => type !== "custom" || canSetCustom || isLocked,
-  )
-  const typeSelectItems = typeOptions.map((type) => ({ value: type, label: DISCOUNT_TYPE_LABELS[type] }))
-
-  const handleTypeChange = (type: DiscountType) => {
-    const percent = type === "custom" ? 0 : (DISCOUNT_PRESET_RATES[type] ?? 0)
-    setValue("discountPercent", percent, { shouldDirty: true, shouldValidate: true })
-  }
+  const options = discounts.filter((discount) => discount.type !== "custom" || canSetCustom || isLocked)
+  const selectItems = options.map((discount) => ({ value: String(discount.id), label: formatDiscountOption(discount) }))
+  const selected = discounts.find((discount) => discount.id === discountId)
+  const isCustom = selected?.type === "custom"
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <FormField label="Discount" error={errors.discountType?.message}>
+      <FormField label="Discount" error={errors.discountId?.message}>
         <Controller
           control={control}
-          name="discountType"
+          name="discountId"
           render={({ field }) => (
             <Select
-              disabled={isLocked}
-              items={typeSelectItems}
+              disabled={isLoading || isLocked}
+              items={selectItems}
               onValueChange={(value) => {
-                const type = (value ?? "none") as DiscountType
-                field.onChange(type)
+                const discount = discounts.find((d) => d.id === Number(value))
+                field.onChange(Number(value ?? 0))
                 field.onBlur()
-                handleTypeChange(type)
+                setValue("discountPercent", discount?.percent ?? 0, { shouldDirty: true, shouldValidate: true })
               }}
-              value={field.value}
+              value={field.value ? String(field.value) : ""}
             >
-              <SelectTrigger aria-invalid={!!errors.discountType} className="w-full">
-                <SelectValue />
+              <SelectTrigger aria-invalid={!!errors.discountId} className="w-full">
+                <SelectValue placeholder="Select discount" />
               </SelectTrigger>
               <SelectContent>
-                {typeOptions.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {DISCOUNT_TYPE_LABELS[type]}
-                    {isPresetDiscount(type) ? ` (${DISCOUNT_PRESET_RATES[type]}%)` : null}
+                {selectItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -77,16 +72,16 @@ export default function DiscountFields({ ownerCustomDiscount = false }: Discount
       <FormField label="Discount (%)" error={errors.discountPercent?.message}>
         <FormInput
           aria-invalid={!!errors.discountPercent}
-          className={discountType === "custom" && !isLocked ? undefined : "bg-muted/50"}
+          className={isCustom && !isLocked ? undefined : "bg-muted/50"}
           max={100}
           min={0}
-          readOnly={discountType !== "custom" || isLocked}
+          readOnly={!isCustom || isLocked}
           step="any"
           type="number"
           {...register("discountPercent", { valueAsNumber: true })}
         />
         <span className="text-xs text-muted-foreground">
-          {isPresetDiscount(discountType) ? "Fixed by law" : "Taken off the total of the items below"}
+          {isPresetDiscount(selected?.type) ? "Fixed by law" : "Taken off the total of the items below"}
         </span>
       </FormField>
     </div>
