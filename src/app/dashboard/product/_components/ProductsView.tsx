@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Plus } from "lucide-react"
+import { Plus, Upload } from "lucide-react"
 import CountFilterSelect from "@/components/CountFilterSelect"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
+import ImportModal from "@/components/ImportModal"
 import ListHeader from "@/components/ListHeader"
 import ListSummary from "@/components/ListSummary"
 import { formatCount } from "@/lib/format"
@@ -22,6 +23,7 @@ import { useProductFilters } from "../_hooks/useProductFilters"
 import { useProductMutations, useProducts, type ProductValues } from "../_hooks/useProducts"
 import { formatProductId } from "@/lib/helpers/productHelpers"
 import { getProductFilter, productFilters, productSortOptions } from "../_lib/productHelpers"
+import { checkProductCells, productImportColumns, productImportHint, productImportSchema } from "../_lib/productImport"
 import ProductDetailsModal from "./ProductDetailsModal"
 import ProductFormModal from "./ProductFormModal"
 import ProductsTable from "./ProductsTable"
@@ -29,6 +31,7 @@ import ProductsTable from "./ProductsTable"
 // Which modal is open, and for which product.
 type ModalState =
   | { type: "add" }
+  | { type: "import" }
   | { type: "edit"; product: ProductListItem }
   | { type: "delete"; product: ProductListItem }
   | { type: "details"; product: ProductListItem }
@@ -82,10 +85,16 @@ export default function ProductsView() {
         actions={
           <>
             {can(role, "product:add") && (
-              <Button onClick={() => setModal({ type: "add" })} type="button">
-                <Plus className="h-4 w-4" />
-                Add product
-              </Button>
+              <>
+                <Button onClick={() => setModal({ type: "import" })} type="button" variant="outline">
+                  <Upload className="h-4 w-4" />
+                  Import
+                </Button>
+                <Button onClick={() => setModal({ type: "add" })} type="button">
+                  <Plus className="h-4 w-4" />
+                  Add product
+                </Button>
+              </>
             )}
           </>
         }
@@ -168,6 +177,20 @@ export default function ProductsView() {
           disabled={mutations.isSubmitting}
           onClose={closeModal}
           onSubmit={handleSubmitProduct}
+        />
+      )}
+
+      {modal?.type === "import" && (
+        <ImportModal
+          title="Import products"
+          columns={productImportColumns}
+          schema={productImportSchema}
+          templateName="products-template.csv"
+          hint={productImportHint}
+          pending={mutations.importProducts.isPending}
+          onCheck={checkProductCells}
+          onImport={(rows) => mutations.importProducts.mutateAsync(rows)}
+          onClose={closeModal}
         />
       )}
 

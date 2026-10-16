@@ -4,9 +4,11 @@ import type {
   FetchProductsParams,
   ProductListContent,
   InsertProductPayload,
+  ProductImportRow,
   UpdateProductPayload,
 } from "@/types/product"
 import { ApiError } from "@/lib/apiError"
+import { postImport } from "@/lib/import/postImport"
 
 // GET
 export async function fetchProducts(params: FetchProductsParams = {}): Promise<{
@@ -97,4 +99,14 @@ export async function deleteProduct(id: number): Promise<ApiEnvelopeNoContent> {
   }
 
   return data
+}
+
+// Saves every row or none; a 400 carries `rows.N.<field>` errors. Returns how many were added.
+export function importProducts(rows: ProductImportRow[]): Promise<number> {
+  return postImport("/api/Product/import", rows, "products")
+}
+
+// Checks names and categories against the database without saving; a 400 carries `rows.N.<field>` errors.
+export function checkProductImport(rows: Pick<ProductImportRow, "name" | "category">[]): Promise<unknown> {
+  return postImport<Pick<ProductImportRow, "name" | "category">, unknown>("/api/Product/import/check", rows, "products")
 }

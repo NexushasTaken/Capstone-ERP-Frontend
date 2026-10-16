@@ -2,7 +2,8 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { deleteDriver, fetchDrivers, insertDriver, updateDriver } from "@/services/driverApi"
+import { deleteDriver, fetchDrivers, importDrivers, insertDriver, updateDriver } from "@/services/driverApi"
+import { isValidationError } from "@/lib/apiError"
 import { invalidateDrivers } from "@/lib/query/queryInvalidation"
 import { queryKeys } from "@/lib/query/queryKeys"
 import type { FetchDriversParams } from "@/types/driver"
@@ -40,8 +41,21 @@ export function useDriverMutations() {
     ...callbacks("Driver deleted successfully", "Failed to delete driver"),
   })
 
+  // Not optimistic: the modal waits for the result so it can show row errors from a 400.
+  const importDriversMutation = useMutation({
+    mutationFn: importDrivers,
+    onSuccess: (count) => {
+      toast.success(`Imported ${count} driver(s)`)
+      invalidateDrivers(queryClient)
+    },
+    onError: (err) => {
+      if (!isValidationError(err)) toast.error(err.message || "Failed to import drivers")
+    },
+  })
+
   return {
     addDriver,
+    importDrivers: importDriversMutation,
     updateDriver: updateDriverMutation,
     deleteDriver: deleteDriverMutation,
     isSubmitting: addDriver.isPending || updateDriverMutation.isPending || deleteDriverMutation.isPending,

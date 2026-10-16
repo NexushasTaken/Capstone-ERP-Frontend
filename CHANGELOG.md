@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.2.0] - 2026-10-16
+
+### Added
+
+- Import categories, products and drivers from a .csv or .xlsx file (owner only), from a new "Import" button next to Add on each page. A "Template" button downloads a CSV with the expected headers; headers match ignoring case and spaces.
+- Product files can include Category (by name), Quantity and Reorder point; rows with both stock columns also get their opening stock.
+- Picking a file checks every row straight away, including names that already exist, names repeated in the file and categories that don't exist. Bad cells are highlighted with the reason in a tooltip, all problems are listed under the preview, and Import stays disabled until the file has none. Picking the same file again after fixing it re-runs the checks.
+- Import saves every row or none, and failures (server unreachable, session expired, old backend) show a plain message instead of a technical error.
+- Needs Backend 9.2.0.
+
 ## [4.1.0] - 2026-10-16
 
 ### Added
