@@ -1,21 +1,15 @@
 "use client"
 
-import { Controller, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import AppModal, { ModalHeader } from "@/components/AppModal"
 import { FormField } from "@/components/FormField"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { formatInventoryId, formatNumber } from "@/lib/helpers/inventoryHelpers"
 import type { InventoryListItem, RestockInventoryPayload } from "@/types/inventory"
 import { restockSchema, type RestockFormValues } from "../_lib/inventorySchema"
-
-const restockTypeOptions = [
-  { value: 1, label: "Receive stock" },
-  { value: 2, label: "Return Stock" },
-]
 
 interface RestockModalProps {
   item: InventoryListItem
@@ -28,13 +22,11 @@ interface RestockModalProps {
 export default function RestockModal({ item, isPending, onClose, onSubmit }: RestockModalProps) {
   const {
     register,
-    control,
     handleSubmit,
     formState: { errors, isValid },
   } = useForm<RestockFormValues>({
     resolver: zodResolver(restockSchema),
     mode: "onTouched",
-    defaultValues: { restockType: 1 },
   })
   const close = () => {
     if (!isPending) onClose()
@@ -50,38 +42,8 @@ export default function RestockModal({ item, isPending, onClose, onSubmit }: Res
       >
         <div className="flex flex-col gap-4 p-4">
           <p className="text-sm text-muted-foreground">
-            {item.name} · {formatNumber(item.quantity)} available.
+            {item.name} · {formatNumber(item.quantity)} available. Customer returns are recorded from the sale in Sales.
           </p>
-          <div className="flex flex-col gap-1 text-sm text-foreground">
-            <label htmlFor="restock-type" className="text-xs text-muted-foreground">
-              Restock type
-            </label>
-            <Controller
-              control={control}
-              name="restockType"
-              render={({ field }) => (
-                <Select
-                  items={restockTypeOptions}
-                  value={field.value}
-                  disabled={isPending}
-                  onValueChange={(value) => {
-                    if (value === 1 || value === 2) field.onChange(value)
-                  }}
-                >
-                  <SelectTrigger id="restock-type" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {restockTypeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
           <FormField label="Quantity" error={errors.quantity?.message}>
             <Input
               aria-invalid={!!errors.quantity}

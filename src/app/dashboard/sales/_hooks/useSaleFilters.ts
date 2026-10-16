@@ -5,6 +5,8 @@ import type { SaleSortBy } from "@/types/sale"
 import { saleSortOptions } from "../_lib/saleSort"
 
 interface SaleFilters {
+  /** Which tab is open: the sales list or the returns list. */
+  tab: "sales" | "returns"
   search: string
   /** "" for any order type, otherwise an order type id. */
   orderType: string
@@ -17,6 +19,7 @@ interface SaleFilters {
 }
 
 const schema: UrlSchema<SaleFilters> = {
+  tab: { param: "tab", default: "sales", parse: oneOf(["sales", "returns"] as const) },
   search: { param: "q", default: "", parse: text },
   orderType: { param: "type", default: "", parse: digits },
   from: { param: "from", default: "", parse: isoDate },
@@ -26,7 +29,7 @@ const schema: UrlSchema<SaleFilters> = {
   page: { param: "page", default: 1, parse: positiveInt },
 }
 
-/** The sales list's search, filters, sort and page, stored in the URL (see `useUrlState`). */
+/** The open tab plus the list's search, filters, sort and page, stored in the URL (see `useUrlState`). */
 export function useSaleFilters() {
   return useUrlState(schema)
 }

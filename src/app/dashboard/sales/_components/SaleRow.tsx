@@ -19,7 +19,11 @@ export default function SaleRow({ sale, onSeeMore }: SaleRowProps) {
       <TableCell className="px-3 py-4 capitalize">{normalizeOrderText(sale.orderType)}</TableCell>
       <TableCell className="px-3 py-4 font-medium capitalize">{getSaleCustomerName(sale)}</TableCell>
       <TableCell className="px-3 py-4 text-center">{getSaleQuantity(sale)}</TableCell>
-      <TableCell className="px-3 py-4 font-medium">{formatPeso(sale.total)}</TableCell>
+      <TableCell className="px-3 py-4">{formatPeso(sale.total)}</TableCell>
+      <TableCell className="px-3 py-4 text-muted-foreground">
+        {sale.refunded > 0 ? `-${formatPeso(sale.refunded)}` : "-"}
+      </TableCell>
+      <TableCell className="px-3 py-4 font-medium">{formatPeso(sale.totalAfterRefunds)}</TableCell>
       <TableCell className="px-3 py-4 font-medium">{formatDate(sale.created_At)}</TableCell>
       <TableCell className="px-3 py-4">
         <Button

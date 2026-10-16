@@ -147,17 +147,15 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
     }),
   })
 
-  // Damage of the current stock (type 1) lowers the quantity right away, and an already-loaded
+  // Damage lowers the quantity right away, and an already-loaded
   // damage history gets the new report on top. Both roll back if the request fails.
   const markAsDamage = useMutation({
     mutationFn: markInventoryAsDamage,
     onMutate: async (payload: MarkInventoryAsDamagePayload) => {
       await queryClient.cancelQueries({ queryKey: ["inventories"] })
-      const previousQuantity =
-        payload.damagedType === 1
-          ? queryClient.getQueryData<InventoriesResponse>(listQueryKey)?.items.find((item) => item.id === payload.id)
-              ?.quantity
-          : undefined
+      const previousQuantity = queryClient
+        .getQueryData<InventoriesResponse>(listQueryKey)
+        ?.items.find((item) => item.id === payload.id)?.quantity
       const damageKey = queryKeys.inventories.damageRecords(payload.id)
       const previousDamageRecords = queryClient.getQueryData<DamageRecords>(damageKey)
 
@@ -167,9 +165,7 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
           current && {
             ...current,
             items: current.items.map((item) =>
-              item.id === payload.id && payload.damagedType === 1
-                ? { ...item, quantity: item.quantity - payload.quantity }
-                : item,
+              item.id === payload.id ? { ...item, quantity: item.quantity - payload.quantity } : item,
             ),
           },
       )

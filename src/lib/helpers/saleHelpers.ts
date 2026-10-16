@@ -19,6 +19,11 @@ export function getSaleQuantity(sale: Sale): number {
   return sale.orders.reduce((sum, order) => sum + order.quantity, 0)
 }
 
+/** True while at least one of the sale's products hasn't been fully returned. */
+export function canReturnSale(sale: Sale): boolean {
+  return sale.orders.some((order) => order.quantity > order.returnedQuantity)
+}
+
 export function getSaleStatusLabel(sale: Sale): string {
   return sale.orderStatus
 }

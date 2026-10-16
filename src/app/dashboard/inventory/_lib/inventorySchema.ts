@@ -21,24 +21,20 @@ export function inventorySchema(isEdit: boolean): z.ZodType<InventoryFields, Inv
 }
 
 export const restockSchema = z.object({
-  restockType: z.union([z.literal(1), z.literal(2)]),
   quantity: positiveInt("Quantity must be a whole number greater than 0."),
 })
 
 export type RestockFormValues = z.infer<typeof restockSchema>
 
-// "Current item" damage (type 1) can't exceed what's in stock.
+// Damage comes out of stock, so it can't exceed what's on hand.
 export function damageSchema(available: number) {
-  return z
-    .object({
-      damagedType: z.union([z.literal(1), z.literal(2)]),
-      quantity: positiveInt("Quantity must be a whole number greater than 0."),
-      reason: requiredString("Add a reason for marking it as damaged."),
-    })
-    .refine((form) => form.damagedType === 2 || form.quantity <= available, {
-      path: ["quantity"],
-      message: `Only ${available} available.`,
-    })
+  return z.object({
+    quantity: positiveInt("Quantity must be a whole number greater than 0.").max(
+      available,
+      `Only ${available} available.`,
+    ),
+    reason: requiredString("Add a reason for marking it as damaged."),
+  })
 }
 
 export type DamageFormValues = z.infer<ReturnType<typeof damageSchema>>
