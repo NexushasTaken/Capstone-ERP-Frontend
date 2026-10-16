@@ -79,7 +79,6 @@ function OrderDetailsBody({ order }: { order: OrderGroup }) {
           label={`Discount (${formatDiscount(order.discountType, order.discountPercent)})`}
           value={order.discountAmount > 0 ? `-${formatPeso(order.discountAmount)}` : formatPeso(0)}
         />
-        {order.discountIdNumber ? <DetailItem label="Discount ID number" value={order.discountIdNumber} /> : null}
         <DetailItem label="Total" value={formatPeso(order.total)} />
         {isWalkinOrder ? null : (
           <>

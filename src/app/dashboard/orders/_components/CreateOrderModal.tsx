@@ -18,7 +18,6 @@ import {
   getOrderLineQuantityTotal,
   getOrderLineRows,
   hasStockShortage,
-  isPresetDiscount,
   normalizeOrderText,
 } from "@/lib/helpers/orderHelpers"
 import type { InsertOrderPayload } from "@/types/order"
@@ -101,7 +100,6 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
       deliveryAddress: isWalkin ? "" : order.deliveryAddress,
       discountPercent: order.discountPercent,
       discountType: order.discountType,
-      discountIdNumber: order.discountIdNumber,
       orderLines: order.orderLines,
     })
     setIsReviewing(false)
@@ -114,7 +112,6 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
     { label: "Customer", value: values.customerName || "-" },
     { label: "Quantity", value: totalQuantity },
     { label: "Discount", value: formatDiscount(values.discountType, values.discountPercent) },
-    ...(isPresetDiscount(values.discountType) ? [{ label: "ID number", value: values.discountIdNumber || "-" }] : []),
     ...(isWalkin ? [] : [{ label: "Delivery address", value: values.deliveryAddress || "-" }]),
   ]
 

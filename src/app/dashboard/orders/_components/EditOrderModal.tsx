@@ -52,7 +52,6 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
       deliveryAddress: order.deliveryAddress ?? "",
       discountPercent: order.discountPercent,
       discountType: order.discountType,
-      discountIdNumber: order.discountIdNumber ?? "",
       orderLines: order.orders.map((line) => ({ productId: line.productId, quantity: line.quantity })),
     },
   })
@@ -85,7 +84,6 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
         deliveryAddress: isWalkin ? "" : values.deliveryAddress,
         discountPercent: values.discountPercent,
         discountType: values.discountType,
-        discountIdNumber: values.discountIdNumber,
         orderLines: values.orderLines,
       })
       onClose()
