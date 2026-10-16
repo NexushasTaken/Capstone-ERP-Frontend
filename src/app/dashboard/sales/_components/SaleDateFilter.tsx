@@ -15,6 +15,8 @@ interface SaleDateFilterProps {
   from: string
   to: string
   onChange: (from: string, to: string) => void
+  /** Let the calendar run to today, for returns made after the last sale. */
+  untilToday?: boolean
 }
 
 const ISO_DAY = "yyyy-MM-dd"
@@ -47,15 +49,15 @@ function rangeLabel(from: string, to: string) {
 }
 
 // Date range filter for the sales list: preset ranges, or any range picked on the calendar.
-export default function SaleDateFilter({ from, to, onChange }: SaleDateFilterProps) {
+export default function SaleDateFilter({ from, to, onChange, untilToday = false }: SaleDateFilterProps) {
   const [open, setOpen] = useState(false)
   // The calendar's selection, applied only on "Apply" so the list doesn't reload on the first click.
   const [draft, setDraft] = useState<DateRange | undefined>()
   const presets = getPresets()
-  // The calendar only offers the days between the first and the last sale.
+  // The calendar only offers the days between the first and the last sale (or today, for returns).
   const { data: range, isPending: rangePending } = useSaleDateRange()
   const firstDay = range?.first ? parseISO(range.first) : undefined
-  const lastDay = range?.last ? parseISO(range.last) : undefined
+  const lastDay = untilToday && range?.first ? new Date() : range?.last ? parseISO(range.last) : undefined
 
   function handleOpenChange(next: boolean) {
     setOpen(next)

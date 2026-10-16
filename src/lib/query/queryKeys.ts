@@ -2,7 +2,7 @@ import type { FetchInventoriesParams, FetchInventoryVelocityParams } from "@/typ
 import type { FetchOrdersParams } from "@/types/order"
 import type { FetchProductsParams } from "@/types/product"
 import type { FetchDriversParams } from "@/types/driver"
-import type { FetchSalesParams } from "@/types/sale"
+import type { FetchSaleReturnsParams, FetchSalesParams } from "@/types/sale"
 import type { DemandBacktestParams, FetchInventoryForecastParams } from "@/types/dashboard"
 import type { FetchCategoriesParams } from "@/types/category"
 import type { FetchAuditLogsParams } from "@/types/auditLog"
@@ -45,6 +45,7 @@ export const queryKeys = {
   sales: {
     all: (params: FetchSalesParams = {}) => ["sales", params] as const,
     range: ["sales", "range"] as const,
+    returns: (params: FetchSaleReturnsParams = {}) => ["sales", "returns", params] as const,
   },
   auditLogs: {
     all: (params: FetchAuditLogsParams = {}) => ["auditLogs", params] as const,

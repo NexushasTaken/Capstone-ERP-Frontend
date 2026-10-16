@@ -76,7 +76,6 @@ export interface UpdateInventoryPayload {
 }
 
 export interface MarkInventoryAsDamagePayload {
-  damagedType: 1 | 2
   id: number
   quantity: number
   reason: string
@@ -86,5 +85,4 @@ export interface MarkInventoryAsDamagePayload {
 export interface RestockInventoryPayload {
   id: number
   quantity: number
-  restockType: 1 | 2
 }

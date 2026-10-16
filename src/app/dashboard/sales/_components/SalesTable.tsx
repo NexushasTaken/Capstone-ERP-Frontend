@@ -8,7 +8,9 @@ const columns: DataTableColumn[] = [
   "Order type",
   "Customer",
   "Quantity",
-  "Total amount",
+  "Total",
+  "Refunded",
+  "Total after refunds",
   "Sale date",
   { label: "Actions", srOnly: true },
 ]
@@ -23,7 +25,7 @@ interface SalesTableProps {
 export default function SalesTable({ sales, isLoading, error, onSeeMore }: SalesTableProps) {
   return (
     <DataTable
-      className="min-w-220"
+      className="min-w-260"
       columns={columns}
       emptyMessage="No sales found."
       error={error}

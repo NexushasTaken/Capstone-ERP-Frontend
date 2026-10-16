@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2026-10-16
+
+### Added
+
+- Return items on a completed sale: from the sale's details, enter how many of each product came back (some or all, over as many visits as needed), whether each is good (back to stock) or damaged, and a reason. The dialog shows the refund, after the order discount, before saving.
+- A Returns tab on the Sales page lists every return with its sale, product, customer, quantity, condition, refund, reason and who processed it, with search and a date range.
+
+### Changed
+
+- **BREAKING:** the secretary can open the Sales page and record returns; only the owner sees Export PDF.
+- The Sales table shows Total, Refunded and Total after refunds, and the list total is after refunds. Sale details show the same figures and a Returned column per product.
+
+### Removed
+
+- **BREAKING:** the Restock type (Receive stock / Return Stock) and the Damage type (Current Item / Return Item). Restock is always stock received, and Mark as damage always takes the units out of stock. Customer returns are recorded from the sale.
+
 ## [4.2.0] - 2026-10-16
 
 ### Added

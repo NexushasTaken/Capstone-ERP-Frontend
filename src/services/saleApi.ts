@@ -1,5 +1,14 @@
 import type { Sale } from "@/types/sale"
-import type { FetchSalesParams, SaleDateRange, SaleListContent, SalesReportPeriod } from "@/types/sale"
+import type {
+  FetchSaleReturnsParams,
+  FetchSalesParams,
+  SaleDateRange,
+  SaleListContent,
+  SaleReturn,
+  SaleReturnListContent,
+  SaleReturnPayload,
+  SalesReportPeriod,
+} from "@/types/sale"
 import { ApiError } from "@/lib/apiError"
 
 interface SaleEnvelope {
@@ -49,6 +58,63 @@ export async function fetchSales(
     pageCount: data.salesData.pageCount,
     rows: data.salesData.rows,
     totalAmount: data.salesData.totalAmount,
+  }
+}
+
+interface SaleReturnEnvelope {
+  status: number
+  success: boolean
+  message: string
+  returnsData: SaleReturnListContent
+}
+
+export async function fetchSaleReturns(
+  params: FetchSaleReturnsParams = {},
+  signal?: AbortSignal,
+): Promise<{ items: SaleReturn[]; pageCount: number; rows: number }> {
+  const query = new URLSearchParams()
+  if (params.page) query.set("page", String(params.page))
+  if (params.pageSize) query.set("pageSize", String(params.pageSize))
+  if (params.name) query.set("name", params.name)
+  if (params.from) query.set("from", params.from)
+  if (params.to) query.set("to", params.to)
+
+  const response = await fetch(`/api/Sale/returns?${query.toString()}`, {
+    cache: "no-store",
+    signal,
+    method: "GET",
+    credentials: "include",
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch returns: ${response.status}`)
+  }
+
+  const data: SaleReturnEnvelope = await response.json()
+
+  if (!data.success) {
+    throw new ApiError(data.message || "Failed to fetch returns", response.status)
+  }
+
+  return {
+    items: data.returnsData.returns,
+    pageCount: data.returnsData.pageCount,
+    rows: data.returnsData.rows,
+  }
+}
+
+export async function returnSaleItems(payload: SaleReturnPayload): Promise<void> {
+  const response = await fetch("/api/Sale/return", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+
+  const data = await response.json().catch(() => null)
+
+  if (!response.ok || !data?.success) {
+    throw new ApiError(data?.message || "Failed to record the return", response.status, data?.errors)
   }
 }
 

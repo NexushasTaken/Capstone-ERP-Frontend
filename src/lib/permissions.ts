@@ -37,6 +37,8 @@ const permissions: Record<Role, RolePermissions> = {
       "inventory:delete",
       "inventory:restock",
       "inventory:damage",
+      "sales:return",
+      "sales:report",
       "account:create",
       "account:edit",
       "account:delete",
@@ -46,6 +48,7 @@ const permissions: Record<Role, RolePermissions> = {
     routes: [
       "/dashboard",
       "/dashboard/orders",
+      "/dashboard/sales",
       "/dashboard/inventory",
       "/dashboard/forecast",
       "/dashboard/product",
@@ -54,7 +57,7 @@ const permissions: Record<Role, RolePermissions> = {
       "/dashboard/audit-logs",
       "/dashboard/account-settings",
     ],
-    actions: [],
+    actions: ["sales:return"],
   },
 }
 
