@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
@@ -52,6 +52,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
   }))
   const isWalkinType = (orderTypeId?: number) =>
     orderTypeOptions.find((type) => type.id === orderTypeId)?.label.toLowerCase() === "walkin"
+  const walkinTypeId = orderTypeOptions.find((type) => isWalkinType(type.id))?.id
 
   const form = useForm<OrderFields>({
     // Walk-in orders skip the driver and address rules, so pick the schema from the values being checked.
@@ -65,9 +66,15 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isValid },
   } = form
   const values = useWatch({ control })
+
+  // Order types load async, so walk-in can't be a default value; fill it in once they arrive and after each reset.
+  useEffect(() => {
+    if (walkinTypeId && !values.orderTypeId) setValue("orderTypeId", walkinTypeId)
+  }, [walkinTypeId, values.orderTypeId, setValue])
 
   const selectedOrderTypeLabel = orderTypeOptions.find((type) => type.id === values.orderTypeId)?.label
   const isWalkin = isWalkinType(values.orderTypeId)
