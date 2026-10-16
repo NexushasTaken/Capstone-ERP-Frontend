@@ -66,6 +66,28 @@ export function getOrderLineAmountTotal(orderLines: ReturnType<typeof getOrderLi
   return orderLines.reduce((total, line) => total + line.subtotal, 0)
 }
 
+// Stock left per product after this order's lines. `heldQuantities` is what the order already took from stock
+// (edit only); it counts as available again. A preview only: the server re-checks stock when the order is saved.
+export function getStockLeft(
+  orderLines: ReturnType<typeof getOrderLineRows>,
+  heldQuantities: Record<number, number> = {},
+) {
+  const entered: Record<number, number> = {}
+  for (const line of orderLines) {
+    if (line.productId) entered[line.productId] = (entered[line.productId] ?? 0) + line.quantity
+  }
+  return (product: ProductListItem) =>
+    (product.stock ?? 0) + (heldQuantities[product.id] ?? 0) - (entered[product.id] ?? 0)
+}
+
+export function hasStockShortage(
+  orderLines: ReturnType<typeof getOrderLineRows>,
+  heldQuantities?: Record<number, number>,
+) {
+  const stockLeft = getStockLeft(orderLines, heldQuantities)
+  return orderLines.some((line) => line.product && stockLeft(line.product) < 0)
+}
+
 // Mirrors the backend's OrderMath.DiscountAmount: the percent of the subtotal, rounded to centavos.
 export function getOrderDiscountAmount(subtotal: number, discountPercent?: number) {
   const percent = Number(discountPercent) || 0

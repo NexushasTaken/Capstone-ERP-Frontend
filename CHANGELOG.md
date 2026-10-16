@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.23.0] - 2026-10-16
+
+### Changed
+
+- The "Create order" and "Edit order" forms show "Not enough stock: only N available." under a quantity that is more than the stock, and "Add order" / "Save changes" stay disabled until it is lowered, instead of failing only after the order is sent.
+
 ## [3.22.0] - 2026-10-16
 
 ### Changed

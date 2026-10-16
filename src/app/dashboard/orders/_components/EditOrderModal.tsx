@@ -15,6 +15,7 @@ import {
   getOrderLineAmountTotal,
   getOrderLineQuantityTotal,
   getOrderLineRows,
+  hasStockShortage,
   normalizeOrderText,
 } from "@/lib/helpers/orderHelpers"
 import type { OrderGroup, UpdateOrderPayload } from "@/types/order"
@@ -72,7 +73,7 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
   const totalQuantity = getOrderLineQuantityTotal(lineRows)
   const totalAmount = getOrderLineAmountTotal(lineRows)
   const heldQuantities = Object.fromEntries(order.orders.map((line) => [line.productId, line.quantity]))
-  const canSubmit = isValid && isDirty && !disabled && !isSubmitting
+  const canSubmit = isValid && isDirty && !disabled && !isSubmitting && !hasStockShortage(lineRows, heldQuantities)
 
   const handleSave = handleSubmit(async (values) => {
     try {
