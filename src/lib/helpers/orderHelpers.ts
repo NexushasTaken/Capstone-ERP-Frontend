@@ -1,4 +1,4 @@
-import type { DiscountType, OrderGroup } from "@/types/order"
+import type { Discount, DiscountType, OrderGroup } from "@/types/order"
 import type { ProductListItem } from "@/types/product"
 
 export function formatOrderNumber(orderId: number) {
@@ -94,13 +94,8 @@ export function getOrderDiscountAmount(subtotal: number, discountPercent?: numbe
   return Math.round(subtotal * percent) / 100
 }
 
-// Fixed rates from Philippine law: RA 9994 (senior citizens), RA 10754 (PWDs), RA 11861 (solo parents).
-// Mirrors the backend's DiscountTypes.PresetRates.
-export const DISCOUNT_PRESET_RATES: Partial<Record<DiscountType, number>> = {
-  senior: 20,
-  pwd: 20,
-  solo_parent: 10,
-}
+// Id of the "custom" row in the Discounts table; mirrors the backend's DiscountTypeEnum.Custom.
+export const CUSTOM_DISCOUNT_ID = 5
 
 export const DISCOUNT_TYPE_LABELS: Record<DiscountType, string> = {
   none: "No discount",
@@ -110,8 +105,15 @@ export const DISCOUNT_TYPE_LABELS: Record<DiscountType, string> = {
   custom: "Custom",
 }
 
+// Senior, PWD and solo parent have fixed rates from Philippine law (RA 9994, RA 10754, RA 11861).
 export function isPresetDiscount(type?: DiscountType) {
-  return type !== undefined && DISCOUNT_PRESET_RATES[type] !== undefined
+  return type === "senior" || type === "pwd" || type === "solo_parent"
+}
+
+// A Discounts row as a dropdown choice: "Senior citizen (20%)", or just "Custom".
+export function formatDiscountOption(discount: Discount) {
+  const label = DISCOUNT_TYPE_LABELS[discount.type] ?? discount.type
+  return isPresetDiscount(discount.type) ? `${label} (${discount.percent}%)` : label
 }
 
 // "Senior citizen, 20%" for presets, just "15%" for custom ones.

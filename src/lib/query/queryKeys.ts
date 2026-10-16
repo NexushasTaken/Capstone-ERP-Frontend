@@ -38,6 +38,7 @@ export const queryKeys = {
     types: ["orders", "types"] as const,
     statuses: ["orders", "statuses"] as const,
     drivers: ["orders", "drivers"] as const,
+    discounts: ["orders", "discounts"] as const,
   },
   products: {
     all: (params: FetchProductsParams = {}) => ["products", params] as const,

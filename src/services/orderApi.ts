@@ -1,5 +1,5 @@
 import type { StatusCount } from "@/types/statusCount"
-import type { OrderGroup, OrderDriver, OrderStatus, OrderType } from "@/types/order"
+import type { Discount, OrderGroup, OrderDriver, OrderStatus, OrderType } from "@/types/order"
 import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
 import type {
   FetchOrdersParams,
@@ -81,6 +81,21 @@ export async function updateOrder(payload: UpdateOrderPayload): Promise<ApiEnvel
   }
 
   return data
+}
+
+export async function fetchDiscounts(): Promise<Discount[]> {
+  const response = await fetch("/api/Order/discounts", {
+    method: "GET",
+    credentials: "include",
+  })
+
+  const data: ApiEnvelope<Discount[]> = await response.json()
+
+  if (!response.ok || !data.success) {
+    throw new ApiError(data.message || "Failed to fetch discounts", response.status, data.errors)
+  }
+
+  return data.content
 }
 
 export async function fetchOrderTypes(): Promise<OrderType[]> {
