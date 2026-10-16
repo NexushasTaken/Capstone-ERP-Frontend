@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatPeso } from "@/lib/format"
 import type { getOrderLineRows } from "@/lib/helpers/orderHelpers"
-import { formatProductId } from "@/lib/helpers/productHelpers"
 import DetailItem from "@/components/DetailItem"
 import OrderTotalRows from "./OrderTotalRows"
 
@@ -60,14 +59,7 @@ export default function ConfirmOrderModal({
               {lineRows.map((line, index) => (
                 <TableRow className="hover:bg-accent" key={`${line.productId}-${index}`}>
                   <TableCell className="text-center font-medium text-foreground">{index + 1}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium capitalize text-foreground">{line.product?.name ?? "-"}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {line.product ? formatProductId(line.product.id) : "-"}
-                      </span>
-                    </div>
-                  </TableCell>
+                  <TableCell className="font-medium capitalize text-foreground">{line.product?.name ?? "-"}</TableCell>
                   <TableCell className="text-center text-foreground">{formatPeso(line.unitPrice)}</TableCell>
                   <TableCell className="text-center font-medium text-foreground">{line.quantity}</TableCell>
                   <TableCell className="text-center font-medium text-foreground">{formatPeso(line.subtotal)}</TableCell>
