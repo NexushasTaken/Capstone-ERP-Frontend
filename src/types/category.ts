@@ -45,3 +45,8 @@ export interface UpdateCategoryPayload {
   id: number
   type: string
 }
+
+/** One row of a category import (`POST /Category/import`). */
+export interface CategoryImportRow {
+  type: string
+}

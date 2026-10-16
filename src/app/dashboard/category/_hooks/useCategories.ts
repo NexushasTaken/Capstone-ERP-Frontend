@@ -1,7 +1,15 @@
 "use client"
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { deleteCategory, fetchCategories, insertCategory, updateCategory } from "@/services/categoryApi"
+import { toast } from "sonner"
+import {
+  deleteCategory,
+  fetchCategories,
+  importCategories,
+  insertCategory,
+  updateCategory,
+} from "@/services/categoryApi"
+import { isValidationError } from "@/lib/apiError"
 import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
 import { queryKeys } from "@/lib/query/queryKeys"
 import type { CategoryListItem, FetchCategoriesParams } from "@/types/category"
@@ -86,8 +94,21 @@ export function useCategoryMutations(query: CategoriesQuery) {
     }),
   })
 
+  // Not optimistic: the modal waits for the result so it can show row errors from a 400.
+  const importCategoriesMutation = useMutation({
+    mutationFn: importCategories,
+    onSuccess: (count) => {
+      toast.success(`Imported ${count} category(ies)`)
+      queryClient.invalidateQueries({ queryKey: ["categories"] })
+    },
+    onError: (err) => {
+      if (!isValidationError(err)) toast.error(err.message || "Failed to import categories")
+    },
+  })
+
   return {
     addCategory,
+    importCategories: importCategoriesMutation,
     updateCategory: updateCategoryMutation,
     deleteCategory: deleteCategoryMutation,
     isSubmitting: addCategory.isPending || updateCategoryMutation.isPending || deleteCategoryMutation.isPending,

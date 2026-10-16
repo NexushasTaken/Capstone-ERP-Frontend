@@ -36,3 +36,6 @@ export interface InsertDriverPayload {
 export interface UpdateDriverPayload extends InsertDriverPayload {
   id: number
 }
+
+/** One row of a driver import (`POST /Order/driver/import`). */
+export type DriverImportRow = InsertDriverPayload

@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Plus } from "lucide-react"
+import { Plus, Upload } from "lucide-react"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
+import ImportModal from "@/components/ImportModal"
 import ListHeader from "@/components/ListHeader"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
@@ -23,12 +24,17 @@ import {
   getDriverFilter,
   getDriverFullName,
 } from "../_lib/driverHelpers"
+import { driverImportColumns, driverImportSchema } from "../_lib/driverImport"
 import DriverFormModal from "./DriverFormModal"
 import DriversTable from "./DriversTable"
 
 // Which modal is open, and for which driver.
 type ModalState =
-  { type: "add" } | { type: "update"; driver: DriverListItem } | { type: "delete"; driver: DriverListItem } | null
+  | { type: "add" }
+  | { type: "import" }
+  | { type: "update"; driver: DriverListItem }
+  | { type: "delete"; driver: DriverListItem }
+  | null
 
 export default function DriversView() {
   const { data: currentUser } = useCurrentUser()
@@ -76,10 +82,16 @@ export default function DriversView() {
         title="Drivers"
         actions={
           can(role, "driver:add") && (
-            <Button onClick={() => setModal({ type: "add" })} type="button">
-              <Plus className="h-4 w-4" />
-              Add driver
-            </Button>
+            <>
+              <Button onClick={() => setModal({ type: "import" })} type="button" variant="outline">
+                <Upload className="h-4 w-4" />
+                Import
+              </Button>
+              <Button onClick={() => setModal({ type: "add" })} type="button">
+                <Plus className="h-4 w-4" />
+                Add driver
+              </Button>
+            </>
           )
         }
         search={<SearchInput value={search} onChange={setSearch} placeholder="Search by name or ID" />}
@@ -129,6 +141,18 @@ export default function DriversView() {
           disabled={mutations.isSubmitting}
           onClose={closeModal}
           onSubmit={handleSubmitDriver}
+        />
+      )}
+
+      {modal?.type === "import" && (
+        <ImportModal
+          title="Import drivers"
+          columns={driverImportColumns}
+          schema={driverImportSchema}
+          templateName="drivers-template.csv"
+          pending={mutations.importDrivers.isPending}
+          onImport={(rows) => mutations.importDrivers.mutateAsync(rows)}
+          onClose={closeModal}
         />
       )}
 

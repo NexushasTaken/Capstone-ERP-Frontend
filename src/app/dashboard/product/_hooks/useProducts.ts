@@ -1,7 +1,10 @@
 "use client"
 
 import { keepPreviousData, type QueryKey, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { deleteProduct, fetchProducts, insertProduct, updateProduct } from "@/services/productApi"
+import { toast } from "sonner"
+import { deleteProduct, fetchProducts, importProducts, insertProduct, updateProduct } from "@/services/productApi"
+import { isValidationError } from "@/lib/apiError"
+import { invalidateInventories } from "@/lib/query/queryInvalidation"
 import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
 import { queryKeys } from "@/lib/query/queryKeys"
 import type { FetchProductsParams, ProductCategoryFilter, ProductListItem } from "@/types/product"
@@ -150,8 +153,23 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
     }),
   })
 
+  // Not optimistic: the modal waits for the result so it can show row errors from a 400.
+  const importProductsMutation = useMutation({
+    mutationFn: importProducts,
+    onSuccess: (count) => {
+      toast.success(`Imported ${count} product(s)`)
+      queryClient.invalidateQueries({ queryKey: ["products"] })
+      // Rows with a quantity also add stock records.
+      invalidateInventories(queryClient)
+    },
+    onError: (err) => {
+      if (!isValidationError(err)) toast.error(err.message || "Failed to import products")
+    },
+  })
+
   return {
     addProduct,
+    importProducts: importProductsMutation,
     updateProduct: updateProductMutation,
     deleteProduct: deleteProductMutation,
     isSubmitting: addProduct.isPending || updateProductMutation.isPending || deleteProductMutation.isPending,

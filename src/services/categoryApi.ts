@@ -1,5 +1,6 @@
 import type { CategoryListItem } from "@/types/category"
 import type {
+  CategoryImportRow,
   CategoryListContent,
   FetchCategoriesParams,
   InsertCategoryPayload,
@@ -8,6 +9,7 @@ import type {
 } from "@/types/category"
 import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
 import { ApiError } from "@/lib/apiError"
+import { postImport } from "@/lib/import/postImport"
 
 function mapCategory(item: RawCategoryListItem): CategoryListItem {
   return {
@@ -103,4 +105,14 @@ export async function deleteCategory(id: number): Promise<ApiEnvelopeNoContent> 
   }
 
   return data
+}
+
+// Saves every row or none; a 400 carries `rows.N.<field>` errors. Returns how many were added.
+export function importCategories(rows: CategoryImportRow[]): Promise<number> {
+  return postImport("/api/Category/import", rows, "categories")
+}
+
+// Checks names against the database without saving; a 400 carries `rows.N.type` errors.
+export function checkCategoryImport(rows: Pick<CategoryImportRow, "type">[]): Promise<unknown> {
+  return postImport<Pick<CategoryImportRow, "type">, unknown>("/api/Category/import/check", rows, "categories")
 }

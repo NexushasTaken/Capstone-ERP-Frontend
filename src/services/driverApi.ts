@@ -1,7 +1,14 @@
 import type { DriverListItem } from "@/types/driver"
-import type { DriverListContent, FetchDriversParams, InsertDriverPayload, UpdateDriverPayload } from "@/types/driver"
+import type {
+  DriverImportRow,
+  DriverListContent,
+  FetchDriversParams,
+  InsertDriverPayload,
+  UpdateDriverPayload,
+} from "@/types/driver"
 import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
 import { ApiError } from "@/lib/apiError"
+import { postImport } from "@/lib/import/postImport"
 
 export async function fetchDrivers(
   params: FetchDriversParams = {},
@@ -89,4 +96,9 @@ export async function deleteDriver(id: number): Promise<ApiEnvelopeNoContent> {
   }
 
   return data
+}
+
+// Saves every row or none; a 400 carries `rows.N.<field>` errors. Returns how many were added.
+export function importDrivers(rows: DriverImportRow[]): Promise<number> {
+  return postImport("/api/Order/driver/import", rows, "drivers")
 }

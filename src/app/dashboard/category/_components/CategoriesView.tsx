@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Plus } from "lucide-react"
+import { Plus, Upload } from "lucide-react"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
+import ImportModal from "@/components/ImportModal"
 import ListHeader from "@/components/ListHeader"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
@@ -19,12 +20,17 @@ import { useCategories, useCategoryMutations } from "../_hooks/useCategories"
 import { useCategoryFilters } from "../_hooks/useCategoryFilters"
 import { formatCategoryId } from "@/lib/helpers/categoryHelpers"
 import { categorySortOptions, getCategoryFilter } from "../_lib/categoryHelpers"
+import { categoryImportColumns, categoryImportSchema, checkCategoryCells } from "../_lib/categoryImport"
 import CategoriesTable from "./CategoriesTable"
 import CategoryFormModal from "./CategoryFormModal"
 
 // Which modal is open, and for which category.
 type ModalState =
-  { type: "add" } | { type: "edit"; category: CategoryListItem } | { type: "delete"; category: CategoryListItem } | null
+  | { type: "add" }
+  | { type: "import" }
+  | { type: "edit"; category: CategoryListItem }
+  | { type: "delete"; category: CategoryListItem }
+  | null
 
 export default function CategoriesView() {
   const { data: currentUser } = useCurrentUser()
@@ -77,10 +83,16 @@ export default function CategoriesView() {
         title="Categories"
         actions={
           can(role, "category:add") && (
-            <Button onClick={() => setModal({ type: "add" })} type="button">
-              <Plus className="h-4 w-4" />
-              Add category
-            </Button>
+            <>
+              <Button onClick={() => setModal({ type: "import" })} type="button" variant="outline">
+                <Upload className="h-4 w-4" />
+                Import
+              </Button>
+              <Button onClick={() => setModal({ type: "add" })} type="button">
+                <Plus className="h-4 w-4" />
+                Add category
+              </Button>
+            </>
           )
         }
         search={<SearchInput value={search} onChange={setSearch} placeholder="Search by type or ID" />}
@@ -129,6 +141,19 @@ export default function CategoriesView() {
           disabled={mutations.isSubmitting}
           onClose={closeModal}
           onSubmit={handleSubmitCategory}
+        />
+      )}
+
+      {modal?.type === "import" && (
+        <ImportModal
+          title="Import categories"
+          columns={categoryImportColumns}
+          schema={categoryImportSchema}
+          templateName="categories-template.csv"
+          pending={mutations.importCategories.isPending}
+          onCheck={checkCategoryCells}
+          onImport={(rows) => mutations.importCategories.mutateAsync(rows)}
+          onClose={closeModal}
         />
       )}
 

@@ -51,3 +51,14 @@ export interface UpdateProductPayload {
   price: number
   id: number
 }
+
+/** One row of a product import (`POST /Product/import`). */
+export interface ProductImportRow {
+  name: string
+  /** Category name, matched ignoring case; blank means no category. */
+  category?: string
+  price: number
+  /** Opening stock; set together with reorderPoint to create a stock record. */
+  quantity?: number
+  reorderPoint?: number
+}
