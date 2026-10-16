@@ -92,7 +92,7 @@ export default function DiscountFields({ ownerCustomDiscount = false }: Discount
       </FormField>
 
       {isPresetDiscount(discountType) && (
-        <FormField label="ID number" error={errors.discountIdNumber?.message}>
+        <FormField label="ID number (optional)" error={errors.discountIdNumber?.message}>
           <FormInput
             aria-invalid={!!errors.discountIdNumber}
             placeholder="Senior, PWD or solo parent ID"
