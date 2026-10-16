@@ -67,17 +67,12 @@ function checkDiscount(
   if (order.discountType === "none" && order.discountPercent !== 0) {
     ctx.addIssue({ code: "custom", path: ["discountPercent"], message: "Discount must be 0 when there is none." })
   }
-  if (presetRate !== undefined) {
-    if (order.discountPercent !== presetRate) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["discountPercent"],
-        message: `The ${DISCOUNT_TYPE_LABELS[order.discountType].toLowerCase()} discount is fixed at ${presetRate}%.`,
-      })
-    }
-    if (!order.discountIdNumber.trim()) {
-      ctx.addIssue({ code: "custom", path: ["discountIdNumber"], message: "ID number is required for this discount." })
-    }
+  if (presetRate !== undefined && order.discountPercent !== presetRate) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["discountPercent"],
+      message: `The ${DISCOUNT_TYPE_LABELS[order.discountType].toLowerCase()} discount is fixed at ${presetRate}%.`,
+    })
   }
   if (order.discountType === "custom" && order.discountPercent <= 0) {
     ctx.addIssue({ code: "custom", path: ["discountPercent"], message: "Custom discount must be more than 0." })
