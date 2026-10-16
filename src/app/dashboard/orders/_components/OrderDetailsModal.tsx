@@ -3,6 +3,7 @@ import DetailItem from "@/components/DetailItem"
 import SeeMoreModal from "@/components/SeeMoreModal"
 import { formatDate, formatPeso } from "@/lib/format"
 import {
+  formatDiscount,
   formatOrderNumber,
   normalizeOrderText,
   orderStatusClass,
@@ -75,9 +76,10 @@ function OrderDetailsBody({ order }: { order: OrderGroup }) {
         <DetailItem label="Quantity" value={totalQuantity} />
         <DetailItem label="Subtotal" value={formatPeso(order.subtotal)} />
         <DetailItem
-          label={`Discount (${order.discountPercent}%)`}
+          label={`Discount (${formatDiscount(order.discountType, order.discountPercent)})`}
           value={order.discountAmount > 0 ? `-${formatPeso(order.discountAmount)}` : formatPeso(0)}
         />
+        {order.discountIdNumber ? <DetailItem label="Discount ID number" value={order.discountIdNumber} /> : null}
         <DetailItem label="Total" value={formatPeso(order.total)} />
         {isWalkinOrder ? null : (
           <>

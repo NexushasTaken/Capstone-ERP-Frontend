@@ -10,6 +10,7 @@ import { formatProductId } from "@/lib/helpers/productHelpers"
 import { getStockLeft, type getOrderLineRows } from "@/lib/helpers/orderHelpers"
 import type { ProductListItem } from "@/types/product"
 import { emptyOrderLine, type OrderFields } from "../_lib/orderSchema"
+import type { DiscountType } from "@/types/order"
 import OrderTotalRows from "./OrderTotalRows"
 
 interface OrderLinesEditorProps {
@@ -18,6 +19,7 @@ interface OrderLinesEditorProps {
   /** Sum of the line subtotals, before the discount. */
   totalAmount: number
   discountPercent?: number
+  discountType?: DiscountType
   products: ProductListItem[]
   productsLoading: boolean
   productsError: unknown
@@ -31,6 +33,7 @@ export default function OrderLinesEditor({
   lineRows,
   totalAmount,
   discountPercent,
+  discountType,
   products,
   productsLoading,
   productsError,
@@ -165,6 +168,7 @@ export default function OrderLinesEditor({
           <TableFooter className="border-t border-border bg-background">
             <OrderTotalRows
               discountPercent={discountPercent}
+              discountType={discountType}
               labelColSpan={4}
               subtotal={totalAmount}
               trailingCells={1}

@@ -1,4 +1,4 @@
-import type { OrderGroup } from "@/types/order"
+import type { DiscountType, OrderGroup } from "@/types/order"
 import type { ProductListItem } from "@/types/product"
 
 export function formatOrderNumber(orderId: number) {
@@ -92,4 +92,30 @@ export function hasStockShortage(
 export function getOrderDiscountAmount(subtotal: number, discountPercent?: number) {
   const percent = Number(discountPercent) || 0
   return Math.round(subtotal * percent) / 100
+}
+
+// Fixed rates from Philippine law: RA 9994 (senior citizens), RA 10754 (PWDs), RA 11861 (solo parents).
+// Mirrors the backend's DiscountTypes.PresetRates.
+export const DISCOUNT_PRESET_RATES: Partial<Record<DiscountType, number>> = {
+  senior: 20,
+  pwd: 20,
+  solo_parent: 10,
+}
+
+export const DISCOUNT_TYPE_LABELS: Record<DiscountType, string> = {
+  none: "No discount",
+  senior: "Senior citizen",
+  pwd: "PWD",
+  solo_parent: "Solo parent",
+  custom: "Custom",
+}
+
+export function isPresetDiscount(type?: DiscountType) {
+  return type !== undefined && DISCOUNT_PRESET_RATES[type] !== undefined
+}
+
+// "Senior citizen, 20%" for presets, just "15%" for custom ones.
+export function formatDiscount(type: DiscountType | undefined, discountPercent?: number) {
+  const percent = `${Number(discountPercent) || 0}%`
+  return type && isPresetDiscount(type) ? `${DISCOUNT_TYPE_LABELS[type]}, ${percent}` : percent
 }

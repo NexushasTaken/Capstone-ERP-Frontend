@@ -1,3 +1,6 @@
+/** Mirrors the backend's DiscountTypes. Senior, PWD and solo parent are the legal presets. */
+export type DiscountType = "none" | "senior" | "pwd" | "solo_parent" | "custom"
+
 export interface OrderLine {
   productId: number
   productName: string
@@ -19,6 +22,9 @@ export interface OrderGroup {
   orders: OrderLine[]
   subtotal: number
   discountPercent: number
+  discountType: DiscountType
+  /** ID card number, kept for the preset discounts only. */
+  discountIdNumber: string | null
   discountAmount: number
   /** Net of the discount. */
   total: number
@@ -62,6 +68,8 @@ export interface InsertOrderPayload {
   customerName: string
   deliveryAddress: string
   discountPercent: number
+  discountType: DiscountType
+  discountIdNumber: string
   orderLines: { productId: number; quantity: number }[]
 }
 
@@ -70,6 +78,8 @@ export interface UpdateOrderPayload {
   deliveryDriverId: number
   deliveryAddress: string
   discountPercent: number
+  discountType: DiscountType
+  discountIdNumber: string
   orderLines: { productId: number; quantity: number }[]
 }
 

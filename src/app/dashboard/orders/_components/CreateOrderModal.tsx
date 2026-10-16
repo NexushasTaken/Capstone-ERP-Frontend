@@ -13,16 +13,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useInventoryProductSearch } from "@/hooks/useInventoryProductSearch"
 import { useOrderTypes } from "@/hooks/useOrderTypes"
 import {
+  formatDiscount,
   getOrderLineAmountTotal,
   getOrderLineQuantityTotal,
   getOrderLineRows,
   hasStockShortage,
+  isPresetDiscount,
   normalizeOrderText,
 } from "@/lib/helpers/orderHelpers"
 import type { InsertOrderPayload } from "@/types/order"
 import { useOrderDrivers } from "../_hooks/useOrders"
 import { emptyOrder, orderSchema, type OrderFields } from "../_lib/orderSchema"
 import ConfirmOrderModal from "./ConfirmOrderModal"
+import DiscountFields from "./DiscountFields"
 import OrderLinesEditor from "./OrderLinesEditor"
 
 interface CreateOrderModalProps {
@@ -97,6 +100,8 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
       customerName: order.customerName,
       deliveryAddress: isWalkin ? "" : order.deliveryAddress,
       discountPercent: order.discountPercent,
+      discountType: order.discountType,
+      discountIdNumber: order.discountIdNumber,
       orderLines: order.orderLines,
     })
     setIsReviewing(false)
@@ -108,7 +113,8 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
     ...(isWalkin ? [] : [{ label: "Delivery driver", value: selectedDriverLabel || "-" }]),
     { label: "Customer", value: values.customerName || "-" },
     { label: "Quantity", value: totalQuantity },
-    { label: "Discount", value: `${Number(values.discountPercent) || 0}%` },
+    { label: "Discount", value: formatDiscount(values.discountType, values.discountPercent) },
+    ...(isPresetDiscount(values.discountType) ? [{ label: "ID number", value: values.discountIdNumber || "-" }] : []),
     ...(isWalkin ? [] : [{ label: "Delivery address", value: values.deliveryAddress || "-" }]),
   ]
 
@@ -120,100 +126,93 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
     >
       <ModalHeader className="p-5" title="Create order" onClose={onClose} />
 
-      <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
-        <div className="flex flex-col bg-background">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <FormField label="Order type" error={errors.orderTypeId?.message}>
-              <Controller
-                control={control}
-                name="orderTypeId"
-                render={({ field }) => (
-                  <Select
-                    disabled={orderTypesLoading}
-                    items={orderTypeSelectItems}
-                    onValueChange={(value) => {
-                      field.onChange(Number(value ?? 0))
-                      field.onBlur()
-                    }}
-                    value={field.value ? String(field.value) : ""}
-                  >
-                    <SelectTrigger aria-invalid={!!errors.orderTypeId} className="w-full">
-                      <SelectValue placeholder="Select order type" />
-                    </SelectTrigger>
-                    <SelectContent className="capitalize">
-                      {orderTypeOptions.map((orderType) => (
-                        <SelectItem key={orderType.id} value={String(orderType.id)} className="capitalize">
-                          {orderType.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </FormField>
-
-            {!isWalkin && (
-              <FormField label="Delivery driver" error={errors.deliveryDriverId?.message}>
+      <FormProvider {...form}>
+        <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
+          <div className="flex flex-col bg-background">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <FormField label="Order type" error={errors.orderTypeId?.message}>
                 <Controller
                   control={control}
-                  name="deliveryDriverId"
+                  name="orderTypeId"
                   render={({ field }) => (
-                    <EntityDropdown
-                      emptyLabel="No drivers found."
-                      isLoading={driversLoading}
-                      onSelect={field.onChange}
-                      options={driverOptions}
-                      placeholder="Select delivery driver"
-                      searchPlaceholder="Search drivers..."
-                      value={selectedDriverLabel}
-                    />
+                    <Select
+                      disabled={orderTypesLoading}
+                      items={orderTypeSelectItems}
+                      onValueChange={(value) => {
+                        field.onChange(Number(value ?? 0))
+                        field.onBlur()
+                      }}
+                      value={field.value ? String(field.value) : ""}
+                    >
+                      <SelectTrigger aria-invalid={!!errors.orderTypeId} className="w-full">
+                        <SelectValue placeholder="Select order type" />
+                      </SelectTrigger>
+                      <SelectContent className="capitalize">
+                        {orderTypeOptions.map((orderType) => (
+                          <SelectItem key={orderType.id} value={String(orderType.id)} className="capitalize">
+                            {orderType.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   )}
                 />
               </FormField>
-            )}
 
-            <FormField label="Customer name" error={errors.customerName?.message}>
-              <FormInput aria-invalid={!!errors.customerName} className="capitalize" {...register("customerName")} />
-            </FormField>
+              {!isWalkin && (
+                <FormField label="Delivery driver" error={errors.deliveryDriverId?.message}>
+                  <Controller
+                    control={control}
+                    name="deliveryDriverId"
+                    render={({ field }) => (
+                      <EntityDropdown
+                        emptyLabel="No drivers found."
+                        isLoading={driversLoading}
+                        onSelect={field.onChange}
+                        options={driverOptions}
+                        placeholder="Select delivery driver"
+                        searchPlaceholder="Search drivers..."
+                        value={selectedDriverLabel}
+                      />
+                    )}
+                  />
+                </FormField>
+              )}
 
-            <FormField label="Discount (%)" error={errors.discountPercent?.message}>
-              <FormInput
-                aria-invalid={!!errors.discountPercent}
-                max={100}
-                min={0}
-                step="any"
-                type="number"
-                {...register("discountPercent", { valueAsNumber: true })}
-              />
-              <span className="text-xs text-muted-foreground">Taken off the total of the items below</span>
-            </FormField>
+              <FormField label="Customer name" error={errors.customerName?.message}>
+                <FormInput aria-invalid={!!errors.customerName} className="capitalize" {...register("customerName")} />
+              </FormField>
 
-            <FormField label="Quantity (total items)">
-              <Input className="bg-muted/50" readOnly disabled value={totalQuantity} />
-              <span className="text-xs text-muted-foreground">Calculated from items below</span>
-            </FormField>
-          </div>
-
-          {!isWalkin && (
-            <div className="mt-4">
-              <FormField label="Delivery address" error={errors.deliveryAddress?.message}>
-                <FormInput aria-invalid={!!errors.deliveryAddress} {...register("deliveryAddress")} />
+              <FormField label="Quantity (total items)">
+                <Input className="bg-muted/50" readOnly disabled value={totalQuantity} />
+                <span className="text-xs text-muted-foreground">Calculated from items below</span>
               </FormField>
             </div>
-          )}
-        </div>
 
-        <FormProvider {...form}>
+            <div className="mt-4">
+              <DiscountFields />
+            </div>
+
+            {!isWalkin && (
+              <div className="mt-4">
+                <FormField label="Delivery address" error={errors.deliveryAddress?.message}>
+                  <FormInput aria-invalid={!!errors.deliveryAddress} {...register("deliveryAddress")} />
+                </FormField>
+              </div>
+            )}
+          </div>
+
           <OrderLinesEditor
             lineRows={lineRows}
             totalAmount={totalAmount}
             discountPercent={values.discountPercent}
+            discountType={values.discountType}
             products={products}
             productsLoading={productsLoading}
             productsError={productsError}
           />
-        </FormProvider>
-      </div>
+        </div>
+      </FormProvider>
 
       <div className="flex justify-end gap-2 border-t border-border p-5">
         <Button onClick={onClose} type="button" variant="outline">
@@ -232,6 +231,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
         lineRows={lineRows}
         totalAmount={totalAmount}
         discountPercent={values.discountPercent}
+        discountType={values.discountType}
         disabled={!canSubmit}
         onBack={() => setIsReviewing(false)}
         onConfirm={handleConfirm}
