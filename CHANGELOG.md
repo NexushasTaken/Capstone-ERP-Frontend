@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.5.0] - 2026-10-16
+
+### Removed
+
+- The Sales Overview card (sales total, growth and chart) from the Dashboard.
+- The Need ordering and Movement Velocity cards from the Inventory page. The number of products that need ordering is still shown on the Demand Forecast page and in the Dashboard's Restock Summary.
+
 ## [5.4.0] - 2026-10-16
 
 ### Changed

@@ -1,4 +1,4 @@
-import type { FetchInventoriesParams, FetchInventoryVelocityParams } from "@/types/inventory"
+import type { FetchInventoriesParams } from "@/types/inventory"
 import type { FetchOrdersParams } from "@/types/order"
 import type { FetchProductsParams } from "@/types/product"
 import type { FetchDriversParams } from "@/types/driver"
@@ -16,7 +16,6 @@ export const queryKeys = {
     all: (params: FetchDriversParams = {}) => ["drivers", params] as const,
   },
   dashboard: {
-    salesOverview: (params: { from: string; to: string }) => ["dashboard", "salesOverview", params] as const,
     inventory: ["dashboard", "inventory"] as const,
     inventoryForecast: (params: FetchInventoryForecastParams = {}) =>
       ["dashboard", "inventory", "forecast", params] as const,
@@ -29,7 +28,6 @@ export const queryKeys = {
     statusCounts: ["inventories", "statusCounts"] as const,
     movements: (id: number | null) => ["inventories", "movements", id] as const,
     damageRecords: (id: number | null) => ["inventories", "damageRecords", id] as const,
-    velocity: (params: FetchInventoryVelocityParams) => ["inventories", "velocity", params] as const,
     all: (params: FetchInventoriesParams = {}) => ["inventories", params] as const,
   },
   orders: {

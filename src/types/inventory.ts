@@ -24,26 +24,8 @@ export interface InventoryDamageItem {
   reason: string
   created_At: string
 }
-export interface InventoryVelocityItem {
-  inventoryId: number
-  name: string
-  classification: string
-  velocityMetric: number
-}
 
 // API request/response shapes
-
-export interface InventoryVelocityContent {
-  inventories: InventoryVelocityItem[]
-  pageCount: number
-  rows: number
-}
-
-export interface FetchInventoryVelocityParams {
-  cutOffDate: number
-  page?: number
-  pageSize?: number
-}
 
 export interface InventoryListContent {
   inventories: InventoryListItem[]

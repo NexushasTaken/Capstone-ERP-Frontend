@@ -1,21 +1,3 @@
-export interface SalesOverviewPoint {
-  /** Month name and year, e.g. "September 2026". Only months with sales are listed. */
-  month: string
-  data: number
-}
-
-export interface SalesOverviewContent {
-  data: SalesOverviewPoint[]
-  totalSales: number
-  growthPercentage: number
-  growthErrorMessage?: string | null
-}
-
-export interface FetchSalesOverviewParams {
-  from: string
-  to: string
-}
-
 export interface DashboardInventoryStatusItem {
   status: string
   total: number
