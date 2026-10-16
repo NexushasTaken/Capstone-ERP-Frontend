@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { formatPeso } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { formatProductId } from "@/lib/helpers/productHelpers"
-import type { getOrderLineRows } from "@/lib/helpers/orderHelpers"
+import { getStockLeft, type getOrderLineRows } from "@/lib/helpers/orderHelpers"
 import type { ProductListItem } from "@/types/product"
 import { emptyOrderLine, type OrderFields } from "../_lib/orderSchema"
 import OrderTotalRows from "./OrderTotalRows"
@@ -43,13 +43,7 @@ export default function OrderLinesEditor({
   } = useFormContext<OrderFields>()
   const { fields, append, remove } = useFieldArray({ control, name: "orderLines" })
 
-  // A preview only: stock changes on the server when the order is saved, which re-checks it.
-  const enteredByProduct: Record<number, number> = {}
-  for (const line of lineRows) {
-    if (line.productId) enteredByProduct[line.productId] = (enteredByProduct[line.productId] ?? 0) + line.quantity
-  }
-  const stockLeft = (product: ProductListItem) =>
-    (product.stock ?? 0) + (heldQuantities[product.id] ?? 0) - (enteredByProduct[product.id] ?? 0)
+  const stockLeft = getStockLeft(lineRows, heldQuantities)
 
   const productOptions = products.map((product) => ({
     id: product.id,
@@ -86,6 +80,7 @@ export default function OrderLinesEditor({
             {fields.map((field, index) => {
               const line = lineRows[index]
               const lineErrors = errors.orderLines?.[index]
+              const isOverStock = !!line?.product && stockLeft(line.product) < 0
               return (
                 <TableRow className="hover:bg-accent" key={field.id}>
                   <TableCell className="text-center font-medium text-foreground">{index + 1}</TableCell>
@@ -133,15 +128,20 @@ export default function OrderLinesEditor({
                   <TableCell>
                     <div className="flex flex-col items-center gap-1">
                       <Input
-                        aria-invalid={!!lineErrors?.quantity}
+                        aria-invalid={!!lineErrors?.quantity || isOverStock}
                         className="mx-auto w-28 text-center"
                         min={1}
                         type="number"
                         {...register(`orderLines.${index}.quantity`, { valueAsNumber: true })}
                       />
-                      {lineErrors?.quantity && (
+                      {lineErrors?.quantity ? (
                         <span className="text-xs text-destructive">{lineErrors.quantity.message}</span>
-                      )}
+                      ) : isOverStock && line?.product ? (
+                        <span className="text-center text-xs text-destructive">
+                          Not enough stock: only {(line.product.stock ?? 0) + (heldQuantities[line.product.id] ?? 0)}{" "}
+                          available.
+                        </span>
+                      ) : null}
                     </div>
                   </TableCell>
                   <TableCell className="text-center font-medium text-foreground">

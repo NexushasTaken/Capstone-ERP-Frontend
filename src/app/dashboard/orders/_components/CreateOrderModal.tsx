@@ -16,6 +16,7 @@ import {
   getOrderLineAmountTotal,
   getOrderLineQuantityTotal,
   getOrderLineRows,
+  hasStockShortage,
   normalizeOrderText,
 } from "@/lib/helpers/orderHelpers"
 import type { InsertOrderPayload } from "@/types/order"
@@ -87,7 +88,7 @@ export default function CreateOrderModal({ open, disabled, onClose, onSubmit }: 
   const lineRows = getOrderLineRows(values.orderLines ?? [], products)
   const totalQuantity = getOrderLineQuantityTotal(lineRows)
   const totalAmount = getOrderLineAmountTotal(lineRows)
-  const canSubmit = isValid && !disabled
+  const canSubmit = isValid && !disabled && !hasStockShortage(lineRows)
 
   const handleConfirm = handleSubmit((order) => {
     onSubmit({
