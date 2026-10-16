@@ -108,7 +108,7 @@ const deleteDriver = useMutation({
 })
 ```
 
-  If the optimistic row needs display data the API payload lacks (category or warehouse name), add it to the mutation variables and strip it in `mutationFn`. See `ProductValues.categoryName`.
+  If the optimistic row needs display data the API payload lacks (such as the category name), add it to the mutation variables and strip it in `mutationFn`. See `ProductValues.categoryName`.
 - Audit logs refresh automatically after any mutation (`MutationCache` in `src/app/providers.tsx`). Don't add manual audit-log invalidation.
 - Debounce search with `useDebouncedValue(search.trim())`. Reset to page 1 in the input's `onChange`, not in an effect.
 

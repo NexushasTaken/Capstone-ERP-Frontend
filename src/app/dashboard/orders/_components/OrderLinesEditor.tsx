@@ -176,7 +176,7 @@ export default function OrderLinesEditor({
   )
 }
 
-// "PR-12 · Stock: 40": stock left across all warehouses (what an order draws from) after this order's quantities.
+// "PR-12 · Stock: 40": stock left (what an order draws from) after this order's quantities.
 function productLabel(product: ProductListItem, stock: number) {
   return `${formatProductId(product.id)} · Stock: ${stock}`
 }

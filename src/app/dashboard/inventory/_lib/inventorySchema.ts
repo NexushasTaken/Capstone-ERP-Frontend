@@ -3,17 +3,15 @@ import { positiveInt, requiredId, requiredString } from "@/lib/validation"
 
 export interface InventoryFields {
   productId: number
-  warehouseId: number
   reorderPoint: number
   /** Only asked for when adding. */
   quantity?: number
 }
 
-// An item is one product in one warehouse. Editing only changes the reorder point; like the backend, it must be above 0.
+// An item is one product's stock record. Editing only changes the reorder point; like the backend, it must be above 0.
 export function inventorySchema(isEdit: boolean): z.ZodType<InventoryFields, InventoryFields> {
   const common = {
     productId: requiredId("Select a product."),
-    warehouseId: requiredId("Select a warehouse."),
     reorderPoint: positiveInt("Reorder point must be greater than 0."),
   }
   if (isEdit) {

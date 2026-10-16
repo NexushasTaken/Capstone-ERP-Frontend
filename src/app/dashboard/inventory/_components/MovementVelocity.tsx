@@ -66,9 +66,6 @@ export default function MovementVelocity() {
                   Inventory
                 </th>
                 <th scope="col" className="pb-3 pr-3">
-                  Warehouse
-                </th>
-                <th scope="col" className="pb-3 pr-3">
                   Classification
                 </th>
               </tr>
@@ -77,7 +74,6 @@ export default function MovementVelocity() {
               {data.items.map((item) => (
                 <tr key={item.inventoryId} className="border-t border-border">
                   <td className="py-3 pr-3 capitalize">{item.name}</td>
-                  <td className="py-3 pr-3">{item.warehouse}</td>
                   <td className="py-3 pr-3">{item.classification}</td>
                 </tr>
               ))}

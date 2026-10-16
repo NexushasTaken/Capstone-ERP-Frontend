@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Warehouse as WarehouseIcon } from "lucide-react"
+import { Boxes } from "lucide-react"
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 
@@ -71,7 +71,7 @@ export default function InventoryOverview() {
       <div className="mt-4 flex flex-col gap-3 sm:flex-row">
         <div className="min-w-0 flex-1 rounded-xl bg-background p-4">
           <div className="flex items-center gap-2">
-            <WarehouseIcon size={18} className="text-muted-foreground" />
+            <Boxes size={18} className="text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Total stock</span>
           </div>
           <p className="mt-3 text-4xl font-semibold text-foreground">
@@ -130,7 +130,7 @@ export default function InventoryOverview() {
                 <div key={item.id} className="flex items-center justify-between rounded-lg border border-border p-3">
                   <div>
                     <p className="font-medium text-foreground capitalize">{item.name}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{item.warehouseName}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{item.categoryName}</p>
                   </div>
 
                   <span className={`text-xs font-medium ${statusStyle.labelClassName}`}>{capitalize(item.status)}</span>

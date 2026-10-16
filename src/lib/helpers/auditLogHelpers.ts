@@ -69,7 +69,6 @@ export const auditModuleOptions: AuditModuleOption[] = [
   { value: 3, key: "Driver", label: "Driver" },
   { value: 4, key: "Order", label: "Order" },
   { value: 5, key: "Inventory", label: "Inventory" },
-  { value: 6, key: "Warehouse", label: "Warehouse" },
   { value: 7, key: "Account", label: "Account" },
 ]
 

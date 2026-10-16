@@ -10,7 +10,6 @@ export interface OrderFields {
   orderTypeId: number
   deliveryDriverId: number
   customerName: string
-  pickUpAddress: string
   deliveryAddress: string
   discountPercent: number
   orderLines: OrderLineFields[]
@@ -22,7 +21,6 @@ export const emptyOrder: OrderFields = {
   orderTypeId: 0,
   deliveryDriverId: 0,
   customerName: "",
-  pickUpAddress: "",
   deliveryAddress: "",
   discountPercent: 0,
   orderLines: [emptyOrderLine],
@@ -43,10 +41,9 @@ function orderObject(isWalkin: boolean) {
       .max(100, "Discount can't be more than 100%."),
     orderLines: z.array(orderLineSchema).min(1, "Add at least one product."),
     ...(isWalkin
-      ? { deliveryDriverId: z.number(), pickUpAddress: z.string(), deliveryAddress: z.string() }
+      ? { deliveryDriverId: z.number(), deliveryAddress: z.string() }
       : {
           deliveryDriverId: requiredId("Select a delivery driver."),
-          pickUpAddress: requiredString("Pick up address is required."),
           deliveryAddress: requiredString("Delivery address is required."),
         }),
   })

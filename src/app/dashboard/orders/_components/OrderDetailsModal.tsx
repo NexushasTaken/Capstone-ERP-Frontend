@@ -82,7 +82,6 @@ function OrderDetailsBody({ order }: { order: OrderGroup }) {
         {isWalkinOrder ? null : (
           <>
             <DetailItem label="Driver" value={order.driverName || "Unassigned"} />
-            <DetailItem label="Pickup address" value={order.pickUpAddress ?? "-"} />
             <DetailItem label="Delivery address" value={order.deliveryAddress ?? "-"} />
           </>
         )}

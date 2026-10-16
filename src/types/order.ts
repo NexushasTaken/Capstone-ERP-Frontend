@@ -13,7 +13,6 @@ export interface OrderGroup {
   deliveryDriverId: number | null
   driverName: string | null
   customerName: string
-  pickUpAddress: string | null
   deliveryAddress: string | null
   created_At: string
   updated_At: string | null
@@ -61,7 +60,6 @@ export interface InsertOrderPayload {
   orderTypeId: number
   deliveryDriverId: number
   customerName: string
-  pickUpAddress: string
   deliveryAddress: string
   discountPercent: number
   orderLines: { productId: number; quantity: number }[]
@@ -70,7 +68,6 @@ export interface InsertOrderPayload {
 export interface UpdateOrderPayload {
   orderId: number
   deliveryDriverId: number
-  pickUpAddress: string
   deliveryAddress: string
   discountPercent: number
   orderLines: { productId: number; quantity: number }[]

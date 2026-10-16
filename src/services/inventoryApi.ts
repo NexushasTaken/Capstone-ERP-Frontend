@@ -72,7 +72,6 @@ export async function fetchInventories(params: FetchInventoriesParams = {}): Pro
   if (params.name) query.set("name", params.name)
   if (params.statusId !== undefined) query.set("statusId", String(params.statusId))
   if (params.filter !== undefined) query.set("filter", String(params.filter))
-  if (params.warehouseId) query.set("warehouseId", String(params.warehouseId))
   if (params.categoryId) query.set("categoryId", String(params.categoryId))
   if (params.minQuantity !== undefined) query.set("minQuantity", String(params.minQuantity))
   if (params.maxQuantity !== undefined) query.set("maxQuantity", String(params.maxQuantity))

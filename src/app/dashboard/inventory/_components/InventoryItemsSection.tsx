@@ -25,7 +25,6 @@ import {
   useInventoryMutations,
   useInventoryStatusCounts,
   useSelectableCategories,
-  useSelectableWarehouses,
 } from "../_hooks/useInventory"
 import { useInventoryFilters } from "../_hooks/useInventoryFilters"
 import InventoryDetailsModal from "./InventoryDetailsModal"
@@ -71,7 +70,6 @@ export default function InventoryItemsSection() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   // Bumped after a successful add to clear the add form.
   const [addFormKey, setAddFormKey] = useState(0)
-  const warehouses = useSelectableWarehouses(true).warehouses
   const categories = useSelectableCategories()
 
   const listParams = {
@@ -80,7 +78,6 @@ export default function InventoryItemsSection() {
     name: urlSearch || undefined,
     statusId: inventoryStatusIds[selectedFilter] ?? 0,
     filter: getInventoryFilter({ value: sortBy, order: sortOrder }),
-    warehouseId: Number(filters.warehouse) || undefined,
     categoryId: Number(filters.category) || undefined,
     minQuantity: filters.minQuantity === "" ? undefined : Number(filters.minQuantity),
     maxQuantity: filters.maxQuantity === "" ? undefined : Number(filters.maxQuantity),
@@ -154,9 +151,7 @@ export default function InventoryItemsSection() {
             )}
           </>
         }
-        search={
-          <SearchInput value={search} onChange={setSearch} placeholder="Search by product, warehouse, status or ID" />
-        }
+        search={<SearchInput value={search} onChange={setSearch} placeholder="Search by product, status or ID" />}
         filters={
           <>
             <CountFilterSelect
@@ -168,19 +163,6 @@ export default function InventoryItemsSection() {
               }))}
               value={selectedFilter}
               onChange={(status) => update({ status })}
-            />
-            <CountFilterSelect
-              aria-label="Filter inventory by warehouse"
-              options={[
-                { value: "", label: "All Warehouses" },
-                ...warehouses.map((warehouse) => ({
-                  value: String(warehouse.id),
-                  label: titleCase(warehouse.name),
-                  count: warehouse.stocks,
-                })),
-              ]}
-              value={filters.warehouse}
-              onChange={(warehouse) => update({ warehouse })}
             />
             <CountFilterSelect
               aria-label="Filter inventory by category"

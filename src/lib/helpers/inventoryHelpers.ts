@@ -70,18 +70,12 @@ export const inventorySortOptions = [
     value: "reorderPoint" as InventorySortBy,
     order: "asc" as const,
   },
-  {
-    label: "Warehouse ID (Ascending)",
-    value: "warehouseId" as InventorySortBy,
-    order: "asc" as const,
-  },
 ]
 
 export function getInventoryFilter(value: { value: InventorySortBy; order: "asc" | "desc" }) {
   if (value.value === "name") return value.order === "asc" ? 1 : 2
   if (value.value === "quantity") return value.order === "desc" ? 3 : 4
   if (value.value === "reorderPoint") return 5
-  if (value.value === "warehouseId") return 6
 
   return 0
 }
