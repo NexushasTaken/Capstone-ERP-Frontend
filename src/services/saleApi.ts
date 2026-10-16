@@ -1,5 +1,5 @@
 import type { Sale } from "@/types/sale"
-import type { FetchSalesParams, SaleDateRange, SaleListContent } from "@/types/sale"
+import type { FetchSalesParams, SaleDateRange, SaleListContent, SalesReportPeriod } from "@/types/sale"
 import { ApiError } from "@/lib/apiError"
 
 interface SaleEnvelope {
@@ -78,4 +78,30 @@ export async function fetchSaleDateRange(signal?: AbortSignal): Promise<SaleDate
   }
 
   return data.range
+}
+
+// Downloads the sales report PDF for the period around `date` (`yyyy-MM-dd`, a Philippine day).
+export async function downloadSalesReport(period: SalesReportPeriod, date: string): Promise<void> {
+  const query = new URLSearchParams({ period, date })
+  const response = await fetch(`/api/Sale/report?${query.toString()}`, {
+    cache: "no-store",
+    method: "GET",
+    credentials: "include",
+  })
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null)
+    throw new ApiError(data?.message || `Failed to export the sales report: ${response.status}`, response.status)
+  }
+
+  const fileName =
+    /filename="?([^";]+)"?/.exec(response.headers.get("content-disposition") ?? "")?.[1] ??
+    `sales-${period}-${date}.pdf`
+  const url = URL.createObjectURL(await response.blob())
+  const link = document.createElement("a")
+  link.href = url
+  link.download = fileName
+  link.click()
+  // Freed a moment later, once the browser has started the download.
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
