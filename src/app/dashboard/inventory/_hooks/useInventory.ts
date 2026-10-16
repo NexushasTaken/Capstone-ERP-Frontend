@@ -13,7 +13,6 @@ import {
   restockInventory,
   updateInventory,
 } from "@/services/inventoryApi"
-import { fetchInventoryForecast } from "@/services/dashboardApi"
 import { fetchCategories } from "@/services/categoryApi"
 import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
 import { invalidateInventories } from "@/lib/query/queryInvalidation"
@@ -42,16 +41,6 @@ export function useInventoryStatusCounts() {
     queryKey: queryKeys.inventories.statusCounts,
     queryFn: ({ signal }) => fetchInventoryStatusCounts(signal),
   })
-}
-
-/** How many products need ordering now (suggested order above 0). */
-export function useNeedOrderCount() {
-  const params = { page: 1, pageSize: 1 }
-  const { data } = useQuery({
-    queryKey: queryKeys.dashboard.inventoryForecast(params),
-    queryFn: ({ signal }) => fetchInventoryForecast(params, signal),
-  })
-  return data?.needOrderCount ?? 0
 }
 
 const ALL_CATEGORIES = { page: 1, pageSize: 1000 }
