@@ -37,6 +37,7 @@ const permissions: Record<Role, RolePermissions> = {
       "inventory:delete",
       "inventory:restock",
       "inventory:damage",
+      "order:custom-discount",
       "sales:return",
       "sales:report",
       "account:create",

@@ -1,11 +1,13 @@
 import { TableCell, TableRow } from "@/components/ui/table"
 import { formatPeso } from "@/lib/format"
-import { getOrderDiscountAmount } from "@/lib/helpers/orderHelpers"
+import { formatDiscount, getOrderDiscountAmount } from "@/lib/helpers/orderHelpers"
+import type { DiscountType } from "@/types/order"
 
 interface OrderTotalRowsProps {
   /** Sum of the line subtotals, before the discount. */
   subtotal: number
   discountPercent?: number
+  discountType?: DiscountType
   /** Columns the label cell spans. */
   labelColSpan: number
   /** Extra empty cells to line the amount up with the table's columns. */
@@ -16,6 +18,7 @@ interface OrderTotalRowsProps {
 export default function OrderTotalRows({
   subtotal,
   discountPercent,
+  discountType,
   labelColSpan,
   trailingCells = 0,
 }: OrderTotalRowsProps) {
@@ -36,7 +39,7 @@ export default function OrderTotalRows({
           </TableRow>
           <TableRow className="hover:bg-transparent">
             <TableCell className="text-right text-sm uppercase text-muted-foreground" colSpan={labelColSpan}>
-              Discount ({discountPercent}%)
+              Discount ({formatDiscount(discountType, discountPercent)})
             </TableCell>
             <TableCell className="text-center text-destructive">-{formatPeso(discountAmount)}</TableCell>
             {trailing}

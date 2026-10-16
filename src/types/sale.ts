@@ -1,3 +1,5 @@
+import type { DiscountType } from "./order"
+
 /** One product of a sale (its order lines added up). */
 export interface SaleLine {
   productId: number
@@ -21,6 +23,8 @@ export interface Sale {
   orders: SaleLine[]
   subtotal: number
   discountPercent: number
+  discountType: DiscountType
+  discountIdNumber: string | null
   discountAmount: number
   /** Net of the discount. */
   total: number

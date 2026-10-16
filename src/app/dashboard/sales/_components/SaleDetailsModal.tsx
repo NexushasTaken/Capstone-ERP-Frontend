@@ -4,7 +4,7 @@ import DetailItem from "@/components/DetailItem"
 import SeeMoreModal from "@/components/SeeMoreModal"
 import { Button } from "@/components/ui/button"
 import { formatDate, formatPeso } from "@/lib/format"
-import { normalizeOrderText } from "@/lib/helpers/orderHelpers"
+import { formatDiscount, normalizeOrderText } from "@/lib/helpers/orderHelpers"
 import {
   canReturnSale,
   formatSaleId,
@@ -52,9 +52,10 @@ function SaleDetailsBody({ sale }: { sale: Sale }) {
         <DetailItem label="Quantity" value={getSaleQuantity(sale)} />
         <DetailItem label="Subtotal" value={formatPeso(sale.subtotal)} />
         <DetailItem
-          label={`Discount (${sale.discountPercent}%)`}
+          label={`Discount (${formatDiscount(sale.discountType, sale.discountPercent)})`}
           value={sale.discountAmount > 0 ? `-${formatPeso(sale.discountAmount)}` : formatPeso(0)}
         />
+        {sale.discountIdNumber ? <DetailItem label="Discount ID number" value={sale.discountIdNumber} /> : null}
         <DetailItem label="Total" value={formatPeso(sale.total)} />
         <DetailItem label="Refunded" value={sale.refunded > 0 ? `-${formatPeso(sale.refunded)}` : formatPeso(0)} />
         <DetailItem label="Total after refunds" value={formatPeso(sale.totalAfterRefunds)} />

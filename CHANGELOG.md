@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.0] - 2026-10-16
+
+### Added
+
+- Pick an order's discount from the legal presets: Senior citizen (20%), PWD (20%) or Solo parent (10%). The percent fills in and can't be changed, and the customer's ID number is required.
+
+### Changed
+
+- Only the owner sees the Custom discount option to type their own percent. When a secretary edits an order that has the owner's custom discount, the discount shows as "Set by the owner" and can't be changed.
+- Order details, sale details, the order review step and the totals show the discount type, e.g. "Discount (Senior citizen, 20%)", plus the ID number for presets.
+
 ## [5.0.0] - 2026-10-16
 
 ### Added

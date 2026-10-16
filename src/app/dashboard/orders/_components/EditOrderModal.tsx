@@ -21,6 +21,7 @@ import {
 import type { OrderGroup, UpdateOrderPayload } from "@/types/order"
 import { useOrderDrivers } from "../_hooks/useOrders"
 import { editOrderSchema, type OrderFields } from "../_lib/orderSchema"
+import DiscountFields from "./DiscountFields"
 import OrderLinesEditor from "./OrderLinesEditor"
 
 interface EditOrderModalProps {
@@ -50,6 +51,8 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
       customerName: order.customerName,
       deliveryAddress: order.deliveryAddress ?? "",
       discountPercent: order.discountPercent,
+      discountType: order.discountType,
+      discountIdNumber: order.discountIdNumber ?? "",
       orderLines: order.orders.map((line) => ({ productId: line.productId, quantity: line.quantity })),
     },
   })
@@ -81,6 +84,8 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
         deliveryDriverId: isWalkin ? 0 : values.deliveryDriverId,
         deliveryAddress: isWalkin ? "" : values.deliveryAddress,
         discountPercent: values.discountPercent,
+        discountType: values.discountType,
+        discountIdNumber: values.discountIdNumber,
         orderLines: values.orderLines,
       })
       onClose()
@@ -98,76 +103,74 @@ export default function EditOrderModal({ order, disabled, onClose, onSubmit }: E
     >
       <ModalHeader className="p-5" title="Edit order" detail={formatOrderNumber(order.orderId)} onClose={onClose} />
 
-      <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
-        <div className="flex flex-col bg-background">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <FormField label="Order type">
-              <Input className="bg-muted/50 capitalize" readOnly disabled value={normalizeOrderText(order.orderType)} />
-            </FormField>
-
-            {!isWalkin && (
-              <FormField label="Delivery driver" error={errors.deliveryDriverId?.message}>
-                <Controller
-                  control={control}
-                  name="deliveryDriverId"
-                  render={({ field }) => (
-                    <EntityDropdown
-                      emptyLabel="No drivers found."
-                      isLoading={driversLoading}
-                      onSelect={field.onChange}
-                      options={driverOptions}
-                      placeholder="Select delivery driver"
-                      searchPlaceholder="Search drivers..."
-                      value={selectedDriverLabel}
-                    />
-                  )}
+      <FormProvider {...form}>
+        <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
+          <div className="flex flex-col bg-background">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <FormField label="Order type">
+                <Input
+                  className="bg-muted/50 capitalize"
+                  readOnly
+                  disabled
+                  value={normalizeOrderText(order.orderType)}
                 />
               </FormField>
-            )}
 
-            <FormField label="Customer name">
-              <Input className="bg-muted/50 capitalize" readOnly disabled value={order.customerName} />
-            </FormField>
+              {!isWalkin && (
+                <FormField label="Delivery driver" error={errors.deliveryDriverId?.message}>
+                  <Controller
+                    control={control}
+                    name="deliveryDriverId"
+                    render={({ field }) => (
+                      <EntityDropdown
+                        emptyLabel="No drivers found."
+                        isLoading={driversLoading}
+                        onSelect={field.onChange}
+                        options={driverOptions}
+                        placeholder="Select delivery driver"
+                        searchPlaceholder="Search drivers..."
+                        value={selectedDriverLabel}
+                      />
+                    )}
+                  />
+                </FormField>
+              )}
 
-            <FormField label="Discount (%)" error={errors.discountPercent?.message}>
-              <FormInput
-                aria-invalid={!!errors.discountPercent}
-                max={100}
-                min={0}
-                step="any"
-                type="number"
-                {...register("discountPercent", { valueAsNumber: true })}
-              />
-              <span className="text-xs text-muted-foreground">Taken off the total of the items below</span>
-            </FormField>
+              <FormField label="Customer name">
+                <Input className="bg-muted/50 capitalize" readOnly disabled value={order.customerName} />
+              </FormField>
 
-            <FormField label="Quantity (total items)">
-              <Input className="bg-muted/50" readOnly disabled value={totalQuantity} />
-              <span className="text-xs text-muted-foreground">Calculated from items below</span>
-            </FormField>
-          </div>
-
-          {!isWalkin && (
-            <div className="mt-4">
-              <FormField label="Delivery address" error={errors.deliveryAddress?.message}>
-                <FormInput aria-invalid={!!errors.deliveryAddress} {...register("deliveryAddress")} />
+              <FormField label="Quantity (total items)">
+                <Input className="bg-muted/50" readOnly disabled value={totalQuantity} />
+                <span className="text-xs text-muted-foreground">Calculated from items below</span>
               </FormField>
             </div>
-          )}
-        </div>
 
-        <FormProvider {...form}>
+            <div className="mt-4">
+              <DiscountFields ownerCustomDiscount={order.discountType === "custom"} />
+            </div>
+
+            {!isWalkin && (
+              <div className="mt-4">
+                <FormField label="Delivery address" error={errors.deliveryAddress?.message}>
+                  <FormInput aria-invalid={!!errors.deliveryAddress} {...register("deliveryAddress")} />
+                </FormField>
+              </div>
+            )}
+          </div>
+
           <OrderLinesEditor
             lineRows={lineRows}
             totalAmount={totalAmount}
             discountPercent={values.discountPercent}
+            discountType={values.discountType}
             products={products}
             productsLoading={productsLoading}
             productsError={productsError}
             heldQuantities={heldQuantities}
           />
-        </FormProvider>
-      </div>
+        </div>
+      </FormProvider>
 
       <div className="flex items-center justify-end gap-2 border-t border-border p-5">
         {errors.root?.server && <p className="mr-auto text-sm text-destructive">{errors.root.server.message}</p>}
