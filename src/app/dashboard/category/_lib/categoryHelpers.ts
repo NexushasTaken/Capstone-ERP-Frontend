@@ -7,10 +7,6 @@ export const categorySortOptions: CategorySortOption[] = [
   { label: "Type (Z to A)", value: "name", order: "desc" },
 ]
 
-export function formatCategoryId(categoryId: string | number) {
-  return `CAT-${categoryId}`
-}
-
 // The backend's `filter` sort code for GET /api/Category/all.
 export function getCategoryFilter(sortBy: CategorySortBy, sortOrder: "asc" | "desc") {
   switch (sortBy) {

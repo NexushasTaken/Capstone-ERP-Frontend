@@ -11,6 +11,7 @@ import { fetchCategories } from "@/services/categoryApi"
 import { queryKeys } from "@/lib/query/queryKeys"
 import type { ProductListItem } from "@/types/product"
 import type { ProductValues } from "../_hooks/useProducts"
+import { formatCategoryId } from "@/lib/helpers/categoryHelpers"
 import { formatProductId } from "@/lib/helpers/productHelpers"
 import { productSchema, type ProductFormValues } from "../_lib/productSchema"
 
@@ -52,7 +53,7 @@ export default function ProductFormModal({ product, disabled, onClose, onSubmit 
     ...categories.map((category) => ({
       id: category.id,
       label: category.type,
-      sublabel: `ID: ${category.id}`,
+      sublabel: formatCategoryId(category.id),
     })),
   ]
   const categoryName = (categoryId: number) => categories.find((category) => category.id === categoryId)?.type ?? null
