@@ -6,7 +6,7 @@ import { Plus } from "lucide-react"
 import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
 import { FormField, FormInput } from "@/components/FormField"
 import type { CategoryListItem } from "@/types/category"
-import { formatCategoryId } from "../_lib/categoryHelpers"
+import { formatCategoryId } from "@/lib/helpers/categoryHelpers"
 import { categorySchema, type CategoryFormValues } from "../_lib/categorySchema"
 
 interface CategoryFormModalProps {

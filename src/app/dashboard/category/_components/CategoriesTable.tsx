@@ -4,7 +4,7 @@ import { TableCell, TableRow } from "@/components/ui/table"
 import { formatDate } from "@/lib/format"
 import type { CategoryListItem } from "@/types/category"
 import type { StatusActionItem } from "@/types/statusAction"
-import { formatCategoryId } from "../_lib/categoryHelpers"
+import { formatCategoryId } from "@/lib/helpers/categoryHelpers"
 
 const columns: DataTableColumn[] = ["Id", "Type", "Created At", { label: "Action", className: "text-right" }]
 

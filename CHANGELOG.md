@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.21.1] - 2026-10-16
+
+### Fixed
+
+- The confirm-order lines show each product's code (PR-#) and the product form's category list shows each category's code (CAT-#), instead of a raw "ID: #" label.
+
 ## [3.21.0] - 2026-10-15
 
 ### Changed
