@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - 2026-10-21
+
+### Added
+
+- Inventory rows have an "Adjust stock" action (owner only). Pick a reason (damaged, lost / missing, found or count correction), enter the quantity (or, for a count correction, the counted amount) and an optional note. The form previews the new stock level.
+- An item's "See more" lists its adjustments with reason, signed quantity and note. Damaged customer returns show the sale they came from.
+
+### Changed
+
+- Stock movements read "Sale", "Return" and "Adjustment" (were "Purchase", "Restock" and "Damage").
+- The audit log shows "Stock adjusted" in place of "Damaged (current)".
+
+### Removed
+
+- **BREAKING:** the "Restock" and "Mark as damage" actions, and the "Damaged inventory" list in "See more". Use "Adjust stock". Needs Backend 16.0.0.
+
 ## [5.7.0] - 2026-10-17
 
 ### Added

@@ -1,11 +1,10 @@
 import type { StatusCount } from "@/types/statusCount"
-import type { InventoryListItem, InventoryMovementItem, InventoryDamageItem } from "@/types/inventory"
+import type { InventoryListItem, InventoryMovementItem, InventoryAdjustmentItem } from "@/types/inventory"
 import type { ProductListItem } from "@/types/product"
 import { ApiEnvelope, ApiEnvelopeNoContent } from "@/types/api"
 import type {
+  AdjustInventoryPayload,
   FetchInventoriesParams,
-  MarkInventoryAsDamagePayload,
-  RestockInventoryPayload,
   InsertInventoryPayload,
   InventoryListContent,
   UpdateInventoryPayload,
@@ -113,30 +112,17 @@ export async function updateInventory(payload: UpdateInventoryPayload): Promise<
   return data
 }
 
-// PATCH
-export async function markInventoryAsDamage(payload: MarkInventoryAsDamagePayload): Promise<ApiEnvelopeNoContent> {
-  const response = await fetch("/api/Inventory/markasdamage", {
-    method: "PATCH",
+// POST
+export async function adjustInventory(payload: AdjustInventoryPayload): Promise<ApiEnvelopeNoContent> {
+  const response = await fetch("/api/Inventory/adjust", {
+    method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify(payload),
   })
   const data: ApiEnvelopeNoContent = await response.json()
   if (!response.ok || !data.success)
-    throw new ApiError(data.message || "Failed to mark inventory as damaged", response.status, data.errors)
-  return data
-}
-
-export async function restockInventory(payload: RestockInventoryPayload): Promise<ApiEnvelopeNoContent> {
-  const response = await fetch("/api/Inventory/restock", {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(payload),
-  })
-  const data: ApiEnvelopeNoContent = await response.json()
-  if (!response.ok || !data.success)
-    throw new ApiError(data.message || "Failed to restock inventory", response.status, data.errors)
+    throw new ApiError(data.message || "Failed to adjust stock", response.status, data.errors)
   return data
 }
 
@@ -171,17 +157,18 @@ export async function fetchInventoryMovements(id: number): Promise<InventoryMove
   return [...data.content].sort((a, b) => Date.parse(b.created_At) - Date.parse(a.created_At))
 }
 
-export async function fetchInventoryDamageRecords(id: number): Promise<InventoryDamageItem[]> {
+// Newest first, as the backend sends them.
+export async function fetchInventoryAdjustments(id: number): Promise<InventoryAdjustmentItem[]> {
   const query = new URLSearchParams({ id: String(id) })
-  const response = await fetch("/api/Inventory/damage/item?" + query, {
+  const response = await fetch("/api/Inventory/adjustment/item?" + query, {
     method: "GET",
     credentials: "include",
   })
-  const data: ApiEnvelope<InventoryDamageItem[]> = await response.json()
+  const data: ApiEnvelope<InventoryAdjustmentItem[]> = await response.json()
   if (!response.ok || !data.success) {
-    throw new ApiError(data.message || "Failed to fetch inventory damage records", response.status, data.errors)
+    throw new ApiError(data.message || "Failed to fetch stock adjustments", response.status, data.errors)
   }
-  return [...data.content].sort((a, b) => Date.parse(b.created_At) - Date.parse(a.created_At))
+  return data.content
 }
 
 export async function fetchInventoryStatusCounts(signal?: AbortSignal): Promise<StatusCount[]> {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { AlertTriangle, Plus, X } from "lucide-react"
+import { Plus, SlidersHorizontal, X } from "lucide-react"
 import CountFilterSelect from "@/components/CountFilterSelect"
 import DeleteConfirmModal from "@/components/DeleteConfirmModal"
 import ListHeader from "@/components/ListHeader"
@@ -27,12 +27,11 @@ import {
   useSelectableCategories,
 } from "../_hooks/useInventory"
 import { useInventoryFilters } from "../_hooks/useInventoryFilters"
+import AdjustStockModal from "./AdjustStockModal"
 import InventoryDetailsModal from "./InventoryDetailsModal"
 import InventoryFormModal, { type InventoryFormValues } from "./InventoryFormModal"
 import InventoryTable from "./InventoryTable"
-import MarkDamageModal from "./MarkDamageModal"
 import QuantityRangeFilter from "./QuantityRangeFilter"
-import RestockModal from "./RestockModal"
 
 const inventoryStatusIds: Record<string, number> = {
   All: 0,
@@ -43,7 +42,7 @@ const inventoryStatusIds: Record<string, number> = {
 
 // Which modal is open, and for which item. Adding has its own flag so its draft survives closing.
 type ModalState = {
-  type: "edit" | "delete" | "details" | "damage" | "restock"
+  type: "edit" | "delete" | "details" | "adjust"
   item: InventoryListItem
 } | null
 
@@ -52,13 +51,7 @@ export default function InventoryView() {
   const role = currentUser?.role
   const inventoryActions = allowedActions(role, "inventory", [
     ...editDeleteActions,
-    { label: "Restock", value: "restock", icon: Plus },
-    {
-      label: "Mark as damage",
-      value: "damage",
-      icon: AlertTriangle,
-      variant: "destructive" as const,
-    },
+    { label: "Adjust stock", value: "adjust", icon: SlidersHorizontal },
   ])
 
   const { filters, update, hasFilters, clearFilters } = useInventoryFilters()
@@ -100,14 +93,14 @@ export default function InventoryView() {
       count: item.count,
     })),
   ]
-  // Show the latest copy of the selected item (e.g. after a restock) rather than the one clicked.
+  // Show the latest copy of the selected item (e.g. after an adjustment) rather than the one clicked.
   const modalItem = modal ? (inventories.find((item) => item.id === modal.item.id) ?? modal.item) : null
   const closeModal = () => setModal(null)
 
   function handleAction(action: string, item: InventoryListItem) {
     if (mutations.isSubmitting) return
-    if ((action === "damage" || action === "restock") && item.id <= 0) return
-    if (action === "edit" || action === "delete" || action === "damage" || action === "restock") {
+    if (action === "adjust" && item.id <= 0) return
+    if (action === "edit" || action === "delete" || action === "adjust") {
       setModal({ type: action, item })
     }
   }
@@ -261,24 +254,12 @@ export default function InventoryView() {
         disabled={mutations.isSubmitting}
       />
 
-      {modal?.type === "damage" && modalItem && (
-        <MarkDamageModal
+      {modal?.type === "adjust" && modalItem && (
+        <AdjustStockModal
           item={modalItem}
-          isPending={mutations.markAsDamage.isPending}
+          isPending={mutations.adjust.isPending}
           onClose={closeModal}
-          onSubmit={(payload) => {
-            closeModal()
-            mutations.markAsDamage.mutate(payload)
-          }}
-        />
-      )}
-
-      {modal?.type === "restock" && modalItem && (
-        <RestockModal
-          item={modalItem}
-          isPending={mutations.restock.isPending}
-          onClose={closeModal}
-          onSubmit={(payload) => mutations.restock.mutate(payload, { onSuccess: closeModal })}
+          onSubmit={(payload) => mutations.adjust.mutate(payload, { onSuccess: closeModal })}
         />
       )}
 

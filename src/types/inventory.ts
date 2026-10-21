@@ -19,9 +19,17 @@ export interface InventoryMovementItem {
   created_At: string
 }
 
-export interface InventoryDamageItem {
-  quantity: number
+/** Values match the backend's AdjustmentReasonEnum. 5 (opening stock) is written by the system only. */
+export type AdjustmentReasonId = 1 | 2 | 3 | 4 | 5
+
+export interface InventoryAdjustmentItem {
+  reasonId: AdjustmentReasonId
   reason: string
+  /** Signed: + added, - taken out. */
+  quantity: number
+  note: string | null
+  /** Set when the units came back damaged from this sale's return. */
+  saleId: number | null
   created_At: string
 }
 
@@ -57,14 +65,10 @@ export interface UpdateInventoryPayload {
   reorderPoint: number
 }
 
-export interface MarkInventoryAsDamagePayload {
+/** quantity: units damaged, lost or found; for a count correction, the counted quantity. */
+export interface AdjustInventoryPayload {
   id: number
+  reasonId: Exclude<AdjustmentReasonId, 5>
   quantity: number
-  reason: string
-  created_At: string
-}
-
-export interface RestockInventoryPayload {
-  id: number
-  quantity: number
+  note?: string
 }

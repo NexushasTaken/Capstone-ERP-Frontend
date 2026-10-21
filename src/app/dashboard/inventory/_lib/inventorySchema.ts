@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { positiveInt, requiredId, requiredString } from "@/lib/validation"
+import { positiveInt, requiredId, requiredNumber } from "@/lib/validation"
 
 export interface InventoryFields {
   productId: number
@@ -20,21 +20,48 @@ export function inventorySchema(isEdit: boolean): z.ZodType<InventoryFields, Inv
   return z.object({ ...common, quantity: positiveInt("Quantity must be greater than 0.") })
 }
 
-export const restockSchema = z.object({
-  quantity: positiveInt("Quantity must be a whole number greater than 0."),
-})
+export const adjustmentReasons = [
+  { value: 1, label: "Damaged", sign: -1 },
+  { value: 2, label: "Lost / missing", sign: -1 },
+  { value: 3, label: "Found", sign: 1 },
+  { value: 4, label: "Count correction", sign: 0 },
+] as const
 
-export type RestockFormValues = z.infer<typeof restockSchema>
+export type AdjustmentReasonValue = (typeof adjustmentReasons)[number]["value"]
 
-// Damage comes out of stock, so it can't exceed what's on hand.
-export function damageSchema(available: number) {
-  return z.object({
-    quantity: positiveInt("Quantity must be a whole number greater than 0.").max(
-      available,
-      `Only ${available} available.`,
-    ),
-    reason: requiredString("Add a reason for marking it as damaged."),
-  })
+/** The signed change an adjustment makes; a count correction replaces the stock with the counted quantity. */
+export function adjustmentChange(reasonId: AdjustmentReasonValue, quantity: number, available: number) {
+  if (Number.isNaN(quantity)) return 0
+  if (reasonId === 4) return quantity - available
+  return adjustmentReasons.find((reason) => reason.value === reasonId)!.sign * quantity
 }
 
-export type DamageFormValues = z.infer<ReturnType<typeof damageSchema>>
+// Same rules as the backend's StockAdjustmentValidator, plus the stock checks it makes in the service.
+export function adjustSchema(available: number) {
+  return z
+    .object({
+      reasonId: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
+      quantity: requiredNumber("Quantity must be a whole number.").int("Quantity must be a whole number."),
+      note: z.string().trim().max(500, "Note can be at most 500 characters."),
+    })
+    .superRefine(({ reasonId, quantity }, ctx) => {
+      if (reasonId === 4) {
+        if (quantity < 0)
+          ctx.addIssue({ code: "custom", path: ["quantity"], message: "Counted quantity can't be negative." })
+        else if (quantity === available)
+          ctx.addIssue({
+            code: "custom",
+            path: ["quantity"],
+            message: "That matches the stock, so there is nothing to adjust.",
+          })
+        return
+      }
+      if (quantity <= 0) {
+        ctx.addIssue({ code: "custom", path: ["quantity"], message: "Quantity must be greater than 0." })
+      } else if (reasonId !== 3 && quantity > available) {
+        ctx.addIssue({ code: "custom", path: ["quantity"], message: `Only ${available} in stock.` })
+      }
+    })
+}
+
+export type AdjustFormValues = z.infer<ReturnType<typeof adjustSchema>>

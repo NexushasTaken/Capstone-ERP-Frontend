@@ -27,7 +27,7 @@ export const queryKeys = {
     productsForInsert: ["inventories", "productsForInsert"] as const,
     statusCounts: ["inventories", "statusCounts"] as const,
     movements: (id: number | null) => ["inventories", "movements", id] as const,
-    damageRecords: (id: number | null) => ["inventories", "damageRecords", id] as const,
+    adjustments: (id: number | null) => ["inventories", "adjustments", id] as const,
     all: (params: FetchInventoriesParams = {}) => ["inventories", params] as const,
   },
   orders: {
