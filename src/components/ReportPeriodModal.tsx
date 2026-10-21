@@ -7,23 +7,30 @@ import { Download } from "lucide-react"
 import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import type { SalesReportPeriod } from "@/types/sale"
-import { useSaleDateRange } from "../_hooks/useSaleDateRange"
-import { useSalesReportDownload } from "../_hooks/useSalesReportDownload"
+import { useReportDownload } from "@/hooks/useReportDownload"
+import type { ReportPeriod } from "@/types/report"
 
-interface SalesReportModalProps {
+interface ReportPeriodModalProps {
   open: boolean
   onClose: () => void
+  /** e.g. "Export sales report" */
+  title: string
+  /** What each period's PDF lists, shown under the buttons. */
+  hints: Record<ReportPeriod, string>
+  /** First and last day with data ("yyyy-MM-dd"); limits the calendar when known. */
+  range?: { first: string | null; last: string | null }
+  /** Builds and saves the PDF for the period around `date` ("yyyy-MM-dd"). */
+  onDownload: (period: ReportPeriod, date: string) => Promise<void>
 }
 
-const periods: { value: SalesReportPeriod; label: string; hint: string }[] = [
-  { value: "daily", label: "Daily", hint: "Every sale of the day" },
-  { value: "weekly", label: "Weekly", hint: "One row per day, Monday to Sunday" },
-  { value: "monthly", label: "Monthly", hint: "One row per week of the month" },
+const periods: { value: ReportPeriod; label: string }[] = [
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
 ]
 
 // The days the report covers, the same rule the backend uses.
-function coveredLabel(period: SalesReportPeriod, day: Date) {
+function coveredLabel(period: ReportPeriod, day: Date) {
   if (period === "daily") return format(day, "EEEE, MMM d, yyyy")
   if (period === "monthly") return format(day, "MMMM yyyy")
 
@@ -32,22 +39,21 @@ function coveredLabel(period: SalesReportPeriod, day: Date) {
   return `${format(start, isSameYear(start, end) ? "MMM d" : "MMM d, yyyy")} – ${format(end, "MMM d, yyyy")}`
 }
 
-// Pick Daily / Weekly / Monthly and a day, then download that sales report as a PDF.
-export default function SalesReportModal({ open, onClose }: SalesReportModalProps) {
-  const [period, setPeriod] = useState<SalesReportPeriod>("daily")
+// Pick Daily / Weekly / Monthly and a day, then download that report as a PDF.
+export default function ReportPeriodModal({ open, onClose, title, hints, range, onDownload }: ReportPeriodModalProps) {
+  const [period, setPeriod] = useState<ReportPeriod>("daily")
   const [picked, setPicked] = useState<Date | undefined>()
-  const { data: range } = useSaleDateRange()
-  const download = useSalesReportDownload()
+  const download = useReportDownload()
 
   const firstDay = range?.first ? parseISO(range.first) : undefined
   const lastDay = range?.last ? parseISO(range.last) : undefined
-  // Today, unless it's past the last sale; then the last sale's day.
+  // Today, unless it's past the last day with data; then that day.
   const today = new Date()
   const day = picked ?? (lastDay && isAfter(today, lastDay) ? lastDay : today)
 
   return (
     <AppModal open={open} onClose={onClose} className="lg:max-w-md">
-      <ModalHeader title="Export sales report" onClose={onClose} />
+      <ModalHeader title={title} onClose={onClose} />
       <ModalBody>
         <div className="grid grid-cols-3 gap-2">
           {periods.map((option) => (
@@ -61,7 +67,7 @@ export default function SalesReportModal({ open, onClose }: SalesReportModalProp
             </Button>
           ))}
         </div>
-        <p className="text-sm text-muted-foreground">{periods.find((option) => option.value === period)?.hint}</p>
+        <p className="text-sm text-muted-foreground">{hints[period]}</p>
 
         <div className="flex justify-center rounded-lg border">
           <Calendar
@@ -84,7 +90,7 @@ export default function SalesReportModal({ open, onClose }: SalesReportModalProp
       </ModalBody>
       <ModalActions
         onCancel={onClose}
-        onConfirm={() => download.mutate({ period, date: format(day, "yyyy-MM-dd") })}
+        onConfirm={() => download.mutate(() => onDownload(period, format(day, "yyyy-MM-dd")))}
         confirmLabel={download.isPending ? "Preparing…" : "Download PDF"}
         confirmIcon={Download}
         confirmDisabled={download.isPending}
