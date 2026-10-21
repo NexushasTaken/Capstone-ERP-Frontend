@@ -1,4 +1,5 @@
 import DataTable, { type DataTableColumn } from "@/components/DataTable"
+import { formatQuantity } from "@/lib/format"
 import StatusAction from "@/components/StatusAction"
 import { Button } from "@/components/ui/button"
 import { TableCell, TableRow } from "@/components/ui/table"
@@ -57,7 +58,7 @@ export default function InventoryTable({
             <TableCell className="px-3 py-4 font-medium">{formatInventoryId(String(item.id))}</TableCell>
             <TableCell className="px-3 py-4 font-medium capitalize">{item.name}</TableCell>
             <TableCell className="px-3 py-4 capitalize">{item.categoryName}</TableCell>
-            <TableCell className="px-3 py-4">{formatNumber(item.quantity)}</TableCell>
+            <TableCell className="px-3 py-4">{formatQuantity(item.quantity, item.unit)}</TableCell>
             <TableCell className="px-3 py-4">{formatNumber(item.reorderPoint)}</TableCell>
             <TableCell className={`px-3 py-4 font-medium ${statusStyle.labelClassName}`}>
               <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${statusStyle.dotClassName}`} />

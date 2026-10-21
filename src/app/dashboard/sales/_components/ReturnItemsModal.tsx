@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
-import { formatPeso } from "@/lib/format"
+import { formatPeso, formatQuantity } from "@/lib/format"
 import { formatSaleId } from "@/lib/helpers/saleHelpers"
 import type { Sale, SaleReturnPayload } from "@/types/sale"
 import { previewRefund, saleReturnSchema, type SaleReturnFormValues } from "../_lib/saleReturnSchema"
@@ -87,7 +87,7 @@ export default function ReturnItemsModal({ sale, isPending, onClose, onSubmit }:
                   return (
                     <tr key={field.id} className="border-t border-border align-top">
                       <td className="px-3 py-3 capitalize">{line.productName}</td>
-                      <td className="px-3 py-3">{line.quantity}</td>
+                      <td className="whitespace-nowrap px-3 py-3">{formatQuantity(line.quantity, line.unit)}</td>
                       <td className="px-3 py-3">{line.returnedQuantity}</td>
                       <td className="px-3 py-2">
                         <Input

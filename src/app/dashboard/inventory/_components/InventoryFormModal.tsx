@@ -1,6 +1,6 @@
 "use client"
 
-import { Controller, useForm } from "react-hook-form"
+import { Controller, useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
 import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
@@ -16,6 +16,8 @@ export interface InventoryFormValues {
   productId: number
   /** For the optimistic row; the API names the item after its product. */
   productName: string
+  /** For the optimistic row: the product's unit. */
+  unit: string | null
   reorderPoint: number
   /** Only set when adding. */
   quantity: number
@@ -49,11 +51,16 @@ export default function InventoryFormModal({ open, item, disabled, onClose, onSu
   const { products, isLoading: productsLoading, error: productsError } = useInventoryProductSearch(open && !isEdit)
 
   const productName = (id?: number) => products.find((product) => product.id === id)?.name ?? ""
+  // Quantities are counted in the product's unit, so the labels name it once a product is chosen.
+  const selectedId = useWatch({ control, name: "productId" })
+  const unit = isEdit ? item.unit : (products.find((product) => product.id === selectedId)?.unitName ?? null)
+  const inUnit = (label: string) => (unit ? `${label} (${unit})` : label)
 
   const submit = handleSubmit((values) =>
     onSubmit({
       productId: values.productId,
       productName: productName(values.productId),
+      unit,
       reorderPoint: values.reorderPoint,
       quantity: values.quantity ?? 0,
     }),
@@ -97,7 +104,7 @@ export default function InventoryFormModal({ open, item, disabled, onClose, onSu
               />
             </FormField>
 
-            <FormField label="Quantity" error={errors.quantity?.message}>
+            <FormField label={inUnit("Quantity")} error={errors.quantity?.message}>
               <FormInput
                 aria-invalid={!!errors.quantity}
                 min={1}
@@ -108,7 +115,7 @@ export default function InventoryFormModal({ open, item, disabled, onClose, onSu
           </>
         )}
 
-        <FormField label="Reorder point" error={errors.reorderPoint?.message}>
+        <FormField label={inUnit("Reorder point")} error={errors.reorderPoint?.message}>
           <FormInput
             aria-invalid={!!errors.reorderPoint}
             min={1}

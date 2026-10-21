@@ -1,7 +1,7 @@
 import { ModalHeader } from "@/components/AppModal"
 import DetailItem from "@/components/DetailItem"
 import SeeMoreModal from "@/components/SeeMoreModal"
-import { formatDate, formatPeso } from "@/lib/format"
+import { formatDate, formatPeso, formatQuantity } from "@/lib/format"
 import {
   formatDiscount,
   formatOrderNumber,
@@ -101,7 +101,7 @@ function OrderDetailsBody({ order }: { order: OrderGroup }) {
             key={`${order.orderId}-${index}`}
           >
             <span className="truncate capitalize">{item.productName}</span>
-            <span className="font-medium">{item.quantity}</span>
+            <span className="font-medium">{formatQuantity(item.quantity, item.unit)}</span>
             <span className="font-medium">{formatPeso(item.totalAmount)}</span>
             <span>{formatPeso(item.price)}</span>
           </div>

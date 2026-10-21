@@ -5,12 +5,16 @@ import type { FetchDriversParams } from "@/types/driver"
 import type { FetchSaleReturnsParams, FetchSalesParams } from "@/types/sale"
 import type { DemandBacktestParams, FetchInventoryForecastParams } from "@/types/dashboard"
 import type { FetchCategoriesParams } from "@/types/category"
+import type { FetchUnitsParams } from "@/types/unit"
 import type { FetchAuditLogsParams } from "@/types/auditLog"
 import type { FetchAccountsParams } from "@/types/account"
 
 export const queryKeys = {
   categories: {
     all: (params: FetchCategoriesParams = {}) => ["categories", params] as const,
+  },
+  units: {
+    all: (params: FetchUnitsParams = {}) => ["units", params] as const,
   },
   drivers: {
     all: (params: FetchDriversParams = {}) => ["drivers", params] as const,

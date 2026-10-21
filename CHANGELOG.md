@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.1.0] - 2026-10-21
+
+### Added
+
+- A Units page (under Basic Informations) to list, add, rename and delete units of measurement, with how many products use each. A unit in use can't be deleted. Editing is owner only.
+- The product form has a Unit choice (starts on pc), and the product list and details show it. The price reads as price per unit.
+- Product import has an optional Unit column. Blank means pc.
+- "Unit" in the audit log's module filter.
+
+### Changed
+
+- Quantities show their unit (e.g. "40 box") in Inventory (list, details, movements, adjustments), Adjust stock, orders (product picker, stock warning, confirm, details) and sales (details, returns).
+- Quantity inputs name the unit: "Quantity (box)" and "Reorder point (box)" when adding inventory, "Quantity (box)" in Adjust stock, and the unit next to each order line's quantity.
+
 ## [6.0.0] - 2026-10-21
 
 ### Added

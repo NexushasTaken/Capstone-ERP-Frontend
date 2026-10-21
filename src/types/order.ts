@@ -11,6 +11,7 @@ export interface Discount {
 export interface OrderLine {
   productId: number
   productName: string
+  unit: string | null
   quantity: number
   price: number
   totalAmount: number

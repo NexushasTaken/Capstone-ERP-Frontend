@@ -3,6 +3,9 @@ export interface ProductListItem {
   categoryId: number | null
   name: string
   price: number
+  unitId: number
+  /** Unit of measurement, e.g. "pc". */
+  unitName: string | null
   categoryName: string | null
   created_At: string
   createdByName: string | null
@@ -43,12 +46,10 @@ export interface InsertProductPayload {
   categoryId: number
   name: string
   price: number
+  unitId: number
 }
 
-export interface UpdateProductPayload {
-  categoryId: number
-  name: string
-  price: number
+export interface UpdateProductPayload extends InsertProductPayload {
   id: number
 }
 
@@ -58,6 +59,8 @@ export interface ProductImportRow {
   /** Category name, matched ignoring case; blank means no category. */
   category?: string
   price: number
+  /** Unit name, matched ignoring case; blank means pc. */
+  unit?: string
   /** Opening stock; set together with reorderPoint to create a stock record. */
   quantity?: number
   reorderPoint?: number

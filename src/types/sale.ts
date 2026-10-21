@@ -4,6 +4,7 @@ import type { DiscountType } from "./order"
 export interface SaleLine {
   productId: number
   productName: string
+  unit: string | null
   quantity: number
   price: number
   totalAmount: number
@@ -43,6 +44,7 @@ export interface SaleReturn {
   saleId: number
   productName: string
   customerName: string
+  unit: string | null
   quantity: number
   condition: ReturnCondition
   refund: number

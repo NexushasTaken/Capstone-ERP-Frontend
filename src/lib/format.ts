@@ -21,3 +21,9 @@ export function formatDate(dateString: string | null) {
 export function formatCount(count: number, singular: string, plural = `${singular}s`) {
   return `${count.toLocaleString("en-PH")} ${count === 1 ? singular : plural}`
 }
+
+/** "12 box", "-3 pc", "1,204 pc". Units stay singular, like a price tag. A missing unit shows the number alone. */
+export function formatQuantity(quantity: number, unit: string | null | undefined) {
+  const amount = Number.isFinite(quantity) ? quantity.toLocaleString("en-PH") : "0"
+  return unit ? `${amount} ${unit}` : amount
+}

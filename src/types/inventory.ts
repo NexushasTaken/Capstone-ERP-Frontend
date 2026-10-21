@@ -3,6 +3,8 @@ export interface InventoryListItem {
   productId: number
   /** The product's name; an item is one product's stock in the store. */
   name: string
+  /** The product's unit of measurement, e.g. "pc". */
+  unit: string | null
   quantity: number
   reorderPoint: number
   status: string
