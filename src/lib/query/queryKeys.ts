@@ -6,12 +6,17 @@ import type { FetchSaleReturnsParams, FetchSalesParams } from "@/types/sale"
 import type { DemandBacktestParams, FetchInventoryForecastParams } from "@/types/dashboard"
 import type { FetchCategoriesParams } from "@/types/category"
 import type { FetchUnitsParams } from "@/types/unit"
+import type { FetchPurchasesParams } from "@/types/purchase"
 import type { FetchAuditLogsParams } from "@/types/auditLog"
 import type { FetchAccountsParams } from "@/types/account"
 
 export const queryKeys = {
   categories: {
     all: (params: FetchCategoriesParams = {}) => ["categories", params] as const,
+  },
+  purchases: {
+    statusCounts: ["purchases", "statusCounts"] as const,
+    all: (params: FetchPurchasesParams = {}) => ["purchases", params] as const,
   },
   units: {
     all: (params: FetchUnitsParams = {}) => ["units", params] as const,
