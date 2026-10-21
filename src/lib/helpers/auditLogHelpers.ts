@@ -1,4 +1,14 @@
-import { CircleDot, PackageMinus, PackagePlus, PackageX, Pencil, Plus, RefreshCw, Trash2, Undo2 } from "lucide-react"
+import {
+  CircleDot,
+  PackageMinus,
+  PackagePlus,
+  Pencil,
+  Plus,
+  RefreshCw,
+  SlidersHorizontal,
+  Trash2,
+  Undo2,
+} from "lucide-react"
 import type { AuditActionOption, AuditFilterOption, AuditModuleOption, UserOption } from "@/types/auditLog"
 
 export const AUDIT_LOG_SIDEBAR_LIMIT = 10
@@ -49,10 +59,10 @@ export const auditActionOptions: AuditActionOption[] = [
   },
   {
     value: 7,
-    key: "CurrentItemDamage",
-    label: "Damaged (current)",
-    Icon: PackageX,
-    className: "bg-destructive/10 text-destructive",
+    key: "Adjust",
+    label: "Stock adjusted",
+    Icon: SlidersHorizontal,
+    className: "bg-blue-50 text-blue-700",
   },
   {
     value: 8,

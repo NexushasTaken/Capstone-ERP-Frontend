@@ -3,14 +3,13 @@
 import { keepPreviousData, type QueryKey, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
+  adjustInventory,
   deleteInventory,
   fetchInventories,
-  fetchInventoryDamageRecords,
+  fetchInventoryAdjustments,
   fetchInventoryMovements,
   fetchInventoryStatusCounts,
   insertInventory,
-  markInventoryAsDamage,
-  restockInventory,
   updateInventory,
 } from "@/services/inventoryApi"
 import { fetchCategories } from "@/services/categoryApi"
@@ -21,12 +20,10 @@ import type {
   FetchInventoriesParams,
   InsertInventoryPayload,
   InventoryListItem,
-  MarkInventoryAsDamagePayload,
   UpdateInventoryPayload,
 } from "@/types/inventory"
 
 type InventoriesResponse = Awaited<ReturnType<typeof fetchInventories>>
-type DamageRecords = Awaited<ReturnType<typeof fetchInventoryDamageRecords>>
 
 export function useInventories(params: FetchInventoriesParams) {
   return useQuery({
@@ -54,7 +51,7 @@ export function useSelectableCategories() {
   return query.data?.items ?? []
 }
 
-/** Stock movements and damage reports for one item, loaded only while its details are open. */
+/** Stock movements and adjustments for one item, loaded only while its details are open. */
 export function useInventoryHistory(inventoryId: number | null, enabled: boolean) {
   const shouldLoad = enabled && inventoryId !== null && inventoryId > 0
   const movements = useQuery({
@@ -62,12 +59,12 @@ export function useInventoryHistory(inventoryId: number | null, enabled: boolean
     queryFn: () => fetchInventoryMovements(inventoryId!),
     enabled: shouldLoad,
   })
-  const damageRecords = useQuery({
-    queryKey: queryKeys.inventories.damageRecords(inventoryId),
-    queryFn: () => fetchInventoryDamageRecords(inventoryId!),
+  const adjustments = useQuery({
+    queryKey: queryKeys.inventories.adjustments(inventoryId),
+    queryFn: () => fetchInventoryAdjustments(inventoryId!),
     enabled: shouldLoad,
   })
-  return { movements, damageRecords, shouldLoad }
+  return { movements, adjustments, shouldLoad }
 }
 
 // The optimistic row needs the product name, which the API payload doesn't carry.
@@ -136,71 +133,14 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
     }),
   })
 
-  // Damage lowers the quantity right away, and an already-loaded
-  // damage history gets the new report on top. Both roll back if the request fails.
-  const markAsDamage = useMutation({
-    mutationFn: markInventoryAsDamage,
-    onMutate: async (payload: MarkInventoryAsDamagePayload) => {
-      await queryClient.cancelQueries({ queryKey: ["inventories"] })
-      const previousQuantity = queryClient
-        .getQueryData<InventoriesResponse>(listQueryKey)
-        ?.items.find((item) => item.id === payload.id)?.quantity
-      const damageKey = queryKeys.inventories.damageRecords(payload.id)
-      const previousDamageRecords = queryClient.getQueryData<DamageRecords>(damageKey)
-
-      queryClient.setQueryData<InventoriesResponse>(
-        listQueryKey,
-        (current) =>
-          current && {
-            ...current,
-            items: current.items.map((item) =>
-              item.id === payload.id ? { ...item, quantity: item.quantity - payload.quantity } : item,
-            ),
-          },
-      )
-      // Only extend loaded history so an incomplete history is never cached as complete.
-      if (previousDamageRecords) {
-        queryClient.setQueryData(damageKey, [
-          {
-            quantity: payload.quantity,
-            reason: payload.reason,
-            created_At: payload.created_At,
-          },
-          ...previousDamageRecords,
-        ])
-      }
-      return { previousQuantity, previousDamageRecords, damageKey }
-    },
-    onError: (error, payload, context) => {
-      if (context?.previousQuantity !== undefined) {
-        const quantity = context.previousQuantity
-        queryClient.setQueryData<InventoriesResponse>(
-          listQueryKey,
-          (current) =>
-            current && {
-              ...current,
-              items: current.items.map((item) => (item.id === payload.id ? { ...item, quantity } : item)),
-            },
-        )
-      }
-      if (context?.previousDamageRecords) {
-        queryClient.setQueryData(context.damageKey, context.previousDamageRecords)
-      }
-      toast.error(error instanceof Error ? error.message : "Failed to mark inventory as damaged.")
-    },
+  // Not optimistic: a count correction's change is only known from the current stock, so wait for the server.
+  const adjust = useMutation({
+    mutationFn: adjustInventory,
     onSuccess: () => {
-      toast.success("Inventory marked as damaged successfully.")
-    },
-    onSettled: () => invalidateInventories(queryClient),
-  })
-
-  const restock = useMutation({
-    mutationFn: restockInventory,
-    onSuccess: () => {
-      toast.success("Inventory restocked successfully.")
+      toast.success("Stock adjusted successfully.")
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to restock inventory.")
+      toast.error(error instanceof Error ? error.message : "Failed to adjust stock.")
     },
     onSettled: () => invalidateInventories(queryClient),
   })
@@ -209,13 +149,11 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
     addInventory,
     updateInventory: updateInventoryMutation,
     deleteInventory: deleteInventoryMutation,
-    markAsDamage,
-    restock,
+    adjust,
     isSubmitting:
       addInventory.isPending ||
       updateInventoryMutation.isPending ||
       deleteInventoryMutation.isPending ||
-      markAsDamage.isPending ||
-      restock.isPending,
+      adjust.isPending,
   }
 }

@@ -27,7 +27,7 @@ interface InventoryTableProps {
   error: unknown
   actions: StatusActionItem[]
   onShowDetails: (item: InventoryListItem) => void
-  /** Called with the action's value: 'edit', 'delete', 'restock' or 'damage'. */
+  /** Called with the action's value: 'edit', 'delete' or 'adjust'. */
   onAction: (action: string, item: InventoryListItem) => void
 }
 

@@ -5,6 +5,7 @@ import { Tag } from "lucide-react"
 import { ModalHeader } from "@/components/AppModal"
 import SeeMoreModal from "@/components/SeeMoreModal"
 import { formatDate } from "@/lib/format"
+import { formatSaleId } from "@/lib/helpers/saleHelpers"
 import {
   capitalize,
   formatInventoryId,
@@ -19,9 +20,9 @@ interface InventoryDetailsModalProps {
   onClose: () => void
 }
 
-// The read-only "See more" view: stock level, recent movements and damage reports.
+// The read-only "See more" view: stock level, recent movements and stock adjustments.
 export default function InventoryDetailsModal({ item, onClose }: InventoryDetailsModalProps) {
-  const { movements, damageRecords, shouldLoad } = useInventoryHistory(item?.id ?? null, item !== null)
+  const { movements, adjustments, shouldLoad } = useInventoryHistory(item?.id ?? null, item !== null)
   const statusStyle = item ? getInventoryStatusStyleFromLabel(item.status) : null
 
   return (
@@ -95,24 +96,44 @@ export default function InventoryDetailsModal({ item, onClose }: InventoryDetail
             )}
           </div>
 
-          <SectionHeading className="mt-8">Damaged inventory</SectionHeading>
+          <SectionHeading className="mt-8">Adjustments</SectionHeading>
           <div className="mt-4 flex w-full flex-col gap-2 max-h-72 overflow-auto scrollbar-none">
-            {damageRecords.isLoading && shouldLoad ? (
-              <HistoryMessage>Loading damage reports...</HistoryMessage>
-            ) : damageRecords.isError ? (
-              <HistoryError onRetry={() => damageRecords.refetch()}>Unable to load damage reports.</HistoryError>
-            ) : (damageRecords.data ?? []).length === 0 ? (
-              <HistoryMessage>No damage reports.</HistoryMessage>
+            {adjustments.isLoading && shouldLoad ? (
+              <HistoryMessage>Loading adjustments...</HistoryMessage>
+            ) : adjustments.isError ? (
+              <HistoryError onRetry={() => adjustments.refetch()}>Unable to load adjustments.</HistoryError>
+            ) : (adjustments.data ?? []).length === 0 ? (
+              <HistoryMessage>No adjustments.</HistoryMessage>
             ) : (
-              (damageRecords.data ?? []).map((record, index) => (
-                <div key={record.created_At + "-" + index} className="flex flex-col gap-2 p-2">
+              (adjustments.data ?? []).map((record, index) => (
+                <div key={record.created_At + "-" + index} className="flex flex-col gap-1 p-2">
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm font-semibold text-destructive">
-                      {formatNumber(record.quantity)} units damaged
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <span className="text-sm font-medium text-foreground capitalize">
+                        {record.reason}
+                        {record.saleId !== null && (
+                          <span className="font-normal normal-case text-muted-foreground">
+                            {" "}
+                            · customer return, {formatSaleId(record.saleId)}
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{formatDate(record.created_At)}</span>
+                    </div>
+                    <span
+                      className={
+                        record.quantity < 0
+                          ? "shrink-0 text-sm font-semibold text-destructive"
+                          : "shrink-0 text-sm font-semibold text-green-700"
+                      }
+                    >
+                      {record.quantity > 0 ? "+" : ""}
+                      {formatNumber(record.quantity)} units
                     </span>
-                    <span className="text-xs text-muted-foreground">{formatDate(record.created_At)}</span>
                   </div>
-                  <p className="whitespace-pre-wrap wrap-anywhere text-sm text-foreground">{record.reason}</p>
+                  {record.note && (
+                    <p className="whitespace-pre-wrap wrap-anywhere text-sm text-foreground">{record.note}</p>
+                  )}
                 </div>
               ))
             )}
