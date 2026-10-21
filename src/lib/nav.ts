@@ -7,6 +7,7 @@ import {
   PackageOpen,
   Ruler,
   ShoppingCart,
+  Tags,
   TrendingUp,
   Truck,
   UserCog,
@@ -24,80 +25,38 @@ export interface NavGroup {
   items: NavItem[]
 }
 
+// Operations: day-to-day work. Insights: reading what happened. Records: the lists the rest is built from.
 export const navGroups: NavGroup[] = [
   {
     label: "Operations",
     items: [
-      {
-        name: "Orders",
-        icon: Package,
-        link: "/dashboard/orders",
-      },
-      {
-        name: "Purchases",
-        icon: ShoppingCart,
-        link: "/dashboard/purchases",
-      },
-      {
-        name: "Inventory",
-        icon: Boxes,
-        link: "/dashboard/inventory",
-      },
-      {
-        name: "Demand Forecast",
-        icon: TrendingUp,
-        link: "/dashboard/forecast",
-      },
+      { name: "Orders", icon: Package, link: "/dashboard/orders" },
+      { name: "Sales", icon: ChartNoAxesCombined, link: "/dashboard/sales" },
+      { name: "Purchases", icon: ShoppingCart, link: "/dashboard/purchases" },
+      { name: "Inventory", icon: Boxes, link: "/dashboard/inventory" },
     ],
   },
   {
-    label: "Basic Informations",
+    label: "Insights",
     items: [
-      {
-        name: "Product",
-        icon: PackageOpen,
-        link: "/dashboard/product",
-      },
-      {
-        name: "Category",
-        icon: PackageOpen,
-        link: "/dashboard/category",
-      },
-      {
-        name: "Unit",
-        icon: Ruler,
-        link: "/dashboard/unit",
-      },
-      {
-        name: "Driver",
-        icon: Truck,
-        link: "/dashboard/driver",
-      },
-      {
-        name: "Audit logs",
-        icon: History,
-        link: "/dashboard/audit-logs",
-      },
-      {
-        name: "Sales",
-        icon: ChartNoAxesCombined,
-        link: "/dashboard/sales",
-      },
+      { name: "Demand Forecast", icon: TrendingUp, link: "/dashboard/forecast" },
+      { name: "Audit logs", icon: History, link: "/dashboard/audit-logs" },
+    ],
+  },
+  {
+    label: "Records",
+    items: [
+      { name: "Product", icon: PackageOpen, link: "/dashboard/product" },
+      { name: "Category", icon: Tags, link: "/dashboard/category" },
+      { name: "Unit", icon: Ruler, link: "/dashboard/unit" },
+      { name: "Driver", icon: Truck, link: "/dashboard/driver" },
     ],
   },
   {
     label: "Account Manager",
     items: [
-      {
-        name: "Account Settings",
-        icon: UserCog,
-        link: "/dashboard/account-settings",
-      },
-      {
-        name: "Accounts",
-        icon: Users,
-        link: "/dashboard/accounts",
-      },
+      { name: "Account Settings", icon: UserCog, link: "/dashboard/account-settings" },
+      { name: "Accounts", icon: Users, link: "/dashboard/accounts" },
     ],
   },
 ]
