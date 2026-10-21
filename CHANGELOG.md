@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.3.0] - 2026-10-21
+
+### Changed
+
+- Sidebar regrouped: Operations (Orders, Sales, Purchases, Inventory), Insights (Demand Forecast, Audit logs) and Records (Product, Category, Unit, Driver; was "Basic Informations"). Account Manager is unchanged. Category has its own icon.
+
 ## [6.2.0] - 2026-10-21
 
 ### Added
