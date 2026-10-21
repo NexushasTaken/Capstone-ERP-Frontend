@@ -8,12 +8,13 @@ export const productImportColumns: ImportColumn<ProductImportRow>[] = [
   { key: "name", label: "Name", required: true },
   { key: "category", label: "Category" },
   { key: "price", label: "Price", required: true },
+  { key: "unit", label: "Unit" },
   { key: "quantity", label: "Quantity" },
   { key: "reorderPoint", label: "Reorder point" },
 ]
 
 export const productImportHint =
-  "Category must already exist (blank means no category). Fill in Quantity and Reorder point to add opening stock."
+  "Category and Unit must already exist (blank means no category, and pc). Fill in Quantity and Reorder point to add opening stock."
 
 // Mirrors the backend: a stock record needs both a quantity and a reorder point.
 export const productImportSchema: z.ZodType<ProductImportRow> = z
@@ -21,6 +22,7 @@ export const productImportSchema: z.ZodType<ProductImportRow> = z
     name: textCell("Product name is required."),
     category: optionalTextCell(),
     price: positiveNumberCell("Price must be greater than 0."),
+    unit: optionalTextCell(),
     quantity: optionalPositiveIntCell("Quantity must be a whole number above 0."),
     reorderPoint: optionalPositiveIntCell("Reorder point must be a whole number above 0."),
   })
@@ -33,7 +35,9 @@ export const productImportSchema: z.ZodType<ProductImportRow> = z
     }
   })
 
-// Sends only the columns the server checks on pick (name, category).
+// Sends only the columns the server checks on pick (name, category, unit).
 export function checkProductCells(cells: Record<string, string>[]) {
-  return checkProductImport(cells.map((c) => ({ name: c.name, category: c.category || undefined })))
+  return checkProductImport(
+    cells.map((c) => ({ name: c.name, category: c.category || undefined, unit: c.unit || undefined })),
+  )
 }

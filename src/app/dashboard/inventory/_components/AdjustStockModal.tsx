@@ -1,5 +1,6 @@
 "use client"
 
+import { formatQuantity } from "@/lib/format"
 import { Controller, useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import AppModal, { ModalHeader } from "@/components/AppModal"
@@ -61,8 +62,8 @@ export default function AdjustStockModal({ item, isPending, onClose, onSubmit }:
       >
         <div className="flex flex-col gap-4 p-4">
           <p className="text-sm text-muted-foreground">
-            {item.name} · {formatNumber(item.quantity)} in stock. Supplier deliveries go through Purchases, and customer
-            returns through Sales.
+            {item.name} · {formatQuantity(item.quantity, item.unit)} in stock. Supplier deliveries go through Purchases,
+            and customer returns through Sales.
           </p>
           <FormField label="Reason" error={errors.reasonId?.message}>
             <Controller
@@ -93,7 +94,10 @@ export default function AdjustStockModal({ item, isPending, onClose, onSubmit }:
               )}
             />
           </FormField>
-          <FormField label={isCount ? "Counted quantity" : "Quantity"} error={errors.quantity?.message}>
+          <FormField
+            label={`${isCount ? "Counted quantity" : "Quantity"}${item.unit ? ` (${item.unit})` : ""}`}
+            error={errors.quantity?.message}
+          >
             <Input
               aria-invalid={!!errors.quantity}
               type="number"
@@ -113,7 +117,7 @@ export default function AdjustStockModal({ item, isPending, onClose, onSubmit }:
           </FormField>
           <p className="text-sm text-muted-foreground">
             Stock: {formatNumber(item.quantity)} →{" "}
-            <span className="font-medium text-foreground">{formatNumber(item.quantity + change)}</span>{" "}
+            <span className="font-medium text-foreground">{formatQuantity(item.quantity + change, item.unit)}</span>{" "}
             <span className={cn(change < 0 ? "text-destructive" : change > 0 ? "text-green-700" : "")}>
               ({change > 0 ? "+" : ""}
               {formatNumber(change)})

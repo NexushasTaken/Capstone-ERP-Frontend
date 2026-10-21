@@ -40,7 +40,10 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
             </span>
             <div className="flex min-w-0 flex-col">
               <span className="text-xs">Price</span>
-              <span className="truncate text-base font-semibold">{product ? formatPeso(product.price) : ""}</span>
+              <span className="truncate text-base font-semibold">
+                {product ? formatPeso(product.price) : ""}
+                {product?.unitName && <span className="font-normal text-muted-foreground"> / {product.unitName}</span>}
+              </span>
             </div>
           </div>
         </div>

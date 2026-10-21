@@ -4,7 +4,7 @@ import EntityDropdown from "@/components/EntityDropdown"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { formatPeso } from "@/lib/format"
+import { formatPeso, formatQuantity } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { formatProductId } from "@/lib/helpers/productHelpers"
 import { getStockLeft, type getOrderLineRows } from "@/lib/helpers/orderHelpers"
@@ -130,18 +130,28 @@ export default function OrderLinesEditor({
                   <TableCell className="text-center text-foreground">{formatPeso(line?.unitPrice ?? 0)}</TableCell>
                   <TableCell>
                     <div className="flex flex-col items-center gap-1">
-                      <Input
-                        aria-invalid={!!lineErrors?.quantity || isOverStock}
-                        className="mx-auto w-28 text-center"
-                        min={1}
-                        type="number"
-                        {...register(`orderLines.${index}.quantity`, { valueAsNumber: true })}
-                      />
+                      <div className="flex items-center gap-2">
+                        <Input
+                          aria-invalid={!!lineErrors?.quantity || isOverStock}
+                          aria-label={line?.product?.unitName ? `Quantity in ${line.product.unitName}` : "Quantity"}
+                          className="w-28 text-center"
+                          min={1}
+                          type="number"
+                          {...register(`orderLines.${index}.quantity`, { valueAsNumber: true })}
+                        />
+                        {line?.product?.unitName && (
+                          <span className="text-sm text-muted-foreground">{line.product.unitName}</span>
+                        )}
+                      </div>
                       {lineErrors?.quantity ? (
                         <span className="text-xs text-destructive">{lineErrors.quantity.message}</span>
                       ) : isOverStock && line?.product ? (
                         <span className="text-center text-xs text-destructive">
-                          Not enough stock: only {(line.product.stock ?? 0) + (heldQuantities[line.product.id] ?? 0)}{" "}
+                          Not enough stock: only{" "}
+                          {formatQuantity(
+                            (line.product.stock ?? 0) + (heldQuantities[line.product.id] ?? 0),
+                            line.product.unitName,
+                          )}{" "}
                           available.
                         </span>
                       ) : null}
@@ -182,5 +192,5 @@ export default function OrderLinesEditor({
 
 // "PR-12 · Stock: 40": stock left (what an order draws from) after this order's quantities.
 function productLabel(product: ProductListItem, stock: number) {
-  return `${formatProductId(product.id)} · Stock: ${stock}`
+  return `${formatProductId(product.id)} · Stock: ${formatQuantity(stock, product.unitName)}`
 }

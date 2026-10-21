@@ -12,6 +12,7 @@ const columns: DataTableColumn[] = [
   "Category",
   "Product Name",
   "Price",
+  "Unit",
   "Created At",
   { label: "Action", className: "text-right", srOnly: true },
 ]
@@ -51,6 +52,7 @@ export default function ProductsTable({
           <TableCell className="px-3 py-4 font-medium capitalize">{product.categoryName ?? "Uncategorized"}</TableCell>
           <TableCell className="px-3 py-4 capitalize">{product.name}</TableCell>
           <TableCell className="px-3 py-4 font-medium">{formatPeso(product.price)}</TableCell>
+          <TableCell className="px-3 py-4">{product.unitName}</TableCell>
           <TableCell className="px-3 py-4">{formatDate(product.created_At)}</TableCell>
           <TableCell className="px-3 py-4">
             {/* Stop clicks here (incl. the portaled dropdown) from also opening the row's details. */}

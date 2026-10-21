@@ -107,6 +107,10 @@ export function importProducts(rows: ProductImportRow[]): Promise<number> {
 }
 
 // Checks names and categories against the database without saving; a 400 carries `rows.N.<field>` errors.
-export function checkProductImport(rows: Pick<ProductImportRow, "name" | "category">[]): Promise<unknown> {
-  return postImport<Pick<ProductImportRow, "name" | "category">, unknown>("/api/Product/import/check", rows, "products")
+export function checkProductImport(rows: Pick<ProductImportRow, "name" | "category" | "unit">[]): Promise<unknown> {
+  return postImport<Pick<ProductImportRow, "name" | "category" | "unit">, unknown>(
+    "/api/Product/import/check",
+    rows,
+    "products",
+  )
 }

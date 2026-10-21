@@ -5,6 +5,7 @@ import {
   LucideIcon,
   Package,
   PackageOpen,
+  Ruler,
   TrendingUp,
   Truck,
   UserCog,
@@ -55,6 +56,11 @@ export const navGroups: NavGroup[] = [
         name: "Category",
         icon: PackageOpen,
         link: "/dashboard/category",
+      },
+      {
+        name: "Unit",
+        icon: Ruler,
+        link: "/dashboard/unit",
       },
       {
         name: "Driver",

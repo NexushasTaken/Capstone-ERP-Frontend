@@ -3,6 +3,7 @@
 import { keepPreviousData, type QueryKey, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { deleteProduct, fetchProducts, importProducts, insertProduct, updateProduct } from "@/services/productApi"
+import { fetchUnits } from "@/services/unitApi"
 import { isValidationError } from "@/lib/apiError"
 import { invalidateInventories } from "@/lib/query/queryInvalidation"
 import { optimisticUpdate } from "@/lib/query/optimisticUpdate"
@@ -66,6 +67,16 @@ export function useProducts({ filter, search, page, pageSize, sort }: UseProduct
   }
 }
 
+const ALL_UNITS = { page: 1, pageSize: 1000, filter: 2 }
+
+/** Every unit, A to Z, for the product form. */
+export function useSelectableUnits() {
+  return useQuery({
+    queryKey: queryKeys.units.all(ALL_UNITS),
+    queryFn: () => fetchUnits(ALL_UNITS),
+  })
+}
+
 export interface ProductValues {
   name: string
   price: number
@@ -73,6 +84,9 @@ export interface ProductValues {
   categoryId: number
   /** Only used to show the right category name before the server responds. */
   categoryName: string | null
+  unitId: number
+  /** Only used to show the right unit before the server responds. */
+  unitName: string | null
 }
 
 // Add/edit/delete for the products page. Each one updates the visible list in the cache straight away.
@@ -85,8 +99,8 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
   }
 
   const addProduct = useMutation({
-    mutationFn: ({ categoryId, name, price }: ProductValues & { optimisticId: number }) =>
-      insertProduct({ categoryId, name, price }),
+    mutationFn: ({ categoryId, name, price, unitId }: ProductValues & { optimisticId: number }) =>
+      insertProduct({ categoryId, name, price, unitId }),
     ...optimisticUpdate<ProductsResponse, ProductValues & { optimisticId: number }>({
       ...shared,
       update: (current, values) => {
@@ -98,6 +112,8 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
           categoryId: values.categoryId || null,
           name: values.name,
           price: values.price,
+          unitId: values.unitId,
+          unitName: values.unitName,
           categoryName: values.categoryName,
           created_At: new Date().toISOString(),
           createdByName: null,
@@ -116,8 +132,8 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
   })
 
   const updateProductMutation = useMutation({
-    mutationFn: ({ id, categoryId, name, price }: ProductValues & { id: number }) =>
-      updateProduct({ id, categoryId, name, price }),
+    mutationFn: ({ id, categoryId, name, price, unitId }: ProductValues & { id: number }) =>
+      updateProduct({ id, categoryId, name, price, unitId }),
     ...optimisticUpdate<ProductsResponse, ProductValues & { id: number }>({
       ...shared,
       update: (current, values) => ({
@@ -129,6 +145,8 @@ export function useProductMutations(listQueryKey: QueryKey, filter: ProductCateg
                 categoryId: values.categoryId || null,
                 name: values.name,
                 price: values.price,
+                unitId: values.unitId,
+                unitName: values.unitName,
                 categoryName: values.categoryName,
               }
             : product,

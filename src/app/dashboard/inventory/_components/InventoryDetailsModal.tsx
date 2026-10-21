@@ -4,14 +4,9 @@ import type { ReactNode } from "react"
 import { Tag } from "lucide-react"
 import { ModalHeader } from "@/components/AppModal"
 import SeeMoreModal from "@/components/SeeMoreModal"
-import { formatDate } from "@/lib/format"
+import { formatDate, formatQuantity } from "@/lib/format"
 import { formatSaleId } from "@/lib/helpers/saleHelpers"
-import {
-  capitalize,
-  formatInventoryId,
-  formatNumber,
-  getInventoryStatusStyleFromLabel,
-} from "@/lib/helpers/inventoryHelpers"
+import { capitalize, formatInventoryId, getInventoryStatusStyleFromLabel } from "@/lib/helpers/inventoryHelpers"
 import type { InventoryListItem } from "@/types/inventory"
 import { useInventoryHistory } from "../_hooks/useInventory"
 
@@ -56,7 +51,10 @@ export default function InventoryDetailsModal({ item, onClose }: InventoryDetail
           <div className="flex flex-col w-full bg-muted mt-4 rounded-xl p-4">
             <div className="flex w-full justify-between items-center">
               <div className="flex flex-col">
-                <span className="text-5xl font-semibold text-foreground">{item?.quantity}</span>
+                <span className="text-5xl font-semibold text-foreground">
+                  {item?.quantity}
+                  {item?.unit && <span className="ml-2 text-2xl font-normal text-muted-foreground">{item.unit}</span>}
+                </span>
                 <span className="text-base font-light capitalize">{item?.name} available</span>
               </div>
               <div className="flex flex-col items-end">
@@ -89,7 +87,7 @@ export default function InventoryDetailsModal({ item, onClose }: InventoryDetail
                     }
                   >
                     {record.quantity > 0 ? "+" : ""}
-                    {formatNumber(record.quantity)} units
+                    {formatQuantity(record.quantity, item?.unit)}
                   </span>
                 </div>
               ))
@@ -128,7 +126,7 @@ export default function InventoryDetailsModal({ item, onClose }: InventoryDetail
                       }
                     >
                       {record.quantity > 0 ? "+" : ""}
-                      {formatNumber(record.quantity)} units
+                      {formatQuantity(record.quantity, item?.unit)}
                     </span>
                   </div>
                   {record.note && (

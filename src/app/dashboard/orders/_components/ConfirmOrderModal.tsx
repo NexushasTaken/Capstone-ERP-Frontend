@@ -1,7 +1,7 @@
 import AppModal, { ModalHeader } from "@/components/AppModal"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { formatPeso } from "@/lib/format"
+import { formatPeso, formatQuantity } from "@/lib/format"
 import type { getOrderLineRows } from "@/lib/helpers/orderHelpers"
 import DetailItem from "@/components/DetailItem"
 import type { DiscountType } from "@/types/order"
@@ -64,7 +64,9 @@ export default function ConfirmOrderModal({
                   <TableCell className="text-center font-medium text-foreground">{index + 1}</TableCell>
                   <TableCell className="font-medium capitalize text-foreground">{line.product?.name ?? "-"}</TableCell>
                   <TableCell className="text-center text-foreground">{formatPeso(line.unitPrice)}</TableCell>
-                  <TableCell className="text-center font-medium text-foreground">{line.quantity}</TableCell>
+                  <TableCell className="text-center font-medium text-foreground">
+                    {formatQuantity(line.quantity, line.product?.unitName)}
+                  </TableCell>
                   <TableCell className="text-center font-medium text-foreground">{formatPeso(line.subtotal)}</TableCell>
                 </TableRow>
               ))}

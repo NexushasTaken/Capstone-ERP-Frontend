@@ -3,7 +3,7 @@ import { ModalHeader } from "@/components/AppModal"
 import DetailItem from "@/components/DetailItem"
 import SeeMoreModal from "@/components/SeeMoreModal"
 import { Button } from "@/components/ui/button"
-import { formatDate, formatPeso } from "@/lib/format"
+import { formatDate, formatPeso, formatQuantity } from "@/lib/format"
 import { formatDiscount, normalizeOrderText } from "@/lib/helpers/orderHelpers"
 import {
   canReturnSale,
@@ -78,7 +78,7 @@ function SaleDetailsBody({ sale }: { sale: Sale }) {
             {sale.orders.map((item, index) => (
               <tr key={`${sale.id}-${index}`} className="border-t border-border">
                 <td className="px-3 py-3 capitalize">{item.productName}</td>
-                <td className="px-3 py-3">{item.quantity}</td>
+                <td className="whitespace-nowrap px-3 py-3">{formatQuantity(item.quantity, item.unit)}</td>
                 <td className="px-3 py-3">{item.returnedQuantity}</td>
                 <td className="whitespace-nowrap px-3 py-3">{formatPeso(item.price)}</td>
                 <td className="whitespace-nowrap px-3 py-3 font-medium">{formatPeso(item.totalAmount)}</td>

@@ -67,8 +67,8 @@ export function useInventoryHistory(inventoryId: number | null, enabled: boolean
   return { movements, adjustments, shouldLoad }
 }
 
-// The optimistic row needs the product name, which the API payload doesn't carry.
-type WithName<T> = T & { productName: string }
+// The optimistic row needs the product name and unit, which the API payload doesn't carry.
+type WithName<T> = T & { productName: string; unit: string | null }
 
 export function useInventoryMutations(listQueryKey: QueryKey) {
   const queryClient = useQueryClient()
@@ -88,6 +88,7 @@ export function useInventoryMutations(listQueryKey: QueryKey) {
           id: payload.optimisticId,
           productId: payload.productId,
           name: payload.productName,
+          unit: payload.unit,
           quantity: payload.quantity,
           reorderPoint: payload.reorderPoint,
           status: "pending",

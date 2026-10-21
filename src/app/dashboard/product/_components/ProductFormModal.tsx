@@ -7,10 +7,11 @@ import { Plus } from "lucide-react"
 import AppModal, { ModalActions, ModalBody, ModalHeader } from "@/components/AppModal"
 import EntityDropdown from "@/components/EntityDropdown"
 import { FormField, FormInput } from "@/components/FormField"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { fetchCategories } from "@/services/categoryApi"
 import { queryKeys } from "@/lib/query/queryKeys"
 import type { ProductListItem } from "@/types/product"
-import type { ProductValues } from "../_hooks/useProducts"
+import { useSelectableUnits, type ProductValues } from "../_hooks/useProducts"
 import { formatCategoryId } from "@/lib/helpers/categoryHelpers"
 import { formatProductId } from "@/lib/helpers/productHelpers"
 import { productSchema, type ProductFormValues } from "../_lib/productSchema"
@@ -39,6 +40,8 @@ export default function ProductFormModal({ product, disabled, onClose, onSubmit 
       name: product?.name ?? "",
       categoryId: product?.categoryId ?? 0,
       price: product?.price,
+      // new products start as pieces (the seeded "pc", id 1)
+      unitId: product?.unitId ?? 1,
     },
   })
   const { data: categoriesResponse, isLoading: categoriesLoading } = useQuery({
@@ -58,7 +61,13 @@ export default function ProductFormModal({ product, disabled, onClose, onSubmit 
   ]
   const categoryName = (categoryId: number) => categories.find((category) => category.id === categoryId)?.type ?? null
 
-  const submit = handleSubmit((values) => onSubmit({ ...values, categoryName: categoryName(values.categoryId) }))
+  const { data: unitsResponse } = useSelectableUnits()
+  const unitOptions = (unitsResponse?.items ?? []).map((unit) => ({ value: unit.id, label: unit.name }))
+  const unitName = (unitId: number) => unitOptions.find((unit) => unit.value === unitId)?.label ?? null
+
+  const submit = handleSubmit((values) =>
+    onSubmit({ ...values, categoryName: categoryName(values.categoryId), unitName: unitName(values.unitId) }),
+  )
 
   return (
     <AppModal className="flex max-h-fit flex-col lg:max-w-lg" onClose={onClose} open>
@@ -90,7 +99,34 @@ export default function ProductFormModal({ product, disabled, onClose, onSubmit 
           />
         </FormField>
 
-        <FormField label="Price" error={errors.price?.message}>
+        <FormField label="Unit" error={errors.unitId?.message}>
+          <Controller
+            control={control}
+            name="unitId"
+            render={({ field }) => (
+              <Select
+                items={unitOptions}
+                value={field.value}
+                onValueChange={(value) => {
+                  if (typeof value === "number") field.onChange(value)
+                }}
+              >
+                <SelectTrigger aria-label="Unit" aria-invalid={!!errors.unitId} className="w-full">
+                  <SelectValue placeholder="Select a unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  {unitOptions.map((unit) => (
+                    <SelectItem key={unit.value} value={unit.value}>
+                      {unit.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </FormField>
+
+        <FormField label="Price per unit" error={errors.price?.message}>
           <FormInput
             aria-invalid={!!errors.price}
             min={1}
