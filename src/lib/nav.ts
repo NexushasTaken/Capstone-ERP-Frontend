@@ -6,6 +6,7 @@ import {
   Package,
   PackageOpen,
   Ruler,
+  ShoppingCart,
   TrendingUp,
   Truck,
   UserCog,
@@ -31,6 +32,11 @@ export const navGroups: NavGroup[] = [
         name: "Orders",
         icon: Package,
         link: "/dashboard/orders",
+      },
+      {
+        name: "Purchases",
+        icon: ShoppingCart,
+        link: "/dashboard/purchases",
       },
       {
         name: "Inventory",

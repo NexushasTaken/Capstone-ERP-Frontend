@@ -12,6 +12,7 @@ const permissions: Record<Role, RolePermissions> = {
       "/dashboard",
       "/dashboard/orders",
       "/dashboard/sales",
+      "/dashboard/purchases",
       "/dashboard/inventory",
       "/dashboard/forecast",
       "/dashboard/product",

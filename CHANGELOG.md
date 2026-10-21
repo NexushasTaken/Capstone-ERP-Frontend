@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.2.0] - 2026-10-21
+
+### Added
+
+- A Purchases page (owner only, under Operations) for stock bought from suppliers. It lists purchases with supplier, order date, items, total cost and status, with a status filter (with counts), search and sort by order date.
+- New purchase / Edit: optional supplier, order date, optional note, and items with quantity (in the product's unit), unit cost and a running total.
+- Receive: each line starts at the ordered quantity and can be lowered if less arrived. Stock goes up, and the purchase is then locked.
+- Cancel an ordered purchase, and "See more" with ordered vs received per line, received date and lead time.
+- "Purchase" in the audit log's module filter.
+
 ## [6.1.0] - 2026-10-21
 
 ### Added
