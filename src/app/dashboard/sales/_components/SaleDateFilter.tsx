@@ -8,7 +8,7 @@ import type { DateRange } from "react-day-picker"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useSaleDateRange } from "../_hooks/useSaleDateRange"
+import { useSaleDateRange } from "@/hooks/useSaleDateRange"
 
 interface SaleDateFilterProps {
   /** First and last day, `yyyy-MM-dd`; "" = no bound. */

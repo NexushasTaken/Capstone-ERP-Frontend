@@ -1,5 +1,6 @@
 import {
   Boxes,
+  FileText,
   ChartNoAxesCombined,
   History,
   LucideIcon,
@@ -40,6 +41,7 @@ export const navGroups: NavGroup[] = [
     label: "Insights",
     items: [
       { name: "Demand Forecast", icon: TrendingUp, link: "/dashboard/forecast" },
+      { name: "Reports", icon: FileText, link: "/dashboard/reports" },
       { name: "Audit logs", icon: History, link: "/dashboard/audit-logs" },
     ],
   },

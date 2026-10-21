@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.4.0] - 2026-10-21
+
+### Added
+
+- A Reports page (owner only, under Insights) listing every PDF report: Sales, Stock on hand (as of now), Purchases and Adjustments (daily, weekly or monthly). The Sales page's export button stays.
+
+### Changed
+
+- The sales export dialog is now shared with the Reports page. It works the same.
+
 ## [6.3.0] - 2026-10-21
 
 ### Changed

@@ -5,6 +5,7 @@ import { FileDown } from "lucide-react"
 import ListHeader from "@/components/ListHeader"
 import ListSummary from "@/components/ListSummary"
 import OrderTypeFilterSelect from "@/components/OrderTypeFilterSelect"
+import SalesReportModal from "@/components/SalesReportModal"
 import SearchInput from "@/components/SearchInput"
 import SortPopover from "@/components/SortPopover"
 import { Button } from "@/components/ui/button"
@@ -25,7 +26,6 @@ import ReturnItemsModal from "./ReturnItemsModal"
 import ReturnsSection from "./ReturnsSection"
 import SaleDateFilter from "./SaleDateFilter"
 import SaleDetailsModal from "./SaleDetailsModal"
-import SalesReportModal from "./SalesReportModal"
 import SalesTable from "./SalesTable"
 
 type ModalState = { type: "details"; sale: Sale } | { type: "return"; sale: Sale } | { type: "report" } | null
@@ -172,7 +172,7 @@ export default function SalesView() {
           onSubmit={(payload) => returnItems.mutate(payload, { onSuccess: () => setModal(null) })}
         />
       )}
-      {modal?.type === "report" && <SalesReportModal open onClose={() => setModal(null)} />}
+      {modal?.type === "report" && <SalesReportModal onClose={() => setModal(null)} />}
     </section>
   )
 }
